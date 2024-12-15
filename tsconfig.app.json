@@ -1,0 +1,57 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": [
+    "vite.config.*",
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.vue",
+    "src/**/*.json",
+    "tailwind-theme.ts",
+    "tailwind-theme.js"
+  ],
+  "exclude": [
+    "src/**/__tests__/*"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@components": [
+        "./src/components/*"
+      ],
+      "@assets": [
+        "./src/assets/*"
+      ],
+      "@http": [
+        "./src/http/*"
+      ],
+      "@router": [
+        "./src/router/*"
+      ],
+      "@schema": [
+        "./src/schema/*"
+      ],
+      "@stores": [
+        "./src/stores/*"
+      ],
+      "@utils": [
+        "./src/utils/*"
+      ],
+      "@views": [
+        "./src/views/*"
+      ],
+      "@composables": [
+        "./src/composables/*"
+      ],
+      "@interface": [
+        "./src/typescript/interface/*"
+      ],
+      "@types": [
+        "./src/typescript/types/*"
+      ],
+    }
+  }
+}
