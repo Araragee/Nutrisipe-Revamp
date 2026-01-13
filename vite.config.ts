@@ -28,4 +28,41 @@ export default defineConfig({
       '@types': fileURLToPath(new URL('./src/typescript/types', import.meta.url))
     }
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks
+          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+          'axios-vendor': ['axios'],
+          // Component chunks
+          'feed-components': [
+            './src/components/feed/PinGrid.vue',
+            './src/components/feed/PinCard.vue',
+            './src/components/feed/PinSkeleton.vue',
+          ],
+          'post-components': [
+            './src/components/post/PostDetailModal.vue',
+            './src/components/post/CreatePostModal.vue',
+            './src/components/post/CommentSection.vue',
+          ],
+          'user-components': [
+            './src/components/user/UserAvatar.vue',
+            './src/components/user/UserCard.vue',
+            './src/components/user/UserSearchModal.vue',
+          ],
+        },
+      },
+    },
+    // Enable chunk size warnings
+    chunkSizeWarningLimit: 500,
+    // Minify production build
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+  },
 })
