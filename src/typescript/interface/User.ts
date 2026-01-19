@@ -8,6 +8,7 @@ export interface User {
   followerCount: number
   followingCount: number
   createdAt: string
+  role?: 'USER' | 'MODERATOR' | 'ADMIN'
   isFollowing?: boolean
 }
 

@@ -7,6 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
+
 model User {
   id              String    @id @default(uuid())
   username        String    @unique @db.VarChar(50)
@@ -15,6 +21,11 @@ model User {
   displayName     String    @map("display_name") @db.VarChar(100)
   avatarUrl       String?   @map("avatar_url")
   bio             String?   @db.Text
+  role            UserRole  @default(USER)
+  isActive        Boolean   @default(true) @map("is_active")
+  isBanned        Boolean   @default(false) @map("is_banned")
+  bannedAt        DateTime? @map("banned_at")
+  banReason       String?   @map("ban_reason") @db.Text
   followerCount   Int       @default(0) @map("follower_count")
   followingCount  Int       @default(0) @map("following_count")
   createdAt       DateTime  @default(now()) @map("created_at")
@@ -28,10 +39,13 @@ model User {
   following            Follow[]       @relation("UserFollowing")
   notifications        Notification[] @relation("NotificationRecipient")
   triggeredNotifications Notification[] @relation("NotificationActor")
+  reports              Report[]       @relation("ReportCreator")
+  moderatedReports     Report[]       @relation("ReportModerator")
 
   @@map("users")
   @@index([username])
   @@index([email])
+  @@index([role])
 }
 
 model Post {
@@ -54,6 +68,7 @@ model Post {
   saves         Save[]
   comments      Comment[]
   recipe        Recipe?
+  reports       Report[]
 
   @@map("posts")
   @@index([userId])
@@ -136,6 +151,7 @@ model Comment {
 
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reports   Report[]
 
   @@map("comments")
   @@index([userId])
@@ -161,4 +177,56 @@ model Notification {
   @@index([actorId])
   @@index([createdAt])
   @@index([isRead])
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWING
+  RESOLVED
+  DISMISSED
+}
+
+enum ReportType {
+  POST
+  COMMENT
+  USER
+}
+
+enum ReportReason {
+  SPAM
+  HARASSMENT
+  INAPPROPRIATE_CONTENT
+  MISINFORMATION
+  COPYRIGHT
+  OTHER
+}
+
+model Report {
+  id             String       @id @default(uuid())
+  reporterId     String       @map("reporter_id")
+  reportedUserId String?      @map("reported_user_id")
+  postId         String?      @map("post_id")
+  commentId      String?      @map("comment_id")
+  type           ReportType
+  reason         ReportReason
+  description    String?      @db.Text
+  status         ReportStatus @default(PENDING)
+  moderatorId    String?      @map("moderator_id")
+  moderatorNote  String?      @map("moderator_note") @db.Text
+  resolvedAt     DateTime?    @map("resolved_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  reporter       User         @relation("ReportCreator", fields: [reporterId], references: [id], onDelete: Cascade)
+  moderator      User?        @relation("ReportModerator", fields: [moderatorId], references: [id])
+  post           Post?        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment        Comment?     @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+  @@index([reporterId])
+  @@index([postId])
+  @@index([commentId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
 }

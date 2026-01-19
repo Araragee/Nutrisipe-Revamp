@@ -1,13 +1,14 @@
 import { Request, Response, NextFunction } from 'express'
 import { verifyToken } from '../utils/jwt'
 import { AppError } from './errorHandler'
+import { prisma } from '../lib/prisma'
 
 export interface AuthRequest extends Request {
   userId?: string
 }
 
-export async function authenticate(
-  req: AuthRequest,
+export async function auth(
+  req: Request,
   res: Response,
   next: NextFunction
 ) {
@@ -22,6 +23,23 @@ export async function authenticate(
 
     try {
       const payload = verifyToken(token)
+
+      // Fetch user with role information
+      const user = await prisma.user.findUnique({
+        where: { id: payload.userId },
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          role: true,
+        },
+      })
+
+      if (!user) {
+        throw new AppError(401, 'User not found')
+      }
+
+      req.user = user
       req.userId = payload.userId
       next()
     } catch (error) {
@@ -31,3 +49,6 @@ export async function authenticate(
     next(error)
   }
 }
+
+// Alias for backwards compatibility
+export const authenticate = auth

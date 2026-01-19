@@ -8,6 +8,8 @@ import usersRoutes from './routes/users'
 import socialRoutes from './routes/social'
 import commentsRoutes from './routes/comments'
 import notificationsRoutes from './routes/notifications'
+import adminRoutes from './routes/admin'
+import reportsRoutes from './routes/reports'
 
 const app = express()
 
@@ -28,6 +30,8 @@ app.use('/api/users', usersRoutes)
 app.use('/api/social', socialRoutes)
 app.use('/api/comments', commentsRoutes)
 app.use('/api/notifications', notificationsRoutes)
+app.use('/api/admin', adminRoutes)
+app.use('/api/reports', reportsRoutes)
 
 app.use(errorHandler)
 

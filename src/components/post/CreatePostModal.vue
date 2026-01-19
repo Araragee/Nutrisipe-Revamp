@@ -3,6 +3,10 @@ import { ref, computed } from 'vue'
 import { createPost, type CreatePostData } from '@/http/posts'
 import { useFeedStore } from '@/stores/feed'
 import BaseButton from '@/components/base/BaseButton.vue'
+import RichTextEditor from '@/components/ui/RichTextEditor.vue'
+import ImageUpload from '@/components/ui/ImageUpload.vue'
+
+const showImageUpload = ref(false)
 
 const props = defineProps<{
   show: boolean
@@ -145,45 +149,30 @@ function handleClose() {
           </select>
         </div>
 
-        <!-- Image URL -->
+        <!-- Image Upload -->
         <div>
-          <label for="imageUrl" class="block text-sm font-semibold text-gray-700 mb-2">
-            Image URL *
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            Post Image *
           </label>
-          <input
-            id="imageUrl"
+          <ImageUpload
             v-model="imageUrl"
-            type="url"
-            required
-            placeholder="https://example.com/image.jpg"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+            :max-size="5"
+            @error="(msg) => error = msg"
           />
           <p class="mt-2 text-sm text-gray-500">
-            Enter a URL to an image for your post
+            Upload an image for your post (max 5MB)
           </p>
-        </div>
-
-        <!-- Image Preview -->
-        <div v-if="imageUrl" class="rounded-lg overflow-hidden border border-gray-200">
-          <img
-            :src="imageUrl"
-            alt="Preview"
-            class="w-full h-48 object-cover"
-            @error="() => {}"
-          />
         </div>
 
         <!-- Description -->
         <div>
-          <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
             Description
           </label>
-          <textarea
-            id="description"
+          <RichTextEditor
             v-model="description"
-            rows="4"
             placeholder="Tell us about your post..."
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
+            :max-length="2000"
           />
         </div>
 

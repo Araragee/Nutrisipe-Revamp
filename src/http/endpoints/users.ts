@@ -30,4 +30,7 @@ export const usersApi = {
     httpClient.get<ApiResponse<Activity[]>>(`/users/${id}/activity`, {
       params: { limit },
     }),
+
+  updateProfile: (data: { displayName?: string; bio?: string; avatarUrl?: string }) =>
+    httpClient.put<ApiResponse<User>>('/users/profile', data),
 }
