@@ -1,3 +1,150 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Accessibility Utilities */
+@layer utilities {
+  /* Screen reader only - visually hidden but accessible to screen readers */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .sr-only-focusable:focus,
+  .sr-only-focusable:active {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+
+  /* Focus visible styles - only show outline on keyboard focus */
+  .focus-visible:focus-visible {
+    @apply outline-none ring-2 ring-orange-500 ring-offset-2;
+  }
+
+  /* Skip link for keyboard navigation */
+  .skip-link {
+    @apply sr-only;
+  }
+
+  .skip-link:focus {
+    @apply not-sr-only absolute top-4 left-4 z-50 px-4 py-2 bg-orange-500 text-white rounded-lg shadow-lg;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+@layer base {
+  *:focus-visible {
+    @apply outline-none ring-2 ring-orange-500 ring-offset-2;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    @apply ring-2 ring-orange-500 ring-offset-2;
+  }
+}
+/* Modal and Z-Index Hierarchy */
+@layer components {
+  /* Z-Index System:
+   * 0-9: Base content
+   * 10-19: Dropdowns, tooltips
+   * 20-29: Sticky headers, footers
+   * 30-39: Navigation overlays
+   * 40-49: Mobile nav, sidebars
+   * 50-59: Modals and overlays
+   * 60+: Critical notifications
+   */
+
+  /* Modal backdrop */
+  .modal-backdrop {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+  }
+
+  /* Modal container - prevents overflow */
+  .modal-container {
+    @apply relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full mx-4 z-50;
+    max-height: 90vh;
+    max-width: min(90vw, 600px);
+  }
+
+  /* Modal content area with scroll */
+  .modal-content {
+    @apply overflow-y-auto;
+    max-height: calc(90vh - 8rem); /* Account for header and footer */
+  }
+
+  /* Large modal variant */
+  .modal-container-lg {
+    max-width: min(90vw, 800px);
+  }
+
+  /* Full screen modal for mobile */
+  @media (max-width: 768px) {
+    .modal-container {
+      max-height: 100vh;
+      max-width: 100vw;
+      margin: 0;
+      border-radius: 0;
+    }
+
+    .modal-content {
+      max-height: calc(100vh - 8rem);
+    }
+  }
+
+  /* Prevent body scroll when modal is open */
+  .modal-open {
+    overflow: hidden;
+  }
+
+  /* Dropdown z-index */
+  .dropdown {
+    @apply z-30;
+  }
+
+  /* Navigation z-index */
+  .navbar {
+    @apply z-40;
+  }
+
+  .mobile-nav {
+    @apply z-40;
+  }
+
+  /* Toast/notification z-index */
+  .toast {
+    @apply z-60;
+  }
+}
+
+/* Safe area support for iOS notch */
+@supports (padding: max(0px)) {
+  .safe-area-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-area-left {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+
+  .safe-area-right {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}

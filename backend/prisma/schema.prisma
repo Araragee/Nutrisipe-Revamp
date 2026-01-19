@@ -1,0 +1,266 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+model User {
+  id              String    @id @default(uuid())
+  username        String    @unique @db.VarChar(50)
+  email           String    @unique @db.VarChar(255)
+  passwordHash    String    @map("password_hash")
+  displayName     String    @map("display_name") @db.VarChar(100)
+  avatarUrl       String?   @map("avatar_url")
+  bio             String?   @db.Text
+  role            UserRole  @default(USER)
+  isActive        Boolean   @default(true) @map("is_active")
+  isBanned        Boolean   @default(false) @map("is_banned")
+  bannedAt        DateTime? @map("banned_at")
+  banReason       String?   @map("ban_reason") @db.Text
+  followerCount   Int       @default(0) @map("follower_count")
+  followingCount  Int       @default(0) @map("following_count")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  posts                Post[]
+  likes                Like[]
+  saves                Save[]
+  comments             Comment[]
+  followers            Follow[]       @relation("UserFollowers")
+  following            Follow[]       @relation("UserFollowing")
+  notifications        Notification[] @relation("NotificationRecipient")
+  triggeredNotifications Notification[] @relation("NotificationActor")
+  reports              Report[]       @relation("ReportCreator")
+  moderatedReports     Report[]       @relation("ReportModerator")
+  collections          Collection[]
+
+  @@map("users")
+  @@index([username])
+  @@index([email])
+  @@index([role])
+}
+
+model Post {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  title         String    @db.VarChar(255)
+  description   String?   @db.Text
+  imageUrl      String    @map("image_url")
+  category      String    @db.VarChar(50)
+  tags          String[]
+  likeCount     Int       @default(0) @map("like_count")
+  saveCount     Int       @default(0) @map("save_count")
+  commentCount  Int       @default(0) @map("comment_count")
+  isPublic      Boolean   @default(true) @map("is_public")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes              Like[]
+  saves              Save[]
+  comments           Comment[]
+  recipe             Recipe?
+  reports            Report[]
+  collectionPosts    CollectionPost[]
+
+  @@map("posts")
+  @@index([userId])
+  @@index([createdAt])
+  @@index([category])
+}
+
+model Recipe {
+  id              String    @id @default(uuid())
+  postId          String    @unique @map("post_id")
+  servings        Int?
+  prepTime        Int?      @map("prep_time")
+  cookTime        Int?      @map("cook_time")
+  totalTime       Int?      @map("total_time")
+  difficulty      String?   @db.VarChar(20)
+  ingredients     Json
+  instructions    Json
+  nutrition       Json?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  post            Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("recipes")
+  @@index([postId])
+}
+
+model Follow {
+  id          String    @id @default(uuid())
+  followerId  String    @map("follower_id")
+  followingId String    @map("following_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  follower    User      @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User      @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Like {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  postId    String    @map("post_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("likes")
+  @@index([userId])
+  @@index([postId])
+}
+
+model Save {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  postId    String    @map("post_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("saves")
+  @@index([userId])
+  @@index([postId])
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  postId    String    @map("post_id")
+  content   String    @db.Text
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reports   Report[]
+
+  @@map("comments")
+  @@index([userId])
+  @@index([postId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  actorId    String    @map("actor_id")
+  type       String    @db.VarChar(50)
+  postId     String?   @map("post_id")
+  commentId  String?   @map("comment_id")
+  isRead     Boolean   @default(false) @map("is_read")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user       User      @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor      User      @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+  @@index([userId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@index([isRead])
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWING
+  RESOLVED
+  DISMISSED
+}
+
+enum ReportType {
+  POST
+  COMMENT
+  USER
+}
+
+enum ReportReason {
+  SPAM
+  HARASSMENT
+  INAPPROPRIATE_CONTENT
+  MISINFORMATION
+  COPYRIGHT
+  OTHER
+}
+
+model Report {
+  id             String       @id @default(uuid())
+  reporterId     String       @map("reporter_id")
+  reportedUserId String?      @map("reported_user_id")
+  postId         String?      @map("post_id")
+  commentId      String?      @map("comment_id")
+  type           ReportType
+  reason         ReportReason
+  description    String?      @db.Text
+  status         ReportStatus @default(PENDING)
+  moderatorId    String?      @map("moderator_id")
+  moderatorNote  String?      @map("moderator_note") @db.Text
+  resolvedAt     DateTime?    @map("resolved_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  reporter       User         @relation("ReportCreator", fields: [reporterId], references: [id], onDelete: Cascade)
+  moderator      User?        @relation("ReportModerator", fields: [moderatorId], references: [id])
+  post           Post?        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment        Comment?     @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+  @@index([reporterId])
+  @@index([postId])
+  @@index([commentId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model Collection {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  isPublic    Boolean  @default(false) @map("is_public")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts       CollectionPost[]
+
+  @@map("collections")
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model CollectionPost {
+  id           String     @id @default(uuid())
+  collectionId String     @map("collection_id")
+  postId       String     @map("post_id")
+  addedAt      DateTime   @default(now()) @map("added_at")
+
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  post         Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, postId])
+  @@map("collection_posts")
+  @@index([collectionId])
+  @@index([postId])
+}
