@@ -6,11 +6,11 @@ services:
     container_name: nutrisipe-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: nutrisipe
-      POSTGRES_PASSWORD: nutrisipe
-      POSTGRES_DB: nutrisipe
+      POSTGRES_USER: ${POSTGRES_USER:-nutrisipe}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-nutrisipe}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
