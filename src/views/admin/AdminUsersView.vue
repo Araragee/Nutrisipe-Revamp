@@ -176,10 +176,10 @@
     <!-- Ban Modal -->
     <div
       v-if="showBanModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      class="modal-backdrop"
       @click="showBanModal = false"
     >
-      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4" @click.stop>
+      <div class="modal-container" @click.stop>
         <h2 class="text-xl font-bold mb-4">Ban User</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-4">
           Are you sure you want to ban @{{ selectedUser?.username }}?
@@ -219,6 +219,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
+import { useModal } from '@/composables/useModal'
 import { adminApi } from '@/http/endpoints/admin'
 
 const router = useRouter()
@@ -239,6 +240,9 @@ const filters = ref({
 const showBanModal = ref(false)
 const selectedUser = ref<any>(null)
 const banReason = ref('')
+
+// Handle modal body scroll lock
+useModal(() => showBanModal.value, () => showBanModal.value = false)
 
 let searchTimeout: NodeJS.Timeout
 

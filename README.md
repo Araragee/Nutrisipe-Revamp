@@ -20,6 +20,10 @@
 - 👮 **Admin & Moderation** - Role-based access, user management, content moderation
 - 🚨 **Reporting System** - User reporting with moderation workflow
 - 📊 **Analytics Dashboard** - Platform insights and statistics
+- 🔍 **Universal Search** - Search posts and users with filtering
+- 🔥 **Trending Posts** - Popular content by time period
+- 📁 **Collections/Boards** - Organize saved recipes into collections
+- 🗂️ **Category Browse** - Browse by cuisine category and tags
 
 ## Documentation
 
@@ -32,9 +36,10 @@
 - 🚀 [PHASE_5_SUMMARY.md](./PHASE_5_SUMMARY.md) - Performance optimizations
 - 🎨 [PHASE_6_SUMMARY.md](./PHASE_6_SUMMARY.md) - UX enhancements
 - 👮 [PHASE_7_SUMMARY.md](./PHASE_7_SUMMARY.md) - Admin & moderation system
+- 🔍 [PHASE_8_SUMMARY.md](./PHASE_8_SUMMARY.md) - Enhanced discovery & search
 
 ## Quick Start
 
 See [SETUP.md](./SETUP.md) for detailed installation instructions.
 
-**Version**: 1.0.0 | **Status**: Phases 1-7 Complete ✅
+**Version**: 1.0.0 | **Status**: Phases 1-8 Complete ✅

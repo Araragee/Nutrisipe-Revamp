@@ -311,3 +311,55 @@ export async function getSuggestedUsers(userId: string, limit: number = 10) {
 
   return suggestedUsers.slice(0, limit)
 }
+
+export async function getSavedPosts(userId: string, page: number, limit: number) {
+  const skip = (page - 1) * limit
+
+  const [saves, total] = await Promise.all([
+    prisma.save.findMany({
+      where: { userId },
+      include: {
+        post: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatarUrl: true,
+              },
+            },
+            _count: {
+              select: {
+                likes: true,
+                comments: true,
+                saves: true,
+              },
+            },
+          },
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.save.count({ where: { userId } }),
+  ])
+
+  const posts = saves.map(save => ({
+    ...save.post,
+    isLiked: false,
+    isSaved: true,
+    savedAt: save.createdAt,
+  }))
+
+  return {
+    posts,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  }
+}

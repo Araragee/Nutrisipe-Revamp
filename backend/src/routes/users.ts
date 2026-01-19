@@ -10,6 +10,7 @@ router.get('/:id', usersController.getUserByIdHandler)
 router.get('/:id/followers', usersController.getUserFollowersHandler)
 router.get('/:id/following', usersController.getUserFollowingHandler)
 router.get('/:id/activity', usersController.getUserActivityHandler)
+router.get('/:id/saved', authenticate, usersController.getSavedPostsHandler)
 
 router.put('/profile', authenticate, usersController.updateProfileHandler)
 

@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { createPost, type CreatePostData } from '@/http/posts'
 import { useFeedStore } from '@/stores/feed'
+import { useModal } from '@/composables/useModal'
 import BaseButton from '@/components/base/BaseButton.vue'
 import RichTextEditor from '@/components/ui/RichTextEditor.vue'
 import ImageUpload from '@/components/ui/ImageUpload.vue'
@@ -26,6 +27,9 @@ const category = ref('recipe')
 const tags = ref('')
 const isSubmitting = ref(false)
 const error = ref<string | null>(null)
+
+// Handle modal body scroll lock
+useModal(() => props.show, () => emit('close'))
 
 const categories = [
   { value: 'recipe', label: 'Recipe' },
@@ -92,10 +96,10 @@ function handleClose() {
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+    class="modal-backdrop"
     @click.self="handleClose"
   >
-    <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="modal-container modal-container-lg dark:bg-gray-800 rounded-2xl">
       <!-- Header -->
       <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
         <h2 class="text-2xl font-bold text-gray-900">Create Post</h2>

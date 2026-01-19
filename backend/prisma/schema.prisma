@@ -41,6 +41,7 @@ model User {
   triggeredNotifications Notification[] @relation("NotificationActor")
   reports              Report[]       @relation("ReportCreator")
   moderatedReports     Report[]       @relation("ReportModerator")
+  collections          Collection[]
 
   @@map("users")
   @@index([username])
@@ -63,12 +64,13 @@ model Post {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  likes         Like[]
-  saves         Save[]
-  comments      Comment[]
-  recipe        Recipe?
-  reports       Report[]
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes              Like[]
+  saves              Save[]
+  comments           Comment[]
+  recipe             Recipe?
+  reports            Report[]
+  collectionPosts    CollectionPost[]
 
   @@map("posts")
   @@index([userId])
@@ -229,4 +231,36 @@ model Report {
   @@index([status])
   @@index([type])
   @@index([createdAt])
+}
+
+model Collection {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  isPublic    Boolean  @default(false) @map("is_public")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts       CollectionPost[]
+
+  @@map("collections")
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model CollectionPost {
+  id           String     @id @default(uuid())
+  collectionId String     @map("collection_id")
+  postId       String     @map("post_id")
+  addedAt      DateTime   @default(now()) @map("added_at")
+
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  post         Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, postId])
+  @@map("collection_posts")
+  @@index([collectionId])
+  @@index([postId])
 }

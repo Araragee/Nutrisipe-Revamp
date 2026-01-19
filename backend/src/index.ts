@@ -10,6 +10,8 @@ import commentsRoutes from './routes/comments'
 import notificationsRoutes from './routes/notifications'
 import adminRoutes from './routes/admin'
 import reportsRoutes from './routes/reports'
+import searchRoutes from './routes/search'
+import collectionsRoutes from './routes/collections'
 
 const app = express()
 
@@ -32,6 +34,8 @@ app.use('/api/comments', commentsRoutes)
 app.use('/api/notifications', notificationsRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/reports', reportsRoutes)
+app.use('/api/search', searchRoutes)
+app.use('/api/collections', collectionsRoutes)
 
 app.use(errorHandler)
 

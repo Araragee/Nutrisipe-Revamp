@@ -136,3 +136,26 @@ export async function searchUsersHandler(req: AuthRequest, res: Response, next: 
     next(error)
   }
 }
+
+export async function getSavedPostsHandler(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params
+    const page = parseInt(req.query.page as string) || 1
+    const limit = parseInt(req.query.limit as string) || 20
+
+    // Only allow users to view their own saved posts
+    if (id !== req.userId) {
+      return res.status(403).json({ error: 'Access denied' })
+    }
+
+    const result = await userService.getSavedPosts(id, page, limit)
+
+    res.json({
+      success: true,
+      data: result.posts,
+      pagination: result.pagination,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
