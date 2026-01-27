@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express'
 import * as notificationService from '../services/notificationService'
-import { AuthRequest } from '../middleware/authenticate'
+import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
 
 export async function getNotificationsHandler(

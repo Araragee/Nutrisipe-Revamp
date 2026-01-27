@@ -1,7 +1,17 @@
 import { Response, NextFunction } from 'express'
+import { z } from 'zod'
 import * as commentService from '../services/commentService'
-import { AuthRequest } from '../middleware/authenticate'
+import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
+
+const createCommentSchema = z.object({
+  postId: z.string().uuid(),
+  content: z.string().min(1).max(1000),
+})
+
+const updateCommentSchema = z.object({
+  content: z.string().min(1).max(1000),
+})
 
 export async function createCommentHandler(
   req: AuthRequest,
@@ -13,14 +23,19 @@ export async function createCommentHandler(
       throw new AppError(401, 'Unauthorized')
     }
 
-    const comment = await commentService.createComment(req.userId, req.body)
+    const validated = createCommentSchema.parse(req.body)
+    const comment = await commentService.createComment(req.userId, validated)
 
     res.status(201).json({
       success: true,
       data: comment,
     })
   } catch (error) {
-    next(error)
+    if (error instanceof z.ZodError) {
+      next(new AppError(400, error.errors[0].message))
+    } else {
+      next(error)
+    }
   }
 }
 
@@ -79,16 +94,12 @@ export async function updateCommentHandler(
     }
 
     const { commentId } = req.params
-    const { content } = req.body
-
-    if (!content || content.trim().length === 0) {
-      throw new AppError(400, 'Content is required')
-    }
+    const validated = updateCommentSchema.parse(req.body)
 
     const comment = await commentService.updateComment(
       commentId,
       req.userId,
-      content
+      validated.content
     )
 
     res.json({
@@ -96,6 +107,10 @@ export async function updateCommentHandler(
       data: comment,
     })
   } catch (error) {
-    next(error)
+    if (error instanceof z.ZodError) {
+      next(new AppError(400, error.errors[0].message))
+    } else {
+      next(error)
+    }
   }
 }

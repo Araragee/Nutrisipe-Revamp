@@ -1,7 +1,19 @@
-import { Request, Response, NextFunction } from 'express'
+import { Response, NextFunction } from 'express'
+import { z } from 'zod'
 import * as postService from '../services/postService'
 import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
+
+const createPostSchema = z.object({
+  title: z.string().min(1).max(255),
+  description: z.string().max(5000).optional(),
+  imageUrl: z.string().min(1),
+  category: z.string().min(1).max(50),
+  tags: z.array(z.string()).default([]),
+  isPublic: z.boolean().default(true),
+})
+
+const updatePostSchema = createPostSchema.partial()
 
 export async function getFeedHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
@@ -62,14 +74,19 @@ export async function createPostHandler(req: AuthRequest, res: Response, next: N
       throw new AppError(401, 'Unauthorized')
     }
 
-    const post = await postService.createPost(req.userId, req.body)
+    const validated = createPostSchema.parse(req.body)
+    const post = await postService.createPost(req.userId, validated)
 
     res.status(201).json({
       success: true,
       data: post,
     })
   } catch (error) {
-    next(error)
+    if (error instanceof z.ZodError) {
+      next(new AppError(400, error.errors[0].message))
+    } else {
+      next(error)
+    }
   }
 }
 
@@ -80,14 +97,19 @@ export async function updatePostHandler(req: AuthRequest, res: Response, next: N
     }
 
     const { id } = req.params
-    const post = await postService.updatePost(id, req.userId, req.body)
+    const validated = updatePostSchema.parse(req.body)
+    const post = await postService.updatePost(id, req.userId, validated)
 
     res.json({
       success: true,
       data: post,
     })
   } catch (error) {
-    next(error)
+    if (error instanceof z.ZodError) {
+      next(new AppError(400, error.errors[0].message))
+    } else {
+      next(error)
+    }
   }
 }
 
