@@ -23,7 +23,7 @@ export async function getFeed(userId: string, page: number = 1, limit: number = 
   const followedPostsCount = Math.ceil(limit * 0.7)
   const popularPostsCount = limit - followedPostsCount
 
-  let followedPosts = []
+  let followedPosts: any[] = []
   if (followedUserIds.length > 0) {
     followedPosts = await prisma.post.findMany({
       where: {

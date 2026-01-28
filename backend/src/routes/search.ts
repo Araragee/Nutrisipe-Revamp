@@ -13,7 +13,8 @@ router.get('/', auth, async (req, res) => {
     const limit = parseInt(req.query.limit as string) || 20
 
     if (!query || query.trim().length < 2) {
-      return res.status(400).json({ error: 'Search query must be at least 2 characters' })
+      res.status(400).json({ error: 'Search query must be at least 2 characters' })
+      return
     }
 
     const searchQuery = query.trim()
@@ -278,7 +279,7 @@ router.get('/category/:category', auth, async (req, res) => {
 })
 
 // Get all unique categories
-router.get('/categories', auth, async (req, res) => {
+router.get('/categories', auth, async (_req, res) => {
   try {
     const categories = await prisma.post.groupBy({
       by: ['category'],

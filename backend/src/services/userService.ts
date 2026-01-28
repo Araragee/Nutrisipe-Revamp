@@ -274,19 +274,6 @@ export async function updateUserProfile(userId: string, data: UpdateProfileData)
 }
 
 export async function getSuggestedUsers(userId: string, limit: number = 10) {
-  const currentUserLikes = await prisma.like.findMany({
-    where: { userId },
-    include: {
-      post: {
-        select: { category: true, tags: true },
-      },
-    },
-    take: 50,
-  })
-
-  const categories = currentUserLikes.map(like => like.post.category)
-  const tags = currentUserLikes.flatMap(like => like.post.tags)
-
   const followedUsers = await prisma.follow.findMany({
     where: { followerId: userId },
     select: { followingId: true },

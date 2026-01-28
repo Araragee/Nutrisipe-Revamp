@@ -110,12 +110,14 @@ router.get('/:id', auth, async (req, res) => {
     })
 
     if (!collection) {
-      return res.status(404).json({ error: 'Collection not found' })
+      res.status(404).json({ error: 'Collection not found' })
+      return
     }
 
     // Check if user can view this collection
     if (!collection.isPublic && collection.userId !== req.user!.id) {
-      return res.status(403).json({ error: 'Access denied' })
+      res.status(403).json({ error: 'Access denied' })
+      return
     }
 
     const [collectionPosts, total] = await Promise.all([
@@ -183,11 +185,13 @@ router.post('/', auth, async (req, res) => {
     const { name, description, isPublic } = req.body
 
     if (!name || name.trim().length === 0) {
-      return res.status(400).json({ error: 'Collection name is required' })
+      res.status(400).json({ error: 'Collection name is required' })
+      return
     }
 
     if (name.length > 100) {
-      return res.status(400).json({ error: 'Collection name must be less than 100 characters' })
+      res.status(400).json({ error: 'Collection name must be less than 100 characters' })
+      return
     }
 
     const collection = await prisma.collection.create({
@@ -224,11 +228,13 @@ router.put('/:id', auth, async (req, res) => {
     })
 
     if (!collection) {
-      return res.status(404).json({ error: 'Collection not found' })
+      res.status(404).json({ error: 'Collection not found' })
+      return
     }
 
     if (collection.userId !== req.user!.id) {
-      return res.status(403).json({ error: 'Access denied' })
+      res.status(403).json({ error: 'Access denied' })
+      return
     }
 
     const updated = await prisma.collection.update({
@@ -264,11 +270,13 @@ router.delete('/:id', auth, async (req, res) => {
     })
 
     if (!collection) {
-      return res.status(404).json({ error: 'Collection not found' })
+      res.status(404).json({ error: 'Collection not found' })
+      return
     }
 
     if (collection.userId !== req.user!.id) {
-      return res.status(403).json({ error: 'Access denied' })
+      res.status(403).json({ error: 'Access denied' })
+      return
     }
 
     await prisma.collection.delete({
@@ -292,11 +300,13 @@ router.post('/:id/posts/:postId', auth, async (req, res) => {
     })
 
     if (!collection) {
-      return res.status(404).json({ error: 'Collection not found' })
+      res.status(404).json({ error: 'Collection not found' })
+      return
     }
 
     if (collection.userId !== req.user!.id) {
-      return res.status(403).json({ error: 'Access denied' })
+      res.status(403).json({ error: 'Access denied' })
+      return
     }
 
     // Check if post exists
@@ -305,7 +315,8 @@ router.post('/:id/posts/:postId', auth, async (req, res) => {
     })
 
     if (!post) {
-      return res.status(404).json({ error: 'Post not found' })
+      res.status(404).json({ error: 'Post not found' })
+      return
     }
 
     // Check if already added
@@ -319,7 +330,8 @@ router.post('/:id/posts/:postId', auth, async (req, res) => {
     })
 
     if (existing) {
-      return res.status(400).json({ error: 'Post already in collection' })
+      res.status(400).json({ error: 'Post already in collection' })
+      return
     }
 
     const collectionPost = await prisma.collectionPost.create({
@@ -346,11 +358,13 @@ router.delete('/:id/posts/:postId', auth, async (req, res) => {
     })
 
     if (!collection) {
-      return res.status(404).json({ error: 'Collection not found' })
+      res.status(404).json({ error: 'Collection not found' })
+      return
     }
 
     if (collection.userId !== req.user!.id) {
-      return res.status(403).json({ error: 'Access denied' })
+      res.status(403).json({ error: 'Access denied' })
+      return
     }
 
     await prisma.collectionPost.delete({

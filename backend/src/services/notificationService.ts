@@ -64,7 +64,7 @@ export async function getNotifications(
 ) {
   const skip = (page - 1) * limit
 
-  const [notifications, total, unreadCount] = await Promise.all([
+  const [notificationsRaw, total, unreadCount] = await Promise.all([
     prisma.notification.findMany({
       where: { userId },
       include: {
@@ -74,13 +74,6 @@ export async function getNotifications(
             username: true,
             displayName: true,
             avatarUrl: true,
-          },
-        },
-        post: {
-          select: {
-            id: true,
-            title: true,
-            imageUrl: true,
           },
         },
       },
@@ -95,6 +88,30 @@ export async function getNotifications(
       where: { userId, isRead: false },
     }),
   ])
+
+  // Fetch related posts manually since there is no relation in schema
+  const postIds = notificationsRaw
+    .map((n) => n.postId)
+    .filter((id): id is string => id !== null)
+
+  const posts =
+    postIds.length > 0
+      ? await prisma.post.findMany({
+          where: { id: { in: postIds } },
+          select: {
+            id: true,
+            title: true,
+            imageUrl: true,
+          },
+        })
+      : []
+
+  const postsMap = new Map(posts.map((p) => [p.id, p]))
+
+  const notifications = notificationsRaw.map((n) => ({
+    ...n,
+    post: n.postId ? postsMap.get(n.postId) || null : null,
+  }))
 
   return {
     notifications,

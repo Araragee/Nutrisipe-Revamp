@@ -11,29 +11,35 @@ router.post('/', auth, async (req, res) => {
 
     // Validate required fields
     if (!type || !reason) {
-      return res.status(400).json({ error: 'Type and reason are required' })
+      res.status(400).json({ error: 'Type and reason are required' })
+      return
     }
 
     // Validate type
     if (!['POST', 'COMMENT', 'USER'].includes(type)) {
-      return res.status(400).json({ error: 'Invalid report type' })
+      res.status(400).json({ error: 'Invalid report type' })
+      return
     }
 
     // Validate reason
     const validReasons = ['SPAM', 'HARASSMENT', 'INAPPROPRIATE_CONTENT', 'MISINFORMATION', 'COPYRIGHT', 'OTHER']
     if (!validReasons.includes(reason)) {
-      return res.status(400).json({ error: 'Invalid report reason' })
+      res.status(400).json({ error: 'Invalid report reason' })
+      return
     }
 
     // Validate that the correct ID is provided for the type
     if (type === 'POST' && !postId) {
-      return res.status(400).json({ error: 'Post ID is required for post reports' })
+      res.status(400).json({ error: 'Post ID is required for post reports' })
+      return
     }
     if (type === 'COMMENT' && !commentId) {
-      return res.status(400).json({ error: 'Comment ID is required for comment reports' })
+      res.status(400).json({ error: 'Comment ID is required for comment reports' })
+      return
     }
     if (type === 'USER' && !reportedUserId) {
-      return res.status(400).json({ error: 'User ID is required for user reports' })
+      res.status(400).json({ error: 'User ID is required for user reports' })
+      return
     }
 
     // Check if user has already reported this item
@@ -47,7 +53,8 @@ router.post('/', auth, async (req, res) => {
     })
 
     if (existingReport) {
-      return res.status(400).json({ error: 'You have already reported this item' })
+      res.status(400).json({ error: 'You have already reported this item' })
+      return
     }
 
     // Create the report

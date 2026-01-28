@@ -113,7 +113,7 @@ export async function searchUsersHandler(req: AuthRequest, res: Response, next: 
     const limit = parseInt(req.query.limit as string) || 20
 
     if (!query || query.trim().length === 0) {
-      return res.json({
+      res.json({
         success: true,
         data: [],
         pagination: {
@@ -123,6 +123,7 @@ export async function searchUsersHandler(req: AuthRequest, res: Response, next: 
           totalPages: 0,
         },
       })
+      return
     }
 
     const result = await userService.searchUsers(query.trim(), req.userId, page, limit)
@@ -145,7 +146,8 @@ export async function getSavedPostsHandler(req: AuthRequest, res: Response, next
 
     // Only allow users to view their own saved posts
     if (id !== req.userId) {
-      return res.status(403).json({ error: 'Access denied' })
+      res.status(403).json({ error: 'Access denied' })
+      return
     }
 
     const result = await userService.getSavedPosts(id, page, limit)

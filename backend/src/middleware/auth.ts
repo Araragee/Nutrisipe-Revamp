@@ -9,7 +9,7 @@ export interface AuthRequest extends Request {
 
 export async function auth(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) {
   try {
