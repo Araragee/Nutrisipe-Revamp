@@ -77,28 +77,33 @@ export async function getFeed(userId: string, page: number = 1, limit: number = 
 
   const allPosts = [...followedPosts, ...popularPosts]
 
-  const postsWithEngagement = await Promise.all(
-    allPosts.map(async (post) => {
-      const [isLiked, isSaved] = await Promise.all([
-        prisma.like.findUnique({
-          where: {
-            userId_postId: { userId, postId: post.id },
-          },
-        }),
-        prisma.save.findUnique({
-          where: {
-            userId_postId: { userId, postId: post.id },
-          },
-        }),
-      ])
+  const postIds = allPosts.map(p => p.id)
 
-      return {
-        ...post,
-        isLiked: !!isLiked,
-        isSaved: !!isSaved,
-      }
-    })
-  )
+  const [likes, saves] = await Promise.all([
+    prisma.like.findMany({
+      where: {
+        userId,
+        postId: { in: postIds },
+      },
+      select: { postId: true },
+    }),
+    prisma.save.findMany({
+      where: {
+        userId,
+        postId: { in: postIds },
+      },
+      select: { postId: true },
+    }),
+  ])
+
+  const likedPostIds = new Set(likes.map(l => l.postId))
+  const savedPostIds = new Set(saves.map(s => s.postId))
+
+  const postsWithEngagement = allPosts.map(post => ({
+    ...post,
+    isLiked: likedPostIds.has(post.id),
+    isSaved: savedPostIds.has(post.id),
+  }))
 
   const total = await prisma.post.count({
     where: { isPublic: true },
