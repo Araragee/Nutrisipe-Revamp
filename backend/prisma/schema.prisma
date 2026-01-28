@@ -76,6 +76,7 @@ model Post {
   @@index([userId])
   @@index([createdAt])
   @@index([category])
+  @@index([tags], type: Gin)
 }
 
 model Recipe {
