@@ -6,7 +6,7 @@ import { prisma } from '../lib/prisma'
 const router = Router()
 
 // Admin dashboard statistics
-router.get('/stats', auth, adminOnly, async (req, res) => {
+router.get('/stats', auth, adminOnly, async (_req, res) => {
   try {
     const [
       totalUsers,
@@ -149,7 +149,8 @@ router.put('/users/:id/role', auth, adminOnly, async (req, res) => {
     const { role } = req.body
 
     if (!['USER', 'MODERATOR', 'ADMIN'].includes(role)) {
-      return res.status(400).json({ error: 'Invalid role' })
+      res.status(400).json({ error: 'Invalid role' })
+      return
     }
 
     const user = await prisma.user.update({
@@ -178,7 +179,8 @@ router.post('/users/:id/ban', auth, adminOnly, async (req, res) => {
     const { reason } = req.body
 
     if (!reason || reason.trim().length === 0) {
-      return res.status(400).json({ error: 'Ban reason is required' })
+      res.status(400).json({ error: 'Ban reason is required' })
+      return
     }
 
     const user = await prisma.user.update({
@@ -327,7 +329,8 @@ router.put('/reports/:id', auth, adminOnly, async (req, res) => {
     const { status, moderatorNote } = req.body
 
     if (!['PENDING', 'REVIEWING', 'RESOLVED', 'DISMISSED'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status' })
+      res.status(400).json({ error: 'Invalid status' })
+      return
     }
 
     const data: any = {

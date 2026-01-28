@@ -6,9 +6,9 @@ export interface JwtPayload {
 }
 
 export function generateToken(userId: string): string {
-  return jwt.sign({ userId } as JwtPayload, env.JWT_SECRET, {
+  return jwt.sign({ userId } as JwtPayload, env.JWT_SECRET as jwt.Secret, {
     expiresIn: env.JWT_EXPIRES_IN,
-  })
+  } as jwt.SignOptions)
 }
 
 export function verifyToken(token: string): JwtPayload {
