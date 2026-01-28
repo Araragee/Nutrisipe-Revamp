@@ -196,28 +196,31 @@ export async function getPostsByUser(targetUserId: string, currentUserId: string
   let postsWithEngagement = posts
 
   if (currentUserId) {
-    postsWithEngagement = await Promise.all(
-      posts.map(async (post) => {
-        const [isLiked, isSaved] = await Promise.all([
-          prisma.like.findUnique({
-            where: {
-              userId_postId: { userId: currentUserId, postId: post.id },
-            },
-          }),
-          prisma.save.findUnique({
-            where: {
-              userId_postId: { userId: currentUserId, postId: post.id },
-            },
-          }),
-        ])
+    const postIds = posts.map(p => p.id)
 
-        return {
-          ...post,
-          isLiked: !!isLiked,
-          isSaved: !!isSaved,
-        }
-      })
-    )
+    const [likes, saves] = await Promise.all([
+      prisma.like.findMany({
+        where: {
+          userId: currentUserId,
+          postId: { in: postIds },
+        },
+      }),
+      prisma.save.findMany({
+        where: {
+          userId: currentUserId,
+          postId: { in: postIds },
+        },
+      }),
+    ])
+
+    const likedPostIds = new Set(likes.map(l => l.postId))
+    const savedPostIds = new Set(saves.map(s => s.postId))
+
+    postsWithEngagement = posts.map(post => ({
+      ...post,
+      isLiked: likedPostIds.has(post.id),
+      isSaved: savedPostIds.has(post.id),
+    }))
   }
 
   const total = await prisma.post.count({
