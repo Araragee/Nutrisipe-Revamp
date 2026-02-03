@@ -70,7 +70,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { useUIStore } from '@/stores/ui'
+import { useUiStore } from '@/stores/ui'
 import { reportsApi } from '@/http/endpoints/reports'
 
 const props = defineProps<{
@@ -85,7 +85,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const uiStore = useUIStore()
+const uiStore = useUiStore()
 
 const reason = ref('')
 const description = ref('')

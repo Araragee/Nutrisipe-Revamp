@@ -16,7 +16,7 @@
         <select
           v-model="filters.status"
           class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
-          @change="loadReports"
+          @change="() => loadReports(1)"
         >
           <option value="">All Status</option>
           <option value="PENDING">Pending</option>
@@ -28,7 +28,7 @@
         <select
           v-model="filters.type"
           class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
-          @change="loadReports"
+          @change="() => loadReports(1)"
         >
           <option value="">All Types</option>
           <option value="POST">Post</option>
@@ -241,12 +241,12 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useUIStore } from '@/stores/ui'
+import { useUiStore } from '@/stores/ui'
 import { adminApi } from '@/http/endpoints/admin'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const uiStore = useUIStore()
+const uiStore = useUiStore()
 
 const reports = ref<any[]>([])
 const pagination = ref<any>(null)

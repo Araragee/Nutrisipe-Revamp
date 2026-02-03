@@ -1,5 +1,5 @@
 import { httpClient } from './client'
-import type { User } from '@/typescript/types'
+import type { User } from '@/typescript/interface/User'
 
 export interface UpdateProfileData {
   displayName?: string

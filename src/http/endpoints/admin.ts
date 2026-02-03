@@ -1,5 +1,5 @@
 import { httpClient } from '../client'
-import type { ApiResponse } from '@/types'
+import type { ApiResponse, PaginatedResponse } from '@/typescript/interface/ApiResponse'
 
 interface AdminStats {
   users: {
@@ -27,7 +27,7 @@ export const adminApi = {
     search?: string
     role?: string
     status?: string
-  }) => httpClient.get<ApiResponse<any[]>>('/admin/users', { params }),
+  }) => httpClient.get<PaginatedResponse<any>>('/admin/users', { params }),
 
   updateUserRole: (userId: string, role: string) =>
     httpClient.put<ApiResponse<any>>(`/admin/users/${userId}/role`, { role }),
@@ -39,7 +39,7 @@ export const adminApi = {
     httpClient.post<ApiResponse<any>>(`/admin/users/${userId}/unban`),
 
   getReports: (params: { page?: number; limit?: number; status?: string; type?: string }) =>
-    httpClient.get<ApiResponse<any[]>>('/admin/reports', { params }),
+    httpClient.get<PaginatedResponse<any>>('/admin/reports', { params }),
 
   updateReportStatus: (reportId: string, status: string, moderatorNote?: string) =>
     httpClient.put<ApiResponse<any>>(`/admin/reports/${reportId}`, { status, moderatorNote }),

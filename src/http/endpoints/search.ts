@@ -1,5 +1,5 @@
 import { httpClient } from '../client'
-import type { ApiResponse } from '@/types'
+import type { ApiResponse } from '@/typescript/interface/ApiResponse'
 
 export const searchApi = {
   search: (params: { q: string; type?: string; page?: number; limit?: number }) =>

@@ -108,7 +108,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { searchApi } from '@/http/endpoints/search'
-import PostCard from '@/components/post/PostCard.vue'
+import PostCard from '@/components/feed/PinCard.vue'
 import UserCard from '@/components/user/UserCard.vue'
 
 const searchQuery = ref('')

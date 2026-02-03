@@ -1,5 +1,5 @@
 import { httpClient } from './client'
-import type { Post } from '@/typescript/types'
+import type { Post } from '@/typescript/interface/Post'
 
 export interface CreatePostData {
   title: string

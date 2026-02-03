@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import LayoutBackground from '@components/layout/LayoutBackground.vue'
+import LayoutBackground from '@/components/layout/LayoutBackground.vue'
 import Toast from '@/components/ui/Toast.vue'
 </script>
 
