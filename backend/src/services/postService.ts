@@ -325,7 +325,8 @@ export async function searchPosts(
   query: string,
   category?: string,
   page: number = 1,
-  limit: number = 20
+  limit: number = 20,
+  sortBy: 'latest' | 'popular' = 'latest'
 ) {
   const skip = (page - 1) * limit
 
@@ -334,6 +335,7 @@ export async function searchPosts(
     OR: [
       { title: { contains: query, mode: 'insensitive' } },
       { description: { contains: query, mode: 'insensitive' } },
+      { category: { contains: query, mode: 'insensitive' } },
       { tags: { has: query.toLowerCase() } },
     ],
   }
@@ -342,51 +344,76 @@ export async function searchPosts(
     where.category = category
   }
 
-  const posts = await prisma.post.findMany({
-    where,
-    take: limit,
-    skip,
-    orderBy: { createdAt: 'desc' },
-    include: {
-      user: {
-        select: {
-          id: true,
-          username: true,
-          displayName: true,
-          avatarUrl: true,
+  const orderBy: any = sortBy === 'popular'
+    ? [
+        { likeCount: 'desc' },
+        { createdAt: 'desc' },
+      ]
+    : { createdAt: 'desc' }
+
+  // Execute findMany and count in parallel to improve performance
+  const [posts, total] = await Promise.all([
+    prisma.post.findMany({
+      where,
+      take: limit,
+      skip,
+      orderBy,
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+            saves: true,
+          },
         },
       },
-    },
-  })
+    }),
+    prisma.post.count({ where }),
+  ])
 
-  let postsWithEngagement = posts
+  let postsWithEngagement = posts.map(post => ({
+    ...post,
+    isLiked: false,
+    isSaved: false,
+  }))
 
-  if (userId) {
-    postsWithEngagement = await Promise.all(
-      posts.map(async (post) => {
-        const [isLiked, isSaved] = await Promise.all([
-          prisma.like.findUnique({
-            where: {
-              userId_postId: { userId, postId: post.id },
-            },
-          }),
-          prisma.save.findUnique({
-            where: {
-              userId_postId: { userId, postId: post.id },
-            },
-          }),
-        ])
+  // Batch fetch likes and saves to fix N+1 query problem
+  if (userId && posts.length > 0) {
+    const postIds = posts.map((p) => p.id)
+    const [likes, saves] = await Promise.all([
+      prisma.like.findMany({
+        where: {
+          userId,
+          postId: { in: postIds },
+        },
+        select: { postId: true },
+      }),
+      prisma.save.findMany({
+        where: {
+          userId,
+          postId: { in: postIds },
+        },
+        select: { postId: true },
+      }),
+    ])
 
-        return {
-          ...post,
-          isLiked: !!isLiked,
-          isSaved: !!isSaved,
-        }
-      })
-    )
+    const likedPostIds = new Set(likes.map((l) => l.postId))
+    const savedPostIds = new Set(saves.map((s) => s.postId))
+
+    postsWithEngagement = posts.map((post) => ({
+      ...post,
+      isLiked: likedPostIds.has(post.id),
+      isSaved: savedPostIds.has(post.id),
+    }))
   }
-
-  const total = await prisma.post.count({ where })
 
   return {
     posts: postsWithEngagement,

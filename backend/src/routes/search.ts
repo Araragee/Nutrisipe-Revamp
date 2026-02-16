@@ -1,11 +1,12 @@
 import { Router } from 'express'
 import { auth } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
+import * as postService from '../services/postService'
 
 const router = Router()
 
 // Search posts, users, and recipes
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, async (req: any, res) => {
   try {
     const query = req.query.q as string
     const type = req.query.type as string // 'posts', 'users', 'all'
@@ -24,48 +25,22 @@ router.get('/', auth, async (req, res) => {
       users: [],
     }
 
+    let postPagination: any
+    let userPagination: any
+
     // Search posts
     if (type === 'posts' || type === 'all' || !type) {
-      const posts = await prisma.post.findMany({
-        where: {
-          isPublic: true,
-          OR: [
-            { title: { contains: searchQuery, mode: 'insensitive' } },
-            { description: { contains: searchQuery, mode: 'insensitive' } },
-            { category: { contains: searchQuery, mode: 'insensitive' } },
-            { tags: { has: searchQuery.toLowerCase() } },
-          ],
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              displayName: true,
-              avatarUrl: true,
-            },
-          },
-          _count: {
-            select: {
-              likes: true,
-              comments: true,
-              saves: true,
-            },
-          },
-        },
-        skip: type === 'posts' ? (page - 1) * limit : 0,
-        take: type === 'posts' ? limit : 10,
-        orderBy: [
-          { likeCount: 'desc' },
-          { createdAt: 'desc' },
-        ],
-      })
-
-      results.posts = posts.map(post => ({
-        ...post,
-        isLiked: false, // Will be checked separately if needed
-        isSaved: false,
-      }))
+      const postsLimit = type === 'posts' ? limit : 10
+      const searchResults = await postService.searchPosts(
+        req.user?.id,
+        searchQuery,
+        undefined, // category
+        type === 'posts' ? page : 1,
+        postsLimit,
+        'popular'
+      )
+      results.posts = searchResults.posts
+      postPagination = searchResults.pagination
     }
 
     // Search users
@@ -105,19 +80,11 @@ router.get('/', auth, async (req, res) => {
     }
 
     // Get counts for pagination
+    // To ensure consistency, we use the total count from pagination results if available,
+    // otherwise we calculate it or use the results length.
     const counts = {
-      posts: type === 'posts' ? await prisma.post.count({
-        where: {
-          isPublic: true,
-          OR: [
-            { title: { contains: searchQuery, mode: 'insensitive' } },
-            { description: { contains: searchQuery, mode: 'insensitive' } },
-            { category: { contains: searchQuery, mode: 'insensitive' } },
-            { tags: { has: searchQuery.toLowerCase() } },
-          ],
-        },
-      }) : results.posts.length,
-      users: type === 'users' ? await prisma.user.count({
+      posts: postPagination?.total ?? (type === 'posts' ? 0 : results.posts.length),
+      users: (type === 'users' || type === 'all' || !type) ? await prisma.user.count({
         where: {
           isActive: true,
           isBanned: false,
@@ -128,6 +95,9 @@ router.get('/', auth, async (req, res) => {
         },
       }) : results.users.length,
     }
+
+    // If type is not 'posts', postPagination.total was used for counts.posts.
+    // If type is 'all' or undefined, we want to return total counts for both.
 
     res.json({
       data: results,
