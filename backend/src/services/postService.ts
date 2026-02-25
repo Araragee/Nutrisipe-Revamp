@@ -362,28 +362,30 @@ export async function searchPosts(
   let postsWithEngagement = posts
 
   if (userId) {
-    postsWithEngagement = await Promise.all(
-      posts.map(async (post) => {
-        const [isLiked, isSaved] = await Promise.all([
-          prisma.like.findUnique({
-            where: {
-              userId_postId: { userId, postId: post.id },
-            },
-          }),
-          prisma.save.findUnique({
-            where: {
-              userId_postId: { userId, postId: post.id },
-            },
-          }),
-        ])
+    const postIds = posts.map((post) => post.id)
+    const [likes, saves] = await Promise.all([
+      prisma.like.findMany({
+        where: {
+          userId,
+          postId: { in: postIds },
+        },
+      }),
+      prisma.save.findMany({
+        where: {
+          userId,
+          postId: { in: postIds },
+        },
+      }),
+    ])
 
-        return {
-          ...post,
-          isLiked: !!isLiked,
-          isSaved: !!isSaved,
-        }
-      })
-    )
+    const likedPostIds = new Set(likes.map((like) => like.postId))
+    const savedPostIds = new Set(saves.map((save) => save.postId))
+
+    postsWithEngagement = posts.map((post) => ({
+      ...post,
+      isLiked: likedPostIds.has(post.id),
+      isSaved: savedPostIds.has(post.id),
+    }))
   }
 
   const total = await prisma.post.count({ where })
