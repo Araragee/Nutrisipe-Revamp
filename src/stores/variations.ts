@@ -1,0 +1,135 @@
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { variationsEndpoints, type ForkRecipeData, type RecipeVariation, type VariationChainItem } from '@/http/endpoints/variations'
+
+export const useVariationsStore = defineStore('variations', () => {
+  const variations = ref<Map<string, RecipeVariation[]>>(new Map())
+  const variationChains = ref<Map<string, VariationChainItem[]>>(new Map())
+  const originalRecipes = ref<Map<string, any>>(new Map())
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+
+  // Fork a recipe
+  const forkRecipe = async (postId: string, data: ForkRecipeData) => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await variationsEndpoints.forkRecipe(postId, data)
+
+      // Clear cached variations for the original post
+      variations.value.delete(postId)
+
+      return response.data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to fork recipe'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Get variations for a post
+  const getVariations = async (postId: string, page = 1, limit = 20) => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await variationsEndpoints.getVariations(postId, page, limit)
+      variations.value.set(postId, response.data.variations)
+      return response.data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to fetch variations'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Get original recipe
+  const getOriginalRecipe = async (postId: string) => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await variationsEndpoints.getOriginalRecipe(postId)
+      if (response.data) {
+        originalRecipes.value.set(postId, response.data)
+      }
+      return response.data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to fetch original recipe'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Get variation chain
+  const getVariationChain = async (postId: string) => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await variationsEndpoints.getVariationChain(postId)
+      variationChains.value.set(postId, response.data.chain)
+      return response.data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to fetch variation chain'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Delete variation
+  const deleteVariation = async (variationId: string, originalPostId: string) => {
+    loading.value = true
+    error.value = null
+
+    try {
+      await variationsEndpoints.deleteVariation(variationId)
+
+      // Clear cached data
+      variations.value.delete(originalPostId)
+
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to delete variation'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Get cached variations for a post
+  const getPostVariations = computed(() => (postId: string) => {
+    return variations.value.get(postId) || []
+  })
+
+  // Get cached variation chain
+  const getPostVariationChain = computed(() => (postId: string) => {
+    return variationChains.value.get(postId) || []
+  })
+
+  // Get cached original recipe
+  const getPostOriginalRecipe = computed(() => (postId: string) => {
+    return originalRecipes.value.get(postId)
+  })
+
+  return {
+    variations,
+    variationChains,
+    originalRecipes,
+    loading,
+    error,
+    forkRecipe,
+    getVariations,
+    getOriginalRecipe,
+    getVariationChain,
+    deleteVariation,
+    getPostVariations,
+    getPostVariationChain,
+    getPostOriginalRecipe
+  }
+})

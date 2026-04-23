@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authApi } from '@/http/endpoints/auth'
+import { socketService } from '@/services/socket'
 import type { User } from '@/typescript/interface/User'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -20,6 +21,9 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = response.data.data.token
       user.value = response.data.data.user
       localStorage.setItem('auth_token', response.data.data.token)
+
+      // Initialize socket connection
+      socketService.connect()
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Login failed'
       throw err
@@ -42,6 +46,9 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = response.data.data.token
       user.value = response.data.data.user
       localStorage.setItem('auth_token', response.data.data.token)
+
+      // Initialize socket connection
+      socketService.connect()
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Registration failed'
       throw err
@@ -54,6 +61,9 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     token.value = null
     localStorage.removeItem('auth_token')
+
+    // Disconnect socket
+    socketService.disconnect()
   }
 
   async function fetchCurrentUser() {
@@ -65,6 +75,11 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await authApi.me()
       user.value = response.data.data
+
+      // Initialize socket connection if user is authenticated
+      if (user.value) {
+        socketService.connect()
+      }
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to fetch user'
       logout()

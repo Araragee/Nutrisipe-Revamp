@@ -3,6 +3,7 @@ import prisma from '../config/database'
 import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
 import { createNotification } from '../services/notificationService'
+import { emitPostLiked, emitPostUnliked, emitPostSaved, emitPostUnsaved } from '../socket'
 
 export async function followUserHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
@@ -174,6 +175,9 @@ export async function likePostHandler(req: AuthRequest, res: Response, next: Nex
       select: { likeCount: true },
     })
 
+    // Emit real-time update
+    emitPostLiked(postId, req.userId, updatedPost?.likeCount || 0)
+
     res.json({
       success: true,
       message: 'Post liked successfully',
@@ -224,6 +228,9 @@ export async function unlikePostHandler(req: AuthRequest, res: Response, next: N
       where: { id: postId },
       select: { likeCount: true },
     })
+
+    // Emit real-time update
+    emitPostUnliked(postId, req.userId, updatedPost?.likeCount || 0)
 
     res.json({
       success: true,
@@ -282,6 +289,9 @@ export async function savePostHandler(req: AuthRequest, res: Response, next: Nex
       select: { saveCount: true },
     })
 
+    // Emit real-time update
+    emitPostSaved(postId, req.userId, updatedPost?.saveCount || 0)
+
     res.json({
       success: true,
       message: 'Post saved successfully',
@@ -332,6 +342,9 @@ export async function unsavePostHandler(req: AuthRequest, res: Response, next: N
       where: { id: postId },
       select: { saveCount: true },
     })
+
+    // Emit real-time update
+    emitPostUnsaved(postId, req.userId, updatedPost?.saveCount || 0)
 
     res.json({
       success: true,
