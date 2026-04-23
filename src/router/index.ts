@@ -7,73 +7,118 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: () => import('../views/HomeView.vue'),
-      meta: { requiresAuth: true },
+      component: () => import('@/views/HomeView.vue'),
     },
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/LoginView.vue'),
+      component: () => import('@/views/LoginView.vue'),
+      meta: { requiresGuest: true },
     },
     {
       path: '/profile/:userId',
       name: 'profile',
-      component: () => import('../views/ProfileView.vue'),
+      component: () => import('@/views/ProfileView.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/settings',
       name: 'settings',
-      component: () => import('../views/SettingsView.vue'),
+      component: () => import('@/views/SettingsView.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/explore',
       name: 'explore',
-      component: () => import('../views/ExploreView.vue'),
+      component: () => import('@/views/ExploreView.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/messages',
       name: 'messages',
-      component: () => import('../views/MessagesView.vue'),
+      component: () => import('@/views/MessagesView.vue'),
       meta: { requiresAuth: true },
+    },
+    {
+      path: '/recipes',
+      name: 'recipes',
+      component: () => import('@/views/RecipesView.vue'),
+    },
+    {
+      path: '/recipes/create',
+      name: 'recipe-create',
+      component: () => import('@/views/RecipeCreateView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/recipes/:id',
+      name: 'recipe-detail',
+      component: () => import('@/views/RecipeDetailView.vue'),
+    },
+    {
+      path: '/recipes/:id/edit',
+      name: 'recipe-edit',
+      component: () => import('@/views/RecipeEditView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/users/:id',
+      name: 'user-profile',
+      component: () => import('@/views/UserProfileView.vue'),
+    },
+    {
+      path: '/saved',
+      name: 'saved-recipes',
+      component: () => import('@/views/SavedRecipesView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/following',
+      name: 'following-feed',
+      component: () => import('@/views/FollowingFeedView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/ingredients',
+      name: 'ingredients',
+      component: () => import('@/views/IngredientsView.vue'),
+      meta: { requiresAdmin: true },
     },
     {
       path: '/admin',
       name: 'admin',
-      component: () => import('../views/admin/AdminDashboardView.vue'),
+      component: () => import('@/views/admin/AdminDashboardView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
       path: '/admin/users',
       name: 'admin-users',
-      component: () => import('../views/admin/AdminUsersView.vue'),
+      component: () => import('@/views/admin/AdminUsersView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
       path: '/admin/reports',
       name: 'admin-reports',
-      component: () => import('../views/admin/AdminReportsView.vue'),
+      component: () => import('@/views/admin/AdminReportsView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
       path: '/admin/analytics',
       name: 'admin-analytics',
-      component: () => import('../views/admin/AdminAnalyticsView.vue'),
+      component: () => import('@/views/admin/AdminAnalyticsView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
   ],
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next({ name: 'login' })
-  } else if (to.meta.requiresAdmin && authStore.user?.role !== 'ADMIN') {
+    next({ name: 'login', query: { redirect: to.fullPath } })
+  } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
     next({ name: 'home' })
-  } else if (to.name === 'login' && authStore.isAuthenticated) {
+  } else if (to.meta.requiresAdmin && !authStore.isAdmin) {
     next({ name: 'home' })
   } else {
     next()

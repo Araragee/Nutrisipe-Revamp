@@ -11,6 +11,7 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref<string | null>(null)
 
   const isAuthenticated = computed(() => !!user.value && !!token.value)
+  const isAdmin = computed(() => user.value?.role === 'ADMIN' || (user.value as any)?.is_admin || false)
 
   async function login(email: string, password: string) {
     isLoading.value = true
@@ -27,6 +28,34 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Login failed'
       throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function loginWithGoogle(googleData: {
+    google_id: string
+    name: string
+    email: string
+    image?: string
+  }) {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const response = await authApi.googleLogin(googleData)
+      const { user: userData, token: authToken } = response.data.data || response.data
+
+      user.value = userData
+      token.value = authToken
+      localStorage.setItem('auth_token', authToken)
+
+      // Initialize socket connection
+      socketService.connect()
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Login failed'
+      return false
     } finally {
       isLoading.value = false
     }
@@ -57,16 +86,37 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
-    user.value = null
-    token.value = null
-    localStorage.removeItem('auth_token')
-
-    // Disconnect socket
-    socketService.disconnect()
+  async function logout() {
+    try {
+      if (token.value) {
+        await authApi.logout()
+      }
+    } catch (err) {
+      console.error('Logout error:', err)
+    } finally {
+      user.value = null
+      token.value = null
+      localStorage.removeItem('auth_token')
+      socketService.disconnect()
+    }
   }
 
-  async function fetchCurrentUser() {
+  async function logoutAll() {
+    try {
+      if (token.value) {
+        await authApi.logoutAll()
+      }
+    } catch (err) {
+      console.error('Logout all error:', err)
+    } finally {
+      user.value = null
+      token.value = null
+      localStorage.removeItem('auth_token')
+      socketService.disconnect()
+    }
+  }
+
+  async function fetchUser() {
     if (!token.value) return
 
     isLoading.value = true
@@ -81,12 +131,17 @@ export const useAuthStore = defineStore('auth', () => {
         socketService.connect()
       }
     } catch (err: any) {
+      if (err.response?.status === 401) {
+        logout()
+      }
       error.value = err.response?.data?.message || 'Failed to fetch user'
-      logout()
     } finally {
       isLoading.value = false
     }
   }
+
+  // Alias for compatibility
+  const fetchCurrentUser = fetchUser
 
   function setUser(updatedUser: User) {
     user.value = updatedUser
@@ -96,11 +151,15 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     token,
     isAuthenticated,
+    isAdmin,
     isLoading,
     error,
     login,
+    loginWithGoogle,
     register,
     logout,
+    logoutAll,
+    fetchUser,
     fetchCurrentUser,
     setUser,
   }

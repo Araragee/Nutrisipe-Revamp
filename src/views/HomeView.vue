@@ -95,7 +95,7 @@ onMounted(async () => {
   }
 
   if (!authStore.user) {
-    await authStore.fetchCurrentUser()
+    await authStore.fetchUser()
   }
 
   await feedStore.fetchFeed(true)
@@ -196,11 +196,11 @@ watch(isNearBottom, (near) => {
     </div>
 
     <div
-      v-if="!feedStore.isLoading && feedStore.posts.length === 0"
+      v-if="!feedStore.isLoading && displayPosts.length === 0"
       class="text-center py-12"
     >
       <p class="text-gray-500 dark:text-gray-400 text-lg">
-        No posts yet. Start following users to see their content!
+        {{ isSearchMode ? 'No results found.' : 'No posts yet. Start following users to see their content!' }}
       </p>
     </div>
 
