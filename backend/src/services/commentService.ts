@@ -1,6 +1,8 @@
 import prisma from '../lib/prisma'
 import { AppError } from '../middleware/errorHandler'
 import { createNotification } from './notificationService'
+import { processMentions } from '../routes/mentions'
+import { emitPostCommented } from '../socket'
 
 interface CreateCommentData {
   postId: string
@@ -48,14 +50,26 @@ export async function createComment(userId: string, data: CreateCommentData) {
     }),
   ])
 
-  // Create notification for post owner
-  await createNotification({
-    userId: post.userId,
-    actorId: userId,
-    type: 'comment',
-    postId: postId,
-    commentId: comment.id,
+  // Create notification for post owner (only if they're not the commenter)
+  if (post.userId !== userId) {
+    await createNotification({
+      userId: post.userId,
+      actorId: userId,
+      type: 'comment',
+      postId: postId,
+      commentId: comment.id,
+    })
+  }
+
+  // Process @mentions in the comment
+  await processMentions(content, userId, 'COMMENT', postId, comment.id)
+
+  // Emit real-time update - get updated comment count
+  const updatedPost = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { commentCount: true }
   })
+  emitPostCommented(postId, comment.id, userId, updatedPost?.commentCount || 0)
 
   return comment
 }
@@ -164,6 +178,14 @@ export async function updateComment(
       },
     },
   })
+
+  // Delete old mentions for this comment
+  await prisma.mention.deleteMany({
+    where: { commentId }
+  })
+
+  // Process new @mentions in the updated comment
+  await processMentions(content, userId, 'COMMENT', comment.postId, commentId)
 
   return updatedComment
 }

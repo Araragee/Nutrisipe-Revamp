@@ -1,6 +1,6 @@
 import prisma from '../config/database'
 
-export type NotificationType = 'like' | 'comment' | 'follow' | 'mention'
+export type NotificationType = 'like' | 'comment' | 'follow' | 'mention' | 'rating' | 'variation'
 
 interface CreateNotificationData {
   userId: string
