@@ -16,7 +16,7 @@ const loadSavedRecipes = async () => {
 
   loading.value = true
   try {
-    const response = await usersApi.getUserSavedRecipes(authStore.user.id)
+    const response = await usersApi.getUserSavedRecipes(authStore.user!.id as any)
     recipes.value = response.data.data
   } catch (error) {
     console.error('Failed to load saved recipes:', error)

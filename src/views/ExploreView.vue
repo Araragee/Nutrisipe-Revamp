@@ -44,7 +44,7 @@
       <div v-if="searchType === 'all' || searchType === 'posts'">
         <h3 class="text-lg font-medium mb-3">Posts ({{ searchResults.counts?.posts || 0 }})</h3>
         <div v-if="searchResults.posts?.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <PostCard v-for="post in searchResults.posts" :key="post.id" :post="post" />
+          <PinCard v-for="post in searchResults.posts" :key="post.id" :post="post" @click="handlePostClick" />
         </div>
         <p v-else class="text-gray-500 mb-8">No posts found</p>
       </div>
@@ -97,19 +97,27 @@
       </div>
 
       <div v-else-if="trendingPosts.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <PostCard v-for="post in trendingPosts" :key="post.id" :post="post" />
+        <PinCard v-for="post in trendingPosts" :key="post.id" :post="post" @click="handlePostClick" />
       </div>
 
       <p v-else class="text-center text-gray-500 py-8">No trending posts</p>
     </div>
+
+    <!-- Post Detail Modal -->
+    <PostDetailModal
+      :post-id="selectedPostId"
+      :show="showPostDetail"
+      @close="handleCloseDetail"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { searchApi } from '@/http/endpoints/search'
-import PostCard from '@/components/post/PostCard.vue'
+import PinCard from '@/components/feed/PinCard.vue'
 import UserCard from '@/components/user/UserCard.vue'
+import PostDetailModal from '@/components/post/PostDetailModal.vue'
 
 const searchQuery = ref('')
 const searchType = ref('all')
@@ -126,6 +134,19 @@ const categories = ref<any[]>([])
 const trendingPosts = ref<any[]>([])
 const trendingPeriod = ref('7days')
 const loadingTrending = ref(false)
+
+const selectedPostId = ref<string | null>(null)
+const showPostDetail = ref(false)
+
+function handlePostClick(postId: string) {
+  selectedPostId.value = postId
+  showPostDetail.value = true
+}
+
+function handleCloseDetail() {
+  showPostDetail.value = false
+  selectedPostId.value = null
+}
 
 let searchTimeout: NodeJS.Timeout
 

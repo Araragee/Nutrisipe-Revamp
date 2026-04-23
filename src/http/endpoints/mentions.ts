@@ -1,4 +1,4 @@
-import { apiClient } from '../client'
+import { httpClient } from '../client'
 
 export interface MentionUser {
   id: string
@@ -46,7 +46,7 @@ export interface SearchUsersResponse {
 export const mentionsApi = {
   // Get all mentions for authenticated user
   async getMentions(limit = 50, offset = 0): Promise<MentionsResponse> {
-    const response = await apiClient.get('/mentions', {
+    const response = await httpClient.get('/mentions', {
       params: { limit, offset }
     })
     return response.data
@@ -54,7 +54,7 @@ export const mentionsApi = {
 
   // Search users for @mention autocomplete
   async searchUsers(query: string): Promise<SearchUsersResponse> {
-    const response = await apiClient.get('/mentions/search', {
+    const response = await httpClient.get('/mentions/search', {
       params: { q: query }
     })
     return response.data
@@ -62,13 +62,13 @@ export const mentionsApi = {
 
   // Get mentions for a specific post
   async getPostMentions(postId: string): Promise<{ mentions: Mention[] }> {
-    const response = await apiClient.get(`/mentions/post/${postId}`)
+    const response = await httpClient.get(`/mentions/post/${postId}`)
     return response.data
   },
 
   // Get mentions for a specific comment
   async getCommentMentions(commentId: string): Promise<{ mentions: Mention[] }> {
-    const response = await apiClient.get(`/mentions/comment/${commentId}`)
+    const response = await httpClient.get(`/mentions/comment/${commentId}`)
     return response.data
   }
 }

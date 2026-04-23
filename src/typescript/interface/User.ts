@@ -18,4 +18,5 @@ export interface UserBasic {
   displayName: string
   avatarUrl: string | null
   followerCount?: number
+  isFollowing?: boolean
 }

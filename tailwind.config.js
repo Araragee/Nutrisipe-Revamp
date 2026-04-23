@@ -87,6 +87,9 @@ module.exports = {
           dark: 'linear-gradient(87.03deg, #2B2621 0%, #1A2525 100%);',
         },
       },
+      zIndex: {
+        '60': '60',
+      },
     },
   },
 

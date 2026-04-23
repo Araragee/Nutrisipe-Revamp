@@ -1,4 +1,4 @@
-import { apiClient } from '../client'
+import { httpClient } from '../client'
 
 export interface Rating {
   id: string
@@ -55,7 +55,7 @@ export interface UserRatingsResponse {
 export const ratingsApi = {
   // Create or update rating
   async createOrUpdateRating(postId: string, rating: number, review?: string) {
-    const response = await apiClient.post('/ratings', {
+    const response = await httpClient.post('/ratings', {
       postId,
       rating,
       review
@@ -70,7 +70,7 @@ export const ratingsApi = {
     limit = 20,
     sortBy: 'newest' | 'oldest' | 'highest' | 'lowest' = 'newest'
   ): Promise<PostRatingsResponse> {
-    const response = await apiClient.get(`/ratings/post/${postId}`, {
+    const response = await httpClient.get(`/ratings/post/${postId}`, {
       params: { page, limit, sortBy }
     })
     return response.data.data
@@ -78,7 +78,7 @@ export const ratingsApi = {
 
   // Get user's ratings
   async getUserRatings(userId: string, page = 1, limit = 20): Promise<UserRatingsResponse> {
-    const response = await apiClient.get(`/ratings/user/${userId}`, {
+    const response = await httpClient.get(`/ratings/user/${userId}`, {
       params: { page, limit }
     })
     return response.data.data
@@ -87,7 +87,7 @@ export const ratingsApi = {
   // Check if user rated a post
   async checkUserRating(postId: string): Promise<Rating | null> {
     try {
-      const response = await apiClient.get(`/ratings/check/${postId}`)
+      const response = await httpClient.get(`/ratings/check/${postId}`)
       return response.data.data
     } catch (error) {
       return null
@@ -96,7 +96,7 @@ export const ratingsApi = {
 
   // Delete rating
   async deleteRating(ratingId: string) {
-    const response = await apiClient.delete(`/ratings/${ratingId}`)
+    const response = await httpClient.delete(`/ratings/${ratingId}`)
     return response.data
   }
 }

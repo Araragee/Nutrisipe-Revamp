@@ -83,15 +83,15 @@ const handleLogout = async () => {
                 class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <img
-                  v-if="authStore.user.image"
-                  :src="authStore.user.image"
-                  :alt="authStore.user.name"
+                  v-if="authStore.user.avatarUrl"
+                  :src="authStore.user.avatarUrl"
+                  :alt="authStore.user.displayName"
                   class="w-8 h-8 rounded-full object-cover"
                 />
                 <div v-else class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
-                  <span class="text-sm font-bold text-primary-700">{{ authStore.user.name.charAt(0) }}</span>
+                  <span class="text-sm font-bold text-primary-700">{{ authStore.user.displayName.charAt(0) }}</span>
                 </div>
-                <span class="text-sm font-medium text-gray-700">{{ authStore.user.name }}</span>
+                <span class="text-sm font-medium text-gray-700">{{ authStore.user.displayName }}</span>
               </router-link>
 
               <button

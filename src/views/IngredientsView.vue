@@ -64,7 +64,7 @@ const openCreateModal = () => {
 
 const openEditModal = (ingredient: Ingredient) => {
   editingIngredient.value = ingredient
-  formData.value = { ...ingredient }
+  formData.value = { ...ingredient, alt_name: ingredient.alt_name || '' }
   showModal.value = true
 }
 

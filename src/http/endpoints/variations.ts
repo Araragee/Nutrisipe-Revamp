@@ -1,4 +1,4 @@
-import api from '../api'
+import { httpClient } from '../client'
 
 export interface ForkRecipeData {
   title: string
@@ -40,13 +40,13 @@ export interface VariationChainItem {
 export const variationsEndpoints = {
   // Fork a recipe
   forkRecipe: async (postId: string, data: ForkRecipeData) => {
-    const response = await api.post(`/variations/${postId}/fork`, data)
+    const response = await httpClient.post(`/variations/${postId}/fork`, data)
     return response.data
   },
 
   // Get all variations of a recipe
   getVariations: async (postId: string, page = 1, limit = 20) => {
-    const response = await api.get(`/variations/${postId}/variations`, {
+    const response = await httpClient.get(`/variations/${postId}/variations`, {
       params: { page, limit }
     })
     return response.data
@@ -54,19 +54,19 @@ export const variationsEndpoints = {
 
   // Get original recipe if this is a variation
   getOriginalRecipe: async (postId: string) => {
-    const response = await api.get(`/variations/${postId}/original`)
+    const response = await httpClient.get(`/variations/${postId}/original`)
     return response.data
   },
 
   // Get variation chain (full lineage)
   getVariationChain: async (postId: string) => {
-    const response = await api.get(`/variations/${postId}/chain`)
+    const response = await httpClient.get(`/variations/${postId}/chain`)
     return response.data
   },
 
   // Delete variation relationship
   deleteVariation: async (variationId: string) => {
-    const response = await api.delete(`/variations/${variationId}`)
+    const response = await httpClient.delete(`/variations/${variationId}`)
     return response.data
   }
 }

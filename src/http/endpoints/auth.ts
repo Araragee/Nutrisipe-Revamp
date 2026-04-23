@@ -9,5 +9,12 @@ export const authApi = {
   login: (data: { email: string; password: string }) =>
     httpClient.post<ApiResponse<AuthResponse>>('/auth/login', data),
 
+  googleLogin: (data: { google_id: string; name: string; email: string; image?: string }) =>
+    httpClient.post<ApiResponse<AuthResponse>>('/auth/google-login', data),
+
   me: () => httpClient.get<ApiResponse<User>>('/auth/me'),
+
+  logout: () => httpClient.post<ApiResponse<void>>('/auth/logout'),
+
+  logoutAll: () => httpClient.post<ApiResponse<void>>('/auth/logout-all'),
 }

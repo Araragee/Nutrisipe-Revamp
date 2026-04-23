@@ -18,8 +18,8 @@ const activeTab = ref<'recipes' | 'saved' | 'followers' | 'following'>('recipes'
 const isFollowing = ref(false)
 const loading = ref(true)
 
-const userId = computed(() => Number(route.params.id))
-const isOwnProfile = computed(() => authStore.user?.id === userId.value)
+const userId = computed(() => route.params.id as string)
+const isOwnProfile = computed(() => authStore.user?.id == userId.value)
 
 const loadProfile = async () => {
   loading.value = true

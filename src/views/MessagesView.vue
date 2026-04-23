@@ -21,8 +21,9 @@
 
           <div v-else-if="conversations.length === 0" class="p-8 text-center">
             <EmptyState
-              message="No messages yet"
+              title="No messages yet"
               description="Start a conversation with someone"
+              icon="💬"
             />
           </div>
 

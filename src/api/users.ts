@@ -2,39 +2,39 @@ import apiClient from './client'
 import type { User, Recipe, PaginatedResponse } from '@/types'
 
 export const usersApi = {
-  getUser(id: number) {
+  getUser(id: string | number) {
     return apiClient.get<{ data: User }>(`/users/${id}`)
   },
 
-  getUserRecipes(id: number, page?: number) {
+  getUserRecipes(id: string | number, page?: number) {
     return apiClient.get<PaginatedResponse<Recipe>>(`/users/${id}/recipes`, {
       params: { page },
     })
   },
 
-  getUserSavedRecipes(id: number, page?: number) {
+  getUserSavedRecipes(id: string | number, page?: number) {
     return apiClient.get<PaginatedResponse<Recipe>>(`/users/${id}/saved-recipes`, {
       params: { page },
     })
   },
 
-  getFollowers(id: number) {
+  getFollowers(id: string | number) {
     return apiClient.get<{ data: User[] }>(`/users/${id}/followers`)
   },
 
-  getFollowing(id: number) {
+  getFollowing(id: string | number) {
     return apiClient.get<{ data: User[] }>(`/users/${id}/following`)
   },
 
-  followUser(id: number) {
+  followUser(id: string | number) {
     return apiClient.post(`/users/${id}/follow`)
   },
 
-  unfollowUser(id: number) {
+  unfollowUser(id: string | number) {
     return apiClient.delete(`/users/${id}/follow`)
   },
 
-  isFollowing(id: number) {
+  isFollowing(id: string | number) {
     return apiClient.get<{ is_following: boolean }>(`/users/${id}/is-following`)
   },
 }

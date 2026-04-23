@@ -96,14 +96,15 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import api from '@/http/api'
+import { httpClient } from '@/http/client'
+import type { AxiosProgressEvent } from 'axios'
 
 interface Props {
   modelValue?: {
     videoUrl: string
     thumbnailUrl?: string
     duration: number
-  }
+  } | null
   allowThumbnail?: boolean
 }
 
@@ -176,11 +177,11 @@ const uploadVideo = async (file: File) => {
       formData.append('thumbnail', thumbnailInputRef.value.files[0])
     }
 
-    const response = await api.post('/upload/video', formData, {
+    const response = await httpClient.post('/upload/video', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },
-      onUploadProgress: (progressEvent) => {
+      onUploadProgress: (progressEvent: AxiosProgressEvent) => {
         if (progressEvent.total) {
           uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total)
         }
@@ -198,7 +199,7 @@ const uploadVideo = async (file: File) => {
     })
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Failed to upload video'
-    emit('error', error.value)
+    emit('error', error.value || 'Failed to upload video')
   } finally {
     uploading.value = false
   }
