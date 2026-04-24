@@ -1,385 +1,224 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { recipesApi, ingredientsApi } from "@/api";
-import type {
-  Ingredient,
-  RecipeCategory,
-  RecipeIngredientInput,
-} from "@/types";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { postsApi } from '@/http/endpoints/posts'
+import { PostCategory } from '@/typescript/types/enums'
+import { useUiStore } from '@/stores/ui'
 
-const router = useRouter();
+const router = useRouter()
+const uiStore = useUiStore()
+const step = ref(0)
+const isSubmitting = ref(false)
 
-const title = ref("");
-const description = ref("");
-const category = ref<RecipeCategory>("Breakfast");
-const yieldAmount = ref("1");
-const image = ref<File | null>(null);
-const imagePreview = ref<string | null>(null);
-const procedure = ref<string[]>([""]);
-const ingredients = ref<RecipeIngredientInput[]>([]);
+const STEPS = ["Photo & Info", "Ingredients", "Method", "Nutrition"]
 
-const categories: RecipeCategory[] = [
-  "Breakfast",
-  "Lunch",
-  "Dinner",
-  "Snack",
-  "Dessert",
-  "Beverage",
-];
+const form = ref({
+  title: '',
+  description: '',
+  photo: null as string | null,
+  time: '',
+  servings: '',
+  tag: '',
+  ingredients: [{ name: '', qty: '' }],
+  steps: [{ text: '' }],
+  cals: '',
+  protein: '',
+  carbs: '',
+  fat: ''
+})
 
-const searchQuery = ref("");
-const searchResults = ref<Ingredient[]>([]);
-const searching = ref(false);
-const submitting = ref(false);
-const error = ref("");
+const addIngredient = () => form.value.ingredients.push({ name: '', qty: '' })
+const removeIngredient = (i: number) => form.value.ingredients.splice(i, 1)
 
-const searchIngredients = async () => {
-  if (!searchQuery.value.trim()) {
-    searchResults.value = [];
-    return;
-  }
+const addStep = () => form.value.steps.push({ text: '' })
+const removeStep = (i: number) => form.value.steps.splice(i, 1)
 
-  searching.value = true;
+async function handleSubmit() {
+  isSubmitting.value = true
   try {
-    const response = await ingredientsApi.getIngredients({
-      search: searchQuery.value,
-      all: true,
-    });
-    searchResults.value = Array.isArray(response.data)
-      ? response.data
-      : response.data.data;
-  } catch (err) {
-    console.error("Failed to search ingredients:", err);
+    const postData = {
+      title: form.value.title,
+      description: form.value.description,
+      imageUrl: form.value.photo || 'https://picsum.photos/800/600',
+      category: PostCategory.Recipe,
+      tags: form.value.tag ? [form.value.tag.toLowerCase()] : [],
+      recipe: {
+        servings: parseInt(form.value.servings) || undefined,
+        totalTime: parseInt(form.value.time) || undefined,
+        ingredients: form.value.ingredients.filter(i => i.name),
+        instructions: form.value.steps.filter(s => s.text).map((s, idx) => ({ step: idx + 1, text: s.text })),
+        nutrition: {
+          calories: parseInt(form.value.cals) || 0,
+          protein: parseInt(form.value.protein) || 0,
+          carbs: parseInt(form.value.carbs) || 0,
+          fat: parseInt(form.value.fat) || 0
+        }
+      }
+    }
+
+    await postsApi.create(postData as any)
+    step.value = 4 // Success step
+  } catch (error) {
+    uiStore.showToast('Failed to create recipe', 'error')
   } finally {
-    searching.value = false;
+    isSubmitting.value = false
   }
-};
+}
 
-const addIngredient = (ingredient: Ingredient) => {
-  ingredients.value.push({
-    ingredient_id: ingredient.id,
-    name: ingredient.food_item,
-    amount: 100,
-    is_custom: false,
-  });
-  searchQuery.value = "";
-  searchResults.value = [];
-};
-
-const addCustomIngredient = () => {
-  if (!searchQuery.value.trim()) return;
-
-  ingredients.value.push({
-    ingredient_id: null,
-    name: searchQuery.value,
-    amount: 100,
-    is_custom: true,
-  });
-  searchQuery.value = "";
-  searchResults.value = [];
-};
-
-const removeIngredient = (index: number) => {
-  ingredients.value.splice(index, 1);
-};
-
-const addProcedureStep = () => {
-  procedure.value.push("");
-};
-
-const removeProcedureStep = (index: number) => {
-  procedure.value.splice(index, 1);
-};
-
-const handleImageUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-
-  if (file) {
-    image.value = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      imagePreview.value = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-  }
-};
-
-const validateForm = (): boolean => {
-  if (!title.value.trim()) {
-    error.value = "Please enter a recipe title";
-    return false;
-  }
-  if (!description.value.trim()) {
-    error.value = "Please enter a description";
-    return false;
-  }
-  if (!image.value) {
-    error.value = "Please upload an image";
-    return false;
-  }
-  if (ingredients.value.length === 0) {
-    error.value = "Please add at least one ingredient";
-    return false;
-  }
-  if (procedure.value.filter((step) => step.trim()).length === 0) {
-    error.value = "Please add at least one instruction step";
-    return false;
-  }
-  if (!yieldAmount.value || Number(yieldAmount.value) < 1) {
-    error.value = "Please enter a valid serving size";
-    return false;
-  }
-
-  return true;
-};
-
-const submitRecipe = async () => {
-  error.value = "";
-
-  if (!validateForm()) return;
-
-  submitting.value = true;
-  try {
-    const response = await recipesApi.createRecipe({
-      title: title.value,
-      description: description.value,
-      category: category.value,
-      image: image.value!,
-      procedure: procedure.value.filter((step) => step.trim()),
-      ingredients: ingredients.value,
-      yield_amount: yieldAmount.value,
-    });
-
-    router.push(`/recipes/${response.data.data.id}`);
-  } catch (err: any) {
-    error.value = err.response?.data?.message || "Failed to create recipe";
-  } finally {
-    submitting.value = false;
-  }
-};
+function handleClose() {
+  router.push('/')
+}
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-8 z-[99999]">
-    <div class="bg-white rounded-xl shadow-lg p-6">
-      <h1 class="text-heading-2 font-bold text-gray-900 mb-6">
-        Create New Recipe
-      </h1>
+  <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/75 backdrop-blur-md animate-revamp">
+    <div class="create-modal bg-background w-full max-w-[720px] max-h-[90vh] rounded-[28px] border-1.5 border-glass-border shadow-modal flex flex-col overflow-hidden animate-modalIn">
 
-      <div
-        v-if="error"
-        class="mb-6 p-4 bg-error-100 border border-error-base rounded-lg"
-      >
-        <p class="text-error-base">{{ error }}</p>
+      <!-- Header -->
+      <header class="p-7 pb-5 border-b border-glass-border flex items-center gap-4">
+        <div class="flex gap-1.5 flex-1">
+          <div
+            v-for="(s, i) in STEPS"
+            :key="i"
+            class="h-1.5 flex-1 rounded-full bg-background-secondary overflow-hidden"
+          >
+            <div
+              class="h-full bg-orange transition-all duration-500"
+              :style="{ width: step > i ? '100%' : step === i ? '60%' : '0%' }"
+            ></div>
+          </div>
+        </div>
+        <span class="text-[12px] font-bold text-text-dim whitespace-nowrap">Step {{ Math.min(step + 1, 4) }} of 4 — {{ STEPS[Math.min(step, 3)] }}</span>
+        <button @click="handleClose" class="w-8.5 h-8.5 rounded-full border-1.5 border-glass-border flex items-center justify-center text-text-muted hover:border-orange hover:text-orange">✕</button>
+      </header>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto p-8">
+
+        <!-- Success Step -->
+        <div v-if="step === 4" class="flex flex-col items-center justify-center py-12 text-center">
+          <div class="w-20 h-20 rounded-full bg-gradient-to-br from-orange to-orange-light flex items-center justify-center text-3xl text-white shadow-lg mb-6 animate-popIn">🎉</div>
+          <h2 class="font-montserrat font-extrabold text-3xl mb-2">Recipe shared!</h2>
+          <p class="text-text-muted text-sm max-w-xs mx-auto mb-8">
+            <strong class="text-text">{{ form.title }}</strong> is now live. The community can't wait to try it!
+          </p>
+          <button @click="handleClose" class="btn-primary px-10">Back to feed</button>
+        </div>
+
+        <div v-else>
+          <h2 class="font-montserrat font-extrabold text-2xl mb-1.5">{{ STEPS[step] }}</h2>
+          <p class="text-text-dim text-sm mb-8">
+            {{ step === 0 ? 'Add a photo and basic info about your dish.' :
+               step === 1 ? 'List everything needed for this recipe.' :
+               step === 2 ? 'Break it down into clear, simple steps.' :
+               'Enter macros per serving for the community.' }}
+          </p>
+
+          <!-- Step 0: Photo & Info -->
+          <div v-if="step === 0" class="space-y-6">
+            <div
+              class="upload-zone border-2 border-dashed border-glass-border rounded-2xl p-12 bg-background-secondary flex flex-col items-center gap-3 cursor-pointer hover:border-orange hover:bg-orange-soft transition-all"
+              @click="form.photo = 'https://picsum.photos/800/600'"
+            >
+              <template v-if="!form.photo">
+                <span class="text-4xl">📸</span>
+                <span class="font-bold text-text">Drop your photo here</span>
+                <span class="text-xs text-text-dim">JPG, PNG or HEIC · Max 20MB</span>
+                <button class="mt-2 px-5 py-2 rounded-full border-1.5 border-orange text-orange font-bold text-xs">Upload from device</button>
+              </template>
+              <img v-else :src="form.photo" class="w-full h-48 object-cover rounded-xl" />
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider mb-2 block">Recipe name</label>
+                <input v-model="form.title" class="w-full bg-background-secondary border-1.5 border-glass-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="e.g. Golden Turmeric Buddha Bowl" />
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider mb-2 block">Description</label>
+                <textarea v-model="form.description" rows="3" class="w-full bg-background-secondary border-1.5 border-glass-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="What makes this dish special?"></textarea>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider mb-2 block">Cook time (min)</label>
+                  <input v-model="form.time" type="number" class="w-full bg-background-secondary border-1.5 border-glass-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="e.g. 25" />
+                </div>
+                <div>
+                  <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider mb-2 block">Servings</label>
+                  <input v-model="form.servings" type="number" class="w-full bg-background-secondary border-1.5 border-glass-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="e.g. 2" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 1: Ingredients -->
+          <div v-if="step === 1" class="space-y-4">
+            <div v-for="(ing, i) in form.ingredients" :key="i" class="flex gap-3">
+              <input v-model="ing.name" class="flex-1 bg-background-secondary border-1.5 border-glass-border rounded-xl p-3.5 text-sm outline-none focus:border-orange" :placeholder="`Ingredient ${i+1}`" />
+              <input v-model="ing.qty" class="w-24 bg-background-secondary border-1.5 border-glass-border rounded-xl p-3.5 text-sm outline-none focus:border-orange" placeholder="Amount" />
+              <button @click="removeIngredient(i)" class="w-10 h-10 shrink-0 border-1.5 border-glass-border rounded-full flex items-center justify-center text-text-dim hover:border-red-500 hover:text-red-500 transition-all">✕</button>
+            </div>
+            <button @click="addIngredient" class="w-full py-3.5 border-1.5 border-dashed border-glass-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add ingredient</button>
+          </div>
+
+          <!-- Step 2: Method -->
+          <div v-if="step === 2" class="space-y-4">
+            <div v-for="(s, i) in form.steps" :key="i" class="flex gap-4">
+              <div class="w-9 h-9 rounded-full bg-orange text-white font-montserrat font-extrabold text-sm flex items-center justify-center shrink-0 mt-1">{{ i + 1 }}</div>
+              <textarea v-model="s.text" rows="2" class="flex-1 bg-background-secondary border-1.5 border-glass-border rounded-xl p-3.5 text-sm outline-none focus:border-orange" :placeholder="`Describe step ${i+1}...`"></textarea>
+              <button @click="removeStep(i)" class="w-10 h-10 shrink-0 border-1.5 border-glass-border rounded-full flex items-center justify-center text-text-dim hover:border-red-500 hover:text-red-500 transition-all">✕</button>
+            </div>
+            <button @click="addStep" class="w-full py-3.5 border-1.5 border-dashed border-glass-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add step</button>
+          </div>
+
+          <!-- Step 3: Nutrition -->
+          <div v-if="step === 3" class="space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+              <div v-for="n in [
+                {k:'cals', i:'⚡', l:'Calories', u:'kcal'},
+                {k:'protein', i:'💪', l:'Protein', u:'g'},
+                {k:'carbs', i:'🌾', l:'Carbs', u:'g'},
+                {k:'fat', i:'🥑', l:'Fat', u:'g'}
+              ]" :key="n.k" class="p-5 bg-background-secondary border-1.5 border-glass-border rounded-2xl focus-within:border-orange transition-all">
+                <span class="text-2xl mb-2 block">{{ n.i }}</span>
+                <label class="text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1 block">{{ n.l }}</label>
+                <input v-model="form[n.k as keyof typeof form]" type="number" class="w-full bg-transparent border-none outline-none font-montserrat font-extrabold text-2xl text-text" placeholder="0" />
+                <span class="text-xs text-text-dim">{{ n.u }} per serving</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <form @submit.prevent="submitRecipe" class="space-y-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Title</label
-          >
-          <input
-            v-model="title"
-            type="text"
-            placeholder="Enter recipe title"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-base focus:border-transparent"
-          />
-        </div>
+      <!-- Footer -->
+      <footer v-if="step < 4" class="p-6 px-8 border-t border-glass-border flex gap-4">
+        <button v-if="step > 0" @click="step--" class="px-8 py-3.5 rounded-xl border-1.5 border-glass-border font-bold text-sm text-text-muted hover:bg-background-secondary">Back</button>
+        <button
+          @click="step < 3 ? step++ : handleSubmit()"
+          class="flex-1 btn-primary py-3.5 !text-sm"
+          :disabled="isSubmitting"
+        >
+          {{ isSubmitting ? 'Sharing...' : step < 3 ? 'Next step →' : 'Share Recipe' }}
+        </button>
+      </footer>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Description</label
-          >
-          <textarea
-            v-model="description"
-            rows="3"
-            placeholder="Describe your recipe"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-base focus:border-transparent resize-none"
-          ></textarea>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Category</label
-            >
-            <select
-              v-model="category"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-base focus:border-transparent"
-            >
-              <option v-for="cat in categories" :key="cat" :value="cat">
-                {{ cat }}
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Servings</label
-            >
-            <input
-              v-model="yieldAmount"
-              type="number"
-              min="1"
-              placeholder="Number of servings"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-base focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Recipe Image</label
-          >
-          <div v-if="imagePreview" class="mb-4">
-            <img
-              :src="imagePreview"
-              alt="Preview"
-              class="w-full max-w-md h-64 object-cover rounded-lg"
-            />
-          </div>
-          <input
-            type="file"
-            accept="image/*"
-            @change="handleImageUpload"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-base focus:border-transparent"
-          />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Ingredients</label
-          >
-          <div class="mb-4">
-            <div class="flex gap-2">
-              <input
-                v-model="searchQuery"
-                @input="searchIngredients"
-                type="text"
-                placeholder="Search ingredients from database..."
-                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-base focus:border-transparent"
-              />
-              <button
-                type="button"
-                @click="addCustomIngredient"
-                class="px-4 py-2 border border-primary-base text-primary-base rounded-lg hover:bg-primary-50 transition-colors"
-              >
-                Add Custom
-              </button>
-            </div>
-
-            <div
-              v-if="searchResults.length > 0"
-              class="mt-2 border border-gray-300 rounded-lg max-h-48 overflow-y-auto"
-            >
-              <button
-                v-for="ingredient in searchResults"
-                :key="ingredient.id"
-                type="button"
-                @click="addIngredient(ingredient)"
-                class="w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors border-b last:border-0"
-              >
-                <span class="font-medium">{{ ingredient.food_item }}</span>
-                <span
-                  v-if="ingredient.alt_name"
-                  class="text-sm text-gray-500 ml-2"
-                  >({{ ingredient.alt_name }})</span
-                >
-              </button>
-            </div>
-          </div>
-
-          <div class="space-y-2">
-            <div
-              v-for="(ingredient, index) in ingredients"
-              :key="index"
-              class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg"
-            >
-              <div class="flex-1">
-                <span class="font-medium">{{ ingredient.name }}</span>
-                <span
-                  v-if="ingredient.is_custom"
-                  class="text-xs text-gray-500 ml-2"
-                  >(custom - no nutrition data)</span
-                >
-              </div>
-              <input
-                v-model.number="ingredient.amount"
-                type="number"
-                min="1"
-                class="w-24 px-2 py-1 border border-gray-300 rounded"
-              />
-              <span class="text-sm text-gray-600">grams</span>
-              <button
-                type="button"
-                @click="removeIngredient(index)"
-                class="text-error-base hover:text-error-700"
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Instructions</label
-          >
-          <div class="space-y-3">
-            <div
-              v-for="(step, index) in procedure"
-              :key="index"
-              class="flex gap-2"
-            >
-              <span
-                class="flex-shrink-0 w-8 h-8 bg-primary-base text-white rounded-full flex items-center justify-center font-semibold text-sm"
-              >
-                {{ index + 1 }}
-              </span>
-              <textarea
-                v-model="procedure[index]"
-                rows="2"
-                placeholder="Enter instruction step"
-                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-base focus:border-transparent resize-none"
-              ></textarea>
-              <button
-                v-if="procedure.length > 1"
-                type="button"
-                @click="removeProcedureStep(index)"
-                class="text-error-base hover:text-error-700"
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-          <button
-            type="button"
-            @click="addProcedureStep"
-            class="mt-3 px-4 py-2 border border-primary-base text-primary-base rounded-lg hover:bg-primary-50 transition-colors"
-          >
-            Add Step
-          </button>
-        </div>
-
-        <div class="flex gap-4 pt-4">
-          <button
-            type="submit"
-            :disabled="submitting"
-            class="flex-1 px-6 py-3 bg-primary-base text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-          >
-            {{ submitting ? "Creating Recipe..." : "Create Recipe" }}
-          </button>
-          <button
-            type="button"
-            @click="router.push('/')"
-            class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
     </div>
   </div>
 </template>
+
+<style scoped>
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(30px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-modalIn {
+  animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-popIn {
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+</style>

@@ -1,21 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUsersStore } from '@/stores/users'
 import { postsApi } from '@/http/endpoints/posts'
-import LayoutThreeColumn from '@/components/layout/LayoutThreeColumn.vue'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import FollowButton from '@/components/user/FollowButton.vue'
 import PinGrid from '@/components/feed/PinGrid.vue'
 import EditProfileModal from '@/components/user/EditProfileModal.vue'
-import PostDetailModal from '@/components/post/PostDetailModal.vue'
-import BaseButton from '@/components/base/BaseButton.vue'
+import RecipeModal from '@/components/feed/RecipeModal.vue'
 import { formatNumber } from '@/utils/format'
 import type { Post } from '@/typescript/interface/Post'
 import type { User } from '@/typescript/interface/User'
 
 const route = useRoute()
+const router = useRouter()
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
 
@@ -24,12 +23,12 @@ const posts = ref<Post[]>([])
 const isLoading = ref(true)
 const showEditModal = ref(false)
 const selectedPostId = ref<string | null>(null)
-const showPostDetail = ref(false)
+const showPostModal = ref(false)
+const activeTab = ref('posts')
 
 const isCurrentUser = computed(() => user.value?.id === authStore.user?.id)
 
 function handleProfileUpdated() {
-  // Refresh user data
   if (authStore.user) {
     user.value = authStore.user
   }
@@ -37,20 +36,16 @@ function handleProfileUpdated() {
 
 function handlePostClick(postId: string) {
   selectedPostId.value = postId
-  showPostDetail.value = true
+  showPostModal.value = true
 }
 
-function handleCloseDetail() {
-  showPostDetail.value = false
-  selectedPostId.value = null
-}
-
-onMounted(async () => {
+async function loadProfile() {
   const userId = route.params.userId as string
+  if (!userId) return
 
+  isLoading.value = true
   try {
     user.value = await usersStore.getUserById(userId)
-
     const response = await postsApi.getByUser(userId, 1, 50)
     posts.value = response.data.data
   } catch (error) {
@@ -58,97 +53,113 @@ onMounted(async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+onMounted(loadProfile)
+watch(() => route.params.userId, loadProfile)
+
+const displayPosts = computed(() => {
+  if (activeTab.value === 'posts') return posts.value
+  // TODO: Add support for 'saved' and 'liked' tabs if API allows
+  return []
 })
 </script>
 
 <template>
-  <LayoutThreeColumn>
-    <div v-if="isLoading" class="text-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-base mx-auto"></div>
+  <div class="profile-view min-h-screen bg-background pb-20">
+    <div v-if="isLoading" class="flex items-center justify-center py-20">
+       <div class="w-12 h-12 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
     </div>
 
     <div v-else-if="user">
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-8 mb-8">
-        <div class="flex items-start gap-6">
-          <UserAvatar :user="user" size="xl" />
+      <!-- Profile Header Hero -->
+      <div class="relative h-64 md:h-80 bg-[#111]">
+         <img src="https://picsum.photos/1200/400?random=99" class="w-full h-full object-cover opacity-40 blur-[2px]" />
+         <div class="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
 
-          <div class="flex-1">
-            <div class="flex items-center justify-between mb-2">
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                {{ user.displayName }}
-              </h1>
-              <BaseButton
-                v-if="isCurrentUser"
-                variant="secondary"
-                size="sm"
-                @click="showEditModal = true"
-              >
-                Edit Profile
-              </BaseButton>
-              <FollowButton
-                v-else
-                :user-id="user.id"
-                :is-following="user.isFollowing"
-              />
+         <div class="absolute -bottom-16 left-8 md:left-12 flex items-end gap-6">
+            <div class="relative group">
+              <UserAvatar :user="user" size="xl" class="!w-32 !h-32 md:!w-40 md:!h-40 border-4 border-background shadow-xl" />
+              <button v-if="isCurrentUser" @click="showEditModal = true" class="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-xs uppercase tracking-widest">Change</button>
             </div>
 
-            <p class="text-gray-600 dark:text-gray-400 mb-4">@{{ user.username }}</p>
-
-            <p v-if="user.bio" class="text-gray-700 dark:text-gray-300 mb-4">
-              {{ user.bio }}
-            </p>
-
-            <div class="flex gap-6">
-              <div>
-                <span class="font-bold text-gray-900 dark:text-white">
-                  {{ formatNumber(user.followerCount) }}
-                </span>
-                <span class="text-gray-600 dark:text-gray-400 ml-1">followers</span>
-              </div>
-              <div>
-                <span class="font-bold text-gray-900 dark:text-white">
-                  {{ formatNumber(user.followingCount) }}
-                </span>
-                <span class="text-gray-600 dark:text-gray-400 ml-1">following</span>
-              </div>
-              <div>
-                <span class="font-bold text-gray-900 dark:text-white">
-                  {{ formatNumber(posts.length) }}
-                </span>
-                <span class="text-gray-600 dark:text-gray-400 ml-1">posts</span>
-              </div>
+            <div class="pb-4 hidden md:block">
+               <h1 class="font-montserrat font-extrabold text-4xl tracking-tight mb-1">{{ user.displayName }}</h1>
+               <p class="text-text-dim font-bold text-sm tracking-wider uppercase">@{{ user.username }}</p>
             </div>
-          </div>
-        </div>
+         </div>
       </div>
 
-      <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Posts</h2>
-      </div>
+      <div class="px-8 md:px-12 mt-20 md:mt-24">
+         <div class="flex flex-col md:flex-row gap-12">
+            <!-- Left: Sidebar Info -->
+            <div class="w-full md:w-80 shrink-0">
+               <div class="md:hidden mb-6">
+                  <h1 class="font-montserrat font-extrabold text-3xl tracking-tight mb-1">{{ user.displayName }}</h1>
+                  <p class="text-text-dim font-bold text-xs tracking-wider uppercase">@{{ user.username }}</p>
+               </div>
 
-      <PinGrid
-        v-if="posts.length > 0"
-        :posts="posts"
-        @post-click="handlePostClick"
-      />
+               <p v-if="user.bio" class="text-text-muted leading-relaxed mb-8">{{ user.bio }}</p>
+               <p v-else class="text-text-dim italic mb-8">No bio yet. This cook prefers to let their recipes do the talking.</p>
 
-      <div v-else class="text-center py-12">
-        <p class="text-gray-500 dark:text-gray-400 text-lg">No posts yet</p>
+               <div class="flex flex-col gap-4 mb-8">
+                  <div class="flex items-center justify-between p-4 bg-background-secondary rounded-2xl border border-glass-border">
+                     <span class="text-xs font-bold uppercase tracking-widest text-text-dim">Followers</span>
+                     <span class="font-montserrat font-extrabold text-xl">{{ formatNumber(user.followerCount) }}</span>
+                  </div>
+                  <div class="flex items-center justify-between p-4 bg-background-secondary rounded-2xl border border-glass-border">
+                     <span class="text-xs font-bold uppercase tracking-widest text-text-dim">Following</span>
+                     <span class="font-montserrat font-extrabold text-xl">{{ formatNumber(user.followingCount) }}</span>
+                  </div>
+                  <div class="flex items-center justify-between p-4 bg-background-secondary rounded-2xl border border-glass-border">
+                     <span class="text-xs font-bold uppercase tracking-widest text-text-dim">Recipes</span>
+                     <span class="font-montserrat font-extrabold text-xl">{{ formatNumber(posts.length) }}</span>
+                  </div>
+               </div>
+
+               <div v-if="!isCurrentUser" class="flex gap-3">
+                  <FollowButton :user-id="user.id" :is-following="user.isFollowing" class="flex-1" />
+                  <button @click="router.push('/messages')" class="w-12 h-12 rounded-xl bg-background-secondary border border-glass-border flex items-center justify-center text-xl hover:bg-orange-soft hover:text-orange transition-all">💬</button>
+               </div>
+               <button v-else @click="showEditModal = true" class="w-full btn-secondary">Edit Profile</button>
+            </div>
+
+            <!-- Right: Content Tabs -->
+            <div class="flex-1">
+               <div class="flex gap-10 border-b border-glass-border mb-8">
+                  <button
+                    v-for="t in ['posts', 'saved', 'liked']"
+                    :key="t"
+                    @click="activeTab = t"
+                    :class="[
+                      'pb-4 text-sm font-bold uppercase tracking-widest transition-all border-b-2',
+                      activeTab === t ? 'text-orange border-orange' : 'text-text-muted border-transparent hover:text-text'
+                    ]"
+                  >
+                    {{ t }}
+                  </button>
+               </div>
+
+               <div v-if="displayPosts.length > 0">
+                  <PinGrid :posts="displayPosts" @post-click="handlePostClick" />
+               </div>
+               <div v-else class="py-20 text-center bg-background-secondary rounded-[32px] border-2 border-dashed border-glass-border">
+                  <span class="text-4xl mb-4 block">🍳</span>
+                  <h3 class="font-bold text-lg mb-1">Nothing to show here</h3>
+                  <p class="text-text-dim text-sm">Explore and start building your collection!</p>
+               </div>
+            </div>
+         </div>
       </div>
     </div>
 
-    <div v-else class="text-center py-12">
-      <p class="text-gray-500 dark:text-gray-400 text-lg">User not found</p>
+    <div v-else class="text-center py-20">
+      <h2 class="text-2xl font-bold">User not found</h2>
+      <button @click="router.push('/')" class="mt-4 text-orange font-bold">Back to home</button>
     </div>
 
-    <!-- Edit Profile Modal -->
+    <!-- Modals -->
     <EditProfileModal :show="showEditModal" @close="showEditModal = false" @updated="handleProfileUpdated" />
-
-    <!-- Post Detail Modal -->
-    <PostDetailModal
-      :post-id="selectedPostId"
-      :show="showPostDetail"
-      @close="handleCloseDetail"
-    />
-  </LayoutThreeColumn>
+    <RecipeModal :post-id="selectedPostId" :show="showPostModal" @close="showPostModal = false" />
+  </div>
 </template>

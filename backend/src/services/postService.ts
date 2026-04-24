@@ -8,6 +8,15 @@ interface CreatePostData {
   category: string
   tags: string[]
   isPublic?: boolean
+  recipe?: {
+    servings?: number
+    prepTime?: number
+    cookTime?: number
+    difficulty?: string
+    ingredients: any
+    instructions: any
+    nutrition?: any
+  }
 }
 
 export async function getFeed(userId: string, page: number = 1, limit: number = 20) {
@@ -135,6 +144,7 @@ export async function getPostById(postId: string, userId?: string) {
           followingCount: true,
         },
       },
+      recipe: true,
     },
   })
 
@@ -242,15 +252,28 @@ export async function getPostsByUser(targetUserId: string, currentUserId: string
 }
 
 export async function createPost(userId: string, data: CreatePostData) {
+  const { recipe, ...postData } = data
+
   const post = await prisma.post.create({
     data: {
       userId,
-      title: data.title,
-      description: data.description,
-      imageUrl: data.imageUrl,
-      category: data.category,
-      tags: data.tags,
-      isPublic: data.isPublic ?? true,
+      title: postData.title,
+      description: postData.description,
+      imageUrl: postData.imageUrl,
+      category: postData.category,
+      tags: postData.tags,
+      isPublic: postData.isPublic ?? true,
+      recipe: recipe ? {
+        create: {
+          servings: recipe.servings,
+          prepTime: recipe.prepTime,
+          cookTime: recipe.cookTime,
+          difficulty: recipe.difficulty,
+          ingredients: recipe.ingredients,
+          instructions: recipe.instructions,
+          nutrition: recipe.nutrition,
+        }
+      } : undefined
     },
     include: {
       user: {
@@ -261,6 +284,7 @@ export async function createPost(userId: string, data: CreatePostData) {
           avatarUrl: true,
         },
       },
+      recipe: true,
     },
   })
 
@@ -270,6 +294,7 @@ export async function createPost(userId: string, data: CreatePostData) {
 export async function updatePost(postId: string, userId: string, data: Partial<CreatePostData>) {
   const post = await prisma.post.findUnique({
     where: { id: postId },
+    include: { recipe: true }
   })
 
   if (!post) {
@@ -280,10 +305,34 @@ export async function updatePost(postId: string, userId: string, data: Partial<C
     throw new AppError(403, 'Not authorized to update this post')
   }
 
+  const { recipe, ...postData } = data
+
   const updatedPost = await prisma.post.update({
     where: { id: postId },
     data: {
-      ...data,
+      ...postData,
+      recipe: recipe ? {
+        upsert: {
+          create: {
+            servings: recipe.servings,
+            prepTime: recipe.prepTime,
+            cookTime: recipe.cookTime,
+            difficulty: recipe.difficulty,
+            ingredients: recipe.ingredients,
+            instructions: recipe.instructions,
+            nutrition: recipe.nutrition,
+          },
+          update: {
+            servings: recipe.servings,
+            prepTime: recipe.prepTime,
+            cookTime: recipe.cookTime,
+            difficulty: recipe.difficulty,
+            ingredients: recipe.ingredients,
+            instructions: recipe.instructions,
+            nutrition: recipe.nutrition,
+          }
+        }
+      } : undefined
     },
     include: {
       user: {
@@ -294,6 +343,7 @@ export async function updatePost(postId: string, userId: string, data: Partial<C
           avatarUrl: true,
         },
       },
+      recipe: true,
     },
   })
 

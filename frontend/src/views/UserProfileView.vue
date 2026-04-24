@@ -1,345 +1,145 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { usersApi } from '@/api'
-import type { User, Recipe } from '@/types'
+import { useUsersStore } from '@/stores/users'
+import { postsApi } from '@/http/endpoints/posts'
+import UserAvatar from '@/components/user/UserAvatar.vue'
+import FollowButton from '@/components/user/FollowButton.vue'
+import PinGrid from '@/components/feed/PinGrid.vue'
+import RecipeModal from '@/components/feed/RecipeModal.vue'
+import { formatNumber } from '@/utils/format'
+import type { Post } from '@/typescript/interface/Post'
+import type { User } from '@/typescript/interface/User'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const usersStore = useUsersStore()
 
 const user = ref<User | null>(null)
-const recipes = ref<Recipe[]>([])
-const savedRecipes = ref<Recipe[]>([])
-const followers = ref<User[]>([])
-const following = ref<User[]>([])
-const activeTab = ref<'recipes' | 'saved' | 'followers' | 'following'>('recipes')
-const isFollowing = ref(false)
-const loading = ref(true)
+const posts = ref<Post[]>([])
+const isLoading = ref(true)
+const selectedPostId = ref<string | null>(null)
+const showPostModal = ref(false)
+const activeTab = ref('posts')
 
 const userId = computed(() => route.params.id as string)
-const isOwnProfile = computed(() => authStore.user?.id == userId.value)
+const isCurrentUser = computed(() => user.value?.id === authStore.user?.id)
 
-const loadProfile = async () => {
-  loading.value = true
+function handlePostClick(postId: string) {
+  selectedPostId.value = postId
+  showPostModal.value = true
+}
+
+async function loadProfile() {
+  if (!userId.value) return
+
+  isLoading.value = true
   try {
-    const [userRes, recipesRes] = await Promise.all([
-      usersApi.getUser(userId.value),
-      usersApi.getUserRecipes(userId.value),
-    ])
-
-    user.value = userRes.data.data
-    recipes.value = recipesRes.data.data
-
-    if (authStore.isAuthenticated && !isOwnProfile.value) {
-      const followStatus = await usersApi.isFollowing(userId.value)
-      isFollowing.value = followStatus.data.is_following
-    }
+    user.value = await usersStore.getUserById(userId.value)
+    const response = await postsApi.getByUser(userId.value, 1, 50)
+    posts.value = response.data.data
   } catch (error) {
     console.error('Failed to load profile:', error)
   } finally {
-    loading.value = false
+    isLoading.value = false
   }
 }
 
-const loadSavedRecipes = async () => {
-  try {
-    const response = await usersApi.getUserSavedRecipes(userId.value)
-    savedRecipes.value = response.data.data
-  } catch (error) {
-    console.error('Failed to load saved recipes:', error)
-  }
-}
+onMounted(loadProfile)
+watch(userId, loadProfile)
 
-const loadFollowers = async () => {
-  try {
-    const response = await usersApi.getFollowers(userId.value)
-    followers.value = response.data.data
-  } catch (error) {
-    console.error('Failed to load followers:', error)
-  }
-}
-
-const loadFollowing = async () => {
-  try {
-    const response = await usersApi.getFollowing(userId.value)
-    following.value = response.data.data
-  } catch (error) {
-    console.error('Failed to load following:', error)
-  }
-}
-
-const toggleFollow = async () => {
-  if (!authStore.isAuthenticated) {
-    router.push('/login')
-    return
-  }
-
-  try {
-    if (isFollowing.value) {
-      await usersApi.unfollowUser(userId.value)
-    } else {
-      await usersApi.followUser(userId.value)
-    }
-    isFollowing.value = !isFollowing.value
-    await loadProfile()
-  } catch (error) {
-    console.error('Failed to toggle follow:', error)
-  }
-}
-
-const changeTab = async (tab: typeof activeTab.value) => {
-  activeTab.value = tab
-
-  if (tab === 'saved' && savedRecipes.value.length === 0) {
-    await loadSavedRecipes()
-  } else if (tab === 'followers' && followers.value.length === 0) {
-    await loadFollowers()
-  } else if (tab === 'following' && following.value.length === 0) {
-    await loadFollowing()
-  }
-}
-
-onMounted(() => {
-  loadProfile()
+const displayPosts = computed(() => {
+  if (activeTab.value === 'posts') return posts.value
+  return []
 })
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 py-8">
-    <div v-if="loading" class="text-center py-12">
-      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-base"></div>
-      <p class="text-gray-600 mt-4">Loading profile...</p>
+  <div class="user-profile-view min-h-screen bg-background pb-20">
+    <div v-if="isLoading" class="flex items-center justify-center py-20">
+       <div class="w-12 h-12 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
     </div>
 
     <div v-else-if="user">
-      <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-        <div class="flex items-start gap-6">
-          <div class="flex-shrink-0">
-            <img
-              v-if="user.image"
-              :src="user.image"
-              :alt="user.name"
-              class="w-24 h-24 rounded-full object-cover"
-            />
-            <div v-else class="w-24 h-24 rounded-full bg-primary-100 flex items-center justify-center">
-              <span class="text-3xl font-bold text-primary-700">{{ user.name.charAt(0) }}</span>
-            </div>
-          </div>
+      <!-- Profile Header Hero -->
+      <div class="relative h-64 md:h-80 bg-[#111]">
+         <img src="https://picsum.photos/1200/400?random=101" class="w-full h-full object-cover opacity-40 blur-[2px]" />
+         <div class="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
 
-          <div class="flex-1">
-            <div class="flex items-start justify-between mb-4">
-              <div>
-                <h1 class="text-heading-2 font-bold text-gray-900">{{ user.name }}</h1>
-                <p class="text-gray-600">{{ user.email }}</p>
-                <span v-if="user.is_admin" class="inline-block px-3 py-1 bg-secondary-100 text-secondary-700 text-sm font-medium rounded-full mt-2">
-                  Admin
-                </span>
-              </div>
+         <div class="absolute -bottom-16 left-8 md:left-12 flex items-end gap-6">
+            <UserAvatar :user="user" size="xl" class="!w-32 !h-32 md:!w-40 md:!h-40 border-4 border-background shadow-xl" />
 
-              <button
-                v-if="!isOwnProfile && authStore.isAuthenticated"
-                @click="toggleFollow"
-                :class="[
-                  'px-6 py-2 rounded-lg font-medium transition-colors',
-                  isFollowing
-                    ? 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                    : 'bg-primary-base text-white hover:bg-primary-700'
-                ]"
-              >
-                {{ isFollowing ? 'Following' : 'Follow' }}
-              </button>
+            <div class="pb-4 hidden md:block">
+               <h1 class="font-montserrat font-extrabold text-4xl tracking-tight mb-1">{{ user.displayName }}</h1>
+               <p class="text-text-dim font-bold text-sm tracking-wider uppercase">@{{ user.username }}</p>
             </div>
-
-            <div class="flex gap-6 text-sm">
-              <div>
-                <span class="font-semibold text-gray-900">{{ user.recipes_count || 0 }}</span>
-                <span class="text-gray-600"> recipes</span>
-              </div>
-              <div>
-                <span class="font-semibold text-gray-900">{{ user.followers_count || 0 }}</span>
-                <span class="text-gray-600"> followers</span>
-              </div>
-              <div>
-                <span class="font-semibold text-gray-900">{{ user.following_count || 0 }}</span>
-                <span class="text-gray-600"> following</span>
-              </div>
-            </div>
-          </div>
-        </div>
+         </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="border-b border-gray-200">
-          <div class="flex">
-            <button
-              @click="changeTab('recipes')"
-              :class="[
-                'flex-1 px-6 py-4 font-medium transition-colors',
-                activeTab === 'recipes'
-                  ? 'border-b-2 border-primary-base text-primary-base'
-                  : 'text-gray-600 hover:text-gray-900'
-              ]"
-            >
-              Recipes
-            </button>
-            <button
-              v-if="isOwnProfile"
-              @click="changeTab('saved')"
-              :class="[
-                'flex-1 px-6 py-4 font-medium transition-colors',
-                activeTab === 'saved'
-                  ? 'border-b-2 border-primary-base text-primary-base'
-                  : 'text-gray-600 hover:text-gray-900'
-              ]"
-            >
-              Saved
-            </button>
-            <button
-              @click="changeTab('followers')"
-              :class="[
-                'flex-1 px-6 py-4 font-medium transition-colors',
-                activeTab === 'followers'
-                  ? 'border-b-2 border-primary-base text-primary-base'
-                  : 'text-gray-600 hover:text-gray-900'
-              ]"
-            >
-              Followers
-            </button>
-            <button
-              @click="changeTab('following')"
-              :class="[
-                'flex-1 px-6 py-4 font-medium transition-colors',
-                activeTab === 'following'
-                  ? 'border-b-2 border-primary-base text-primary-base'
-                  : 'text-gray-600 hover:text-gray-900'
-              ]"
-            >
-              Following
-            </button>
-          </div>
-        </div>
+      <div class="px-8 md:px-12 mt-20 md:mt-24">
+         <div class="flex flex-col md:flex-row gap-12">
+            <!-- Left: Sidebar Info -->
+            <div class="w-full md:w-80 shrink-0">
+               <div class="md:hidden mb-6">
+                  <h1 class="font-montserrat font-extrabold text-3xl tracking-tight mb-1">{{ user.displayName }}</h1>
+                  <p class="text-text-dim font-bold text-xs tracking-wider uppercase">@{{ user.username }}</p>
+               </div>
 
-        <div class="p-6">
-          <div v-if="activeTab === 'recipes'">
-            <div v-if="recipes.length === 0" class="text-center py-12">
-              <p class="text-gray-600">No recipes yet</p>
-            </div>
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div
-                v-for="recipe in recipes"
-                :key="recipe.id"
-                @click="router.push(`/recipes/${recipe.id}`)"
-                class="cursor-pointer hover:shadow-md transition-shadow rounded-lg overflow-hidden border border-gray-200"
-              >
-                <div class="aspect-video bg-gray-200">
-                  <img
-                    v-if="recipe.image"
-                    :src="`http://localhost:8000/storage/${recipe.image}`"
-                    :alt="recipe.title"
-                    class="w-full h-full object-cover"
-                  />
-                </div>
-                <div class="p-4">
-                  <h3 class="font-semibold text-gray-900 line-clamp-1">{{ recipe.title }}</h3>
-                  <p class="text-sm text-gray-600 line-clamp-1 mt-1">{{ recipe.description }}</p>
-                  <div class="flex items-center justify-between text-sm text-gray-500 mt-2">
-                    <span>{{ recipe.category }}</span>
-                    <div class="flex gap-2">
-                      <span>❤️ {{ recipe.saved_by_count }}</span>
-                      <span>💬 {{ recipe.comments_count }}</span>
-                    </div>
+               <p v-if="user.bio" class="text-text-muted leading-relaxed mb-8">{{ user.bio }}</p>
+               <p v-else class="text-text-dim italic mb-8">This user is busy cooking up something special.</p>
+
+               <div class="flex flex-col gap-4 mb-8">
+                  <div class="flex items-center justify-between p-4 bg-background-secondary rounded-2xl border border-glass-border">
+                     <span class="text-xs font-bold uppercase tracking-widest text-text-dim">Followers</span>
+                     <span class="font-montserrat font-extrabold text-xl">{{ formatNumber(user.followerCount) }}</span>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                  <div class="flex items-center justify-between p-4 bg-background-secondary rounded-2xl border border-glass-border">
+                     <span class="text-xs font-bold uppercase tracking-widest text-text-dim">Following</span>
+                     <span class="font-montserrat font-extrabold text-xl">{{ formatNumber(user.followingCount) }}</span>
+                  </div>
+               </div>
 
-          <div v-else-if="activeTab === 'saved'">
-            <div v-if="savedRecipes.length === 0" class="text-center py-12">
-              <p class="text-gray-600">No saved recipes yet</p>
+               <div v-if="!isCurrentUser" class="flex gap-3">
+                  <FollowButton :user-id="user.id" :is-following="user.isFollowing" class="flex-1" />
+                  <button @click="router.push('/messages')" class="w-12 h-12 rounded-xl bg-background-secondary border border-glass-border flex items-center justify-center text-xl hover:bg-orange-soft hover:text-orange transition-all">💬</button>
+               </div>
+               <button v-else @click="router.push('/settings')" class="w-full btn-secondary">Manage Account</button>
             </div>
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div
-                v-for="recipe in savedRecipes"
-                :key="recipe.id"
-                @click="router.push(`/recipes/${recipe.id}`)"
-                class="cursor-pointer hover:shadow-md transition-shadow rounded-lg overflow-hidden border border-gray-200"
-              >
-                <div class="aspect-video bg-gray-200">
-                  <img
-                    v-if="recipe.image"
-                    :src="`http://localhost:8000/storage/${recipe.image}`"
-                    :alt="recipe.title"
-                    class="w-full h-full object-cover"
-                  />
-                </div>
-                <div class="p-4">
-                  <h3 class="font-semibold text-gray-900 line-clamp-1">{{ recipe.title }}</h3>
-                  <p class="text-sm text-gray-600 line-clamp-1 mt-1">{{ recipe.user.name }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div v-else-if="activeTab === 'followers'">
-            <div v-if="followers.length === 0" class="text-center py-12">
-              <p class="text-gray-600">No followers yet</p>
-            </div>
-            <div v-else class="space-y-4">
-              <div
-                v-for="follower in followers"
-                :key="follower.id"
-                @click="router.push(`/users/${follower.id}`)"
-                class="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-              >
-                <img
-                  v-if="follower.image"
-                  :src="follower.image"
-                  :alt="follower.name"
-                  class="w-12 h-12 rounded-full object-cover"
-                />
-                <div v-else class="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
-                  <span class="text-lg font-bold text-primary-700">{{ follower.name.charAt(0) }}</span>
-                </div>
-                <div>
-                  <p class="font-medium text-gray-900">{{ follower.name }}</p>
-                  <p class="text-sm text-gray-600">{{ follower.email }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+            <!-- Right: Content Tabs -->
+            <div class="flex-1">
+               <div class="flex gap-10 border-b border-glass-border mb-8">
+                  <button
+                    @click="activeTab = 'posts'"
+                    :class="[
+                      'pb-4 text-sm font-bold uppercase tracking-widest transition-all border-b-2',
+                      activeTab === 'posts' ? 'text-orange border-orange' : 'text-text-muted border-transparent hover:text-text'
+                    ]"
+                  >
+                    Recipes
+                  </button>
+               </div>
 
-          <div v-else-if="activeTab === 'following'">
-            <div v-if="following.length === 0" class="text-center py-12">
-              <p class="text-gray-600">Not following anyone yet</p>
+               <div v-if="displayPosts.length > 0">
+                  <PinGrid :posts="displayPosts" @post-click="handlePostClick" />
+               </div>
+               <div v-else class="py-20 text-center bg-background-secondary rounded-[32px] border-2 border-dashed border-glass-border">
+                  <span class="text-4xl mb-4 block">🍳</span>
+                  <h3 class="font-bold text-lg mb-1">No recipes shared yet</h3>
+                  <p class="text-text-dim text-sm">Stay tuned for more updates from this cook!</p>
+               </div>
             </div>
-            <div v-else class="space-y-4">
-              <div
-                v-for="user in following"
-                :key="user.id"
-                @click="router.push(`/users/${user.id}`)"
-                class="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-              >
-                <img
-                  v-if="user.image"
-                  :src="user.image"
-                  :alt="user.name"
-                  class="w-12 h-12 rounded-full object-cover"
-                />
-                <div v-else class="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
-                  <span class="text-lg font-bold text-primary-700">{{ user.name.charAt(0) }}</span>
-                </div>
-                <div>
-                  <p class="font-medium text-gray-900">{{ user.name }}</p>
-                  <p class="text-sm text-gray-600">{{ user.email }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+         </div>
       </div>
     </div>
+
+    <div v-else class="text-center py-20">
+      <h2 class="text-2xl font-bold">User not found</h2>
+      <button @click="router.push('/')" class="mt-4 text-orange font-bold">Back to home</button>
+    </div>
+
+    <RecipeModal :post-id="selectedPostId" :show="showPostModal" @close="showPostModal = false" />
   </div>
 </template>

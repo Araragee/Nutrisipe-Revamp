@@ -1,235 +1,142 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { recipesApi } from '@/api'
-import type { Recipe, RecipeCategory } from '@/types'
+import { postsApi } from '@/http/endpoints/posts'
+import { PostCategory } from '@/typescript/types/enums'
+import { useUiStore } from '@/stores/ui'
+import type { Post } from '@/typescript/interface/Post'
 
 const route = useRoute()
 const router = useRouter()
+const uiStore = useUiStore()
 
-const recipe = ref<Recipe | null>(null)
-const title = ref('')
-const description = ref('')
-const category = ref<RecipeCategory>('Breakfast')
-const image = ref<File | null>(null)
-const imagePreview = ref<string | null>(null)
-const procedure = ref<string[]>([''])
-const isHidden = ref(false)
+const post = ref<Post | null>(null)
+const isLoading = ref(true)
+const isSaving = ref(false)
 
-const categories: RecipeCategory[] = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert', 'Beverage']
-
-const loading = ref(true)
-const submitting = ref(false)
-const error = ref('')
-
-const recipeId = computed(() => Number(route.params.id))
-
-const loadRecipe = async () => {
-  loading.value = true
-  try {
-    const response = await recipesApi.getRecipe(recipeId.value)
-    recipe.value = response.data.data
-
-    title.value = recipe.value.title
-    description.value = recipe.value.description
-    category.value = recipe.value.category as RecipeCategory
-    procedure.value = [...recipe.value.procedure]
-    isHidden.value = recipe.value.is_hidden
-    imagePreview.value = `http://localhost:8000/storage/${recipe.value.image}`
-  } catch (err) {
-    error.value = 'Failed to load recipe'
-    console.error(err)
-  } finally {
-    loading.value = false
-  }
-}
-
-const addProcedureStep = () => {
-  procedure.value.push('')
-}
-
-const removeProcedureStep = (index: number) => {
-  procedure.value.splice(index, 1)
-}
-
-const handleImageUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-
-  if (file) {
-    image.value = file
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      imagePreview.value = e.target?.result as string
-    }
-    reader.readAsDataURL(file)
-  }
-}
-
-const validateForm = (): boolean => {
-  if (!title.value.trim()) {
-    error.value = 'Please enter a recipe title'
-    return false
-  }
-  if (!description.value.trim()) {
-    error.value = 'Please enter a description'
-    return false
-  }
-  if (procedure.value.filter(step => step.trim()).length === 0) {
-    error.value = 'Please add at least one instruction step'
-    return false
-  }
-
-  return true
-}
-
-const submitRecipe = async () => {
-  error.value = ''
-
-  if (!validateForm()) return
-
-  submitting.value = true
-  try {
-    await recipesApi.updateRecipe(recipeId.value, {
-      title: title.value,
-      description: description.value,
-      category: category.value,
-      image: image.value || undefined,
-      procedure: procedure.value.filter(step => step.trim()),
-    })
-
-    router.push(`/recipes/${recipeId.value}`)
-  } catch (err: any) {
-    error.value = err.response?.data?.message || 'Failed to update recipe'
-  } finally {
-    submitting.value = false
-  }
-}
-
-onMounted(() => {
-  loadRecipe()
+const formData = ref({
+  title: '',
+  description: '',
+  category: '',
+  imageUrl: ''
 })
+
+async function loadPost() {
+  const id = route.params.id as string
+  try {
+    const response = await postsApi.getById(id)
+    post.value = response.data.data
+    formData.value = {
+      title: post.value.title,
+      description: post.value.description || '',
+      category: post.value.category,
+      imageUrl: post.value.imageUrl || ''
+    }
+  } catch (error) {
+    uiStore.showToast('Failed to load recipe', 'error')
+    router.push('/')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function handleUpdate() {
+  if (!post.value) return
+  isSaving.value = true
+  try {
+    const updateData = {
+      ...formData.value,
+      category: PostCategory.Recipe
+    }
+    await postsApi.update(post.value.id, updateData as any)
+    uiStore.showToast('Recipe updated successfully', 'success')
+    router.push(`/recipes/${post.value.id}`)
+  } catch (error) {
+    uiStore.showToast('Failed to update recipe', 'error')
+  } finally {
+    isSaving.value = false
+  }
+}
+
+onMounted(loadPost)
+
+const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverage']
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-8">
-    <div v-if="loading" class="text-center py-12">
-      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-base"></div>
-      <p class="text-gray-600 mt-4">Loading recipe...</p>
-    </div>
+  <div class="recipe-edit-view min-h-screen bg-background py-16 px-6">
+    <div class="max-w-3xl mx-auto">
+      <button @click="router.back()" class="mb-8 flex items-center gap-2 text-text-dim font-bold hover:text-orange transition-colors">
+        <span>←</span> BACK TO RECIPE
+      </button>
 
-    <div v-else class="bg-white rounded-xl shadow-lg p-6">
-      <h1 class="text-heading-2 font-bold text-gray-900 mb-6">Edit Recipe</h1>
-
-      <div v-if="error" class="mb-6 p-4 bg-error-100 border border-error-base rounded-lg">
-        <p class="text-error-base">{{ error }}</p>
+      <div v-if="isLoading" class="flex justify-center py-20">
+         <div class="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
       </div>
 
-      <form @submit.prevent="submitRecipe" class="space-y-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
-          <input
-            v-model="title"
-            type="text"
-            placeholder="Enter recipe title"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-base focus:border-transparent"
-          />
-        </div>
+      <div v-else-if="post" class="bg-background-secondary rounded-[40px] border border-glass-border p-8 md:p-12 shadow-2xl">
+         <h1 class="font-montserrat font-extrabold text-3xl mb-10">Edit Recipe</h1>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-          <textarea
-            v-model="description"
-            rows="3"
-            placeholder="Describe your recipe"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-base focus:border-transparent resize-none"
-          ></textarea>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-          <select
-            v-model="category"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-base focus:border-transparent"
-          >
-            <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Recipe Image</label>
-          <div v-if="imagePreview" class="mb-4">
-            <img :src="imagePreview" alt="Preview" class="w-full max-w-md h-64 object-cover rounded-lg" />
-          </div>
-          <input
-            type="file"
-            accept="image/*"
-            @change="handleImageUpload"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-base focus:border-transparent"
-          />
-          <p class="text-sm text-gray-500 mt-1">Leave empty to keep current image</p>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Instructions</label>
-          <div class="space-y-3">
-            <div
-              v-for="(step, index) in procedure"
-              :key="index"
-              class="flex gap-2"
-            >
-              <span class="flex-shrink-0 w-8 h-8 bg-primary-base text-white rounded-full flex items-center justify-center font-semibold text-sm">
-                {{ index + 1 }}
-              </span>
-              <textarea
-                v-model="procedure[index]"
-                rows="2"
-                placeholder="Enter instruction step"
-                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-base focus:border-transparent resize-none"
-              ></textarea>
-              <button
-                v-if="procedure.length > 1"
-                type="button"
-                @click="removeProcedureStep(index)"
-                class="text-error-base hover:text-error-700"
-              >
-                Remove
-              </button>
+         <form @submit.prevent="handleUpdate" class="space-y-8">
+            <div class="space-y-2">
+               <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Recipe Title</label>
+               <input
+                 v-model="formData.title"
+                 type="text"
+                 class="w-full bg-background border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all font-bold"
+                 placeholder="Give your recipe a name"
+               />
             </div>
-          </div>
-          <button
-            type="button"
-            @click="addProcedureStep"
-            class="mt-3 px-4 py-2 border border-primary-base text-primary-base rounded-lg hover:bg-primary-50 transition-colors"
-          >
-            Add Step
-          </button>
-        </div>
 
-        <div class="bg-gray-50 rounded-lg p-4">
-          <p class="text-sm text-gray-600 mb-2">
-            <strong>Note:</strong> Ingredients and nutrition facts cannot be edited after creation.
-            If you need to change ingredients, please create a new recipe.
-          </p>
-        </div>
+            <div class="space-y-2">
+               <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Category</label>
+               <select
+                 v-model="formData.category"
+                 class="w-full bg-background border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all font-bold appearance-none"
+               >
+                 <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+               </select>
+            </div>
 
-        <div class="flex gap-4 pt-4">
-          <button
-            type="submit"
-            :disabled="submitting"
-            class="flex-1 px-6 py-3 bg-primary-base text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-          >
-            {{ submitting ? 'Saving Changes...' : 'Save Changes' }}
-          </button>
-          <button
-            type="button"
-            @click="router.push(`/recipes/${recipeId}`)"
-            class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+            <div class="space-y-2">
+               <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Description</label>
+               <textarea
+                 v-model="formData.description"
+                 rows="4"
+                 class="w-full bg-background border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all leading-relaxed"
+                 placeholder="Share the story behind this dish..."
+               ></textarea>
+            </div>
+
+            <div class="space-y-2">
+               <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Cover Image URL</label>
+               <input
+                 v-model="formData.imageUrl"
+                 type="text"
+                 class="w-full bg-background border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all"
+                 placeholder="https://..."
+               />
+            </div>
+
+            <div class="pt-6 flex gap-4">
+               <button
+                 type="submit"
+                 :disabled="isSaving"
+                 class="flex-1 btn-primary h-14 flex items-center justify-center gap-2"
+               >
+                 <span v-if="isSaving" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                 {{ isSaving ? 'Updating...' : 'Save Changes' }}
+               </button>
+               <button
+                 type="button"
+                 @click="router.back()"
+                 class="btn-secondary px-10 h-14"
+               >
+                 Cancel
+               </button>
+            </div>
+         </form>
+      </div>
     </div>
   </div>
 </template>

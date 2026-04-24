@@ -1,226 +1,10 @@
-<template>
-  <div class="max-w-7xl mx-auto px-4 py-8">
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-3xl font-bold">User Management</h1>
-      <RouterLink
-        to="/admin"
-        class="text-orange-500 hover:text-orange-600 font-medium"
-      >
-        ← Back to Dashboard
-      </RouterLink>
-    </div>
-
-    <!-- Filters -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <input
-          v-model="filters.search"
-          type="text"
-          placeholder="Search users..."
-          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
-          @input="debouncedSearch"
-        />
-
-        <select
-          v-model="filters.role"
-          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
-          @change="() => loadUsers()"
-        >
-          <option value="">All Roles</option>
-          <option value="USER">User</option>
-          <option value="MODERATOR">Moderator</option>
-          <option value="ADMIN">Admin</option>
-        </select>
-
-        <select
-          v-model="filters.status"
-          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
-          @change="() => loadUsers()"
-        >
-          <option value="">All Status</option>
-          <option value="active">Active</option>
-          <option value="banned">Banned</option>
-          <option value="inactive">Inactive</option>
-        </select>
-
-        <button
-          @click="resetFilters"
-          class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
-        >
-          Reset Filters
-        </button>
-      </div>
-    </div>
-
-    <!-- Users Table -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-      <div v-if="loading" class="p-8 text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-      </div>
-
-      <div v-else-if="users.length === 0" class="p-8 text-center text-gray-500">
-        No users found
-      </div>
-
-      <table v-else class="w-full">
-        <thead class="bg-gray-50 dark:bg-gray-900">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stats</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-          <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50 dark:hover:bg-gray-750">
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex items-center">
-                <img
-                  :src="user.avatarUrl || '/default-avatar.png'"
-                  :alt="user.displayName"
-                  class="h-10 w-10 rounded-full mr-3"
-                />
-                <div>
-                  <div class="font-medium">{{ user.displayName }}</div>
-                  <div class="text-sm text-gray-500">@{{ user.username }}</div>
-                </div>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm">{{ user.email }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <select
-                :value="user.role"
-                @change="updateUserRole(user.id, ($event.target as HTMLSelectElement).value)"
-                class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 text-sm"
-              >
-                <option value="USER">User</option>
-                <option value="MODERATOR">Moderator</option>
-                <option value="ADMIN">Admin</option>
-              </select>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span
-                :class="[
-                  'px-2 py-1 text-xs font-semibold rounded-full',
-                  user.isBanned
-                    ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                    : user.isActive
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
-                ]"
-              >
-                {{ user.isBanned ? 'Banned' : user.isActive ? 'Active' : 'Inactive' }}
-              </span>
-              <div v-if="user.isBanned && user.banReason" class="text-xs text-gray-500 mt-1">
-                Reason: {{ user.banReason }}
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm">
-              <div>Posts: {{ user._count.posts }}</div>
-              <div>Comments: {{ user._count.comments }}</div>
-              <div class="text-gray-500">{{ user.followerCount }} followers</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm">
-              <button
-                v-if="!user.isBanned"
-                @click="openBanModal(user)"
-                class="text-red-600 hover:text-red-900 mr-3"
-              >
-                Ban
-              </button>
-              <button
-                v-else
-                @click="unbanUser(user.id)"
-                class="text-green-600 hover:text-green-900 mr-3"
-              >
-                Unban
-              </button>
-              <RouterLink
-                :to="`/profile/${user.username}`"
-                class="text-orange-600 hover:text-orange-900"
-              >
-                View
-              </RouterLink>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Pagination -->
-    <div v-if="pagination" class="flex items-center justify-between mt-6">
-      <div class="text-sm text-gray-600 dark:text-gray-400">
-        Showing {{ (pagination.page - 1) * pagination.limit + 1 }} to
-        {{ Math.min(pagination.page * pagination.limit, pagination.total) }} of {{ pagination.total }} users
-      </div>
-      <div class="flex gap-2">
-        <button
-          @click="changePage(pagination.page - 1)"
-          :disabled="pagination.page === 1"
-          class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <button
-          @click="changePage(pagination.page + 1)"
-          :disabled="pagination.page >= pagination.pages"
-          class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
-    </div>
-
-    <!-- Ban Modal -->
-    <div
-      v-if="showBanModal"
-      class="modal-backdrop"
-      @click="showBanModal = false"
-    >
-      <div class="modal-container" @click.stop>
-        <h2 class="text-xl font-bold mb-4">Ban User</h2>
-        <p class="text-gray-600 dark:text-gray-400 mb-4">
-          Are you sure you want to ban @{{ selectedUser?.username }}?
-        </p>
-        <textarea
-          v-model="banReason"
-          placeholder="Reason for ban..."
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 mb-4"
-          rows="3"
-        ></textarea>
-        <div class="flex gap-3">
-          <button
-            @click="confirmBan"
-            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-          >
-            Ban User
-          </button>
-          <button
-            @click="showBanModal = false"
-            class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Error State -->
-    <div v-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mt-4">
-      <p class="text-red-600 dark:text-red-400">{{ error }}</p>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
-import { useModal } from '@/composables/useModal'
 import { adminApi } from '@/http/endpoints/admin'
+import UserAvatar from '@/components/user/UserAvatar.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -241,24 +25,19 @@ const showBanModal = ref(false)
 const selectedUser = ref<any>(null)
 const banReason = ref('')
 
-// Handle modal body scroll lock
-useModal(() => showBanModal.value, () => showBanModal.value = false)
-
-let searchTimeout: NodeJS.Timeout
+let searchTimeout: any
 
 onMounted(async () => {
   if (authStore.user?.role !== 'ADMIN') {
     router.push('/')
     return
   }
-
   await loadUsers()
 })
 
 async function loadUsers(page = 1) {
   loading.value = true
   error.value = ''
-
   try {
     const response = await adminApi.getUsers({
       page,
@@ -284,25 +63,17 @@ function debouncedSearch() {
 }
 
 function resetFilters() {
-  filters.value = {
-    search: '',
-    role: '',
-    status: '',
-  }
+  filters.value = { search: '', role: '', status: '' }
   loadUsers()
-}
-
-function changePage(page: number) {
-  loadUsers(page)
 }
 
 async function updateUserRole(userId: string, newRole: string) {
   try {
     await adminApi.updateUserRole(userId, newRole)
-    uiStore.showToast('User role updated successfully', 'success')
-    loadUsers(pagination.value.page)
+    uiStore.showToast('Role updated', 'success')
+    loadUsers(pagination.value?.page || 1)
   } catch (err: any) {
-    uiStore.showToast(err.response?.data?.error || 'Failed to update user role', 'error')
+    uiStore.showToast('Update failed', 'error')
   }
 }
 
@@ -313,30 +84,137 @@ function openBanModal(user: any) {
 }
 
 async function confirmBan() {
-  if (!banReason.value.trim()) {
-    uiStore.showToast('Please provide a reason for the ban', 'error')
-    return
-  }
-
+  if (!banReason.value.trim()) return
   try {
     await adminApi.banUser(selectedUser.value.id, banReason.value)
-    uiStore.showToast('User banned successfully', 'success')
+    uiStore.showToast('User banned', 'success')
     showBanModal.value = false
-    loadUsers(pagination.value.page)
+    loadUsers(pagination.value?.page || 1)
   } catch (err: any) {
-    uiStore.showToast(err.response?.data?.error || 'Failed to ban user', 'error')
+    uiStore.showToast('Ban failed', 'error')
   }
 }
 
 async function unbanUser(userId: string) {
-  if (!confirm('Are you sure you want to unban this user?')) return
-
+  if (!confirm('Unban this user?')) return
   try {
     await adminApi.unbanUser(userId)
-    uiStore.showToast('User unbanned successfully', 'success')
-    loadUsers(pagination.value.page)
+    uiStore.showToast('User unbanned', 'success')
+    loadUsers(pagination.value?.page || 1)
   } catch (err: any) {
-    uiStore.showToast(err.response?.data?.error || 'Failed to unban user', 'error')
+    uiStore.showToast('Unban failed', 'error')
   }
 }
 </script>
+
+<template>
+  <div class="admin-users-view min-h-screen bg-background py-16 px-6 md:px-12">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <div>
+           <RouterLink to="/admin" class="text-xs font-bold uppercase tracking-widest text-orange hover:underline mb-2 block">← Dashboard</RouterLink>
+           <h1 class="font-montserrat font-extrabold text-4xl tracking-tight">Citizen Management</h1>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
+        <input
+          v-model="filters.search"
+          type="text"
+          placeholder="Search by name, email..."
+          class="bg-background-secondary border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all font-medium"
+          @input="debouncedSearch"
+        />
+        <select v-model="filters.role" @change="loadUsers(1)" class="bg-background-secondary border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none appearance-none font-bold">
+           <option value="">All Roles</option>
+           <option value="USER">User</option>
+           <option value="MODERATOR">Moderator</option>
+           <option value="ADMIN">Admin</option>
+        </select>
+        <select v-model="filters.status" @change="loadUsers(1)" class="bg-background-secondary border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none appearance-none font-bold">
+           <option value="">All Status</option>
+           <option value="active">Active</option>
+           <option value="banned">Banned</option>
+        </select>
+        <button @click="resetFilters" class="btn-secondary">Reset Filters</button>
+      </div>
+
+      <div v-if="loading" class="flex justify-center py-20">
+         <div class="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
+      </div>
+
+      <div v-else class="bg-background-secondary rounded-[40px] border border-glass-border overflow-hidden shadow-xl">
+        <table class="w-full border-collapse">
+           <thead>
+              <tr class="bg-black/20 text-text-dim text-[10px] font-bold uppercase tracking-[0.2em]">
+                 <th class="px-8 py-6 text-left">Citizen</th>
+                 <th class="px-6 py-6 text-left">Role</th>
+                 <th class="px-6 py-6 text-left">Status</th>
+                 <th class="px-6 py-6 text-left">Engagement</th>
+                 <th class="px-8 py-6 text-right">Actions</th>
+              </tr>
+           </thead>
+           <tbody class="divide-y divide-glass-border">
+              <tr v-for="user in users" :key="user.id" class="hover:bg-white/5 transition-colors group">
+                 <td class="px-8 py-6">
+                    <div class="flex items-center gap-4">
+                       <UserAvatar :user="user" size="md" />
+                       <div>
+                          <div class="font-bold">{{ user.displayName }}</div>
+                          <div class="text-xs text-text-dim">@{{ user.username }}</div>
+                       </div>
+                    </div>
+                 </td>
+                 <td class="px-6 py-6">
+                    <select :value="user.role" @change="updateUserRole(user.id, ($event.target as any).value)" class="bg-transparent border-none text-sm font-bold focus:ring-0 cursor-pointer">
+                       <option value="USER">User</option>
+                       <option value="MODERATOR">Moderator</option>
+                       <option value="ADMIN">Admin</option>
+                    </select>
+                 </td>
+                 <td class="px-6 py-6">
+                    <span :class="['px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest', user.isBanned ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500']">
+                       {{ user.isBanned ? 'Banned' : 'Active' }}
+                    </span>
+                 </td>
+                 <td class="px-6 py-6">
+                    <div class="text-xs font-bold text-text-muted">{{ user._count?.posts || 0 }} Recipes • {{ user.followerCount || 0 }} Followers</div>
+                 </td>
+                 <td class="px-8 py-6 text-right">
+                    <div class="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                       <button v-if="!user.isBanned" @click="openBanModal(user)" class="text-xs font-bold text-red-500 hover:underline">Ban</button>
+                       <button v-else @click="unbanUser(user.id)" class="text-xs font-bold text-green-500 hover:underline">Unban</button>
+                       <button @click="router.push(`/profile/${user.id}`)" class="text-xs font-bold text-orange hover:underline">View</button>
+                    </div>
+                 </td>
+              </tr>
+           </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="pagination && pagination.pages > 1" class="flex justify-center gap-4 mt-12">
+         <button :disabled="pagination.page === 1" @click="loadUsers(pagination.page - 1)" class="btn-secondary px-6">Prev</button>
+         <span class="flex items-center font-bold text-sm">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+         <button :disabled="pagination.page === pagination.pages" @click="loadUsers(pagination.page + 1)" class="btn-secondary px-6">Next</button>
+      </div>
+    </div>
+
+    <!-- Ban Modal -->
+    <div v-if="showBanModal" class="fixed inset-0 z-[100] flex items-center justify-center p-6">
+       <div class="absolute inset-0 bg-background/80 backdrop-blur-md" @click="showBanModal = false"></div>
+       <div class="relative w-full max-w-md bg-background-secondary border border-glass-border rounded-[40px] p-10 shadow-2xl">
+          <h2 class="font-montserrat font-extrabold text-2xl mb-4">Ban @{{ selectedUser.username }}</h2>
+          <p class="text-text-muted text-sm mb-8 leading-relaxed">Suspending this citizen will restrict their access to the platform. Please provide a clear reason.</p>
+
+          <textarea v-model="banReason" class="w-full bg-background border border-glass-border rounded-2xl p-5 mb-8 outline-none focus:border-red-500" placeholder="Violating community guidelines..."></textarea>
+
+          <div class="flex gap-4">
+             <button @click="confirmBan" class="flex-1 py-4 rounded-btn bg-red-500 text-white font-bold hover:bg-red-600 transition-all">Confirm Ban</button>
+             <button @click="showBanModal = false" class="flex-1 btn-secondary">Cancel</button>
+          </div>
+       </div>
+    </div>
+  </div>
+</template>

@@ -6,7 +6,6 @@ import { useUsersStore } from '@/stores/users'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import UserAvatar from '@/components/user/UserAvatar.vue'
-import LazyImage from '@/components/ui/LazyImage.vue'
 import { formatNumber } from '@/utils/format'
 import type { Post } from '@/typescript/interface/Post'
 
@@ -24,22 +23,17 @@ const feedStore = useFeedStore()
 const usersStore = useUsersStore()
 const authStore = useAuthStore()
 const uiStore = useUiStore()
-const isHovered = ref(false)
-const isFollowingUser = ref(props.post.user.isFollowing || false)
-const isFollowLoading = ref(false)
-
-const isOwnPost = computed(() => authStore.user?.id === props.post.user.id)
-const showFollowButton = computed(() => !isOwnPost.value && !isFollowingUser.value)
 
 async function toggleLike(event: Event) {
   event.stopPropagation()
+  if (!authStore.isAuthenticated) return
 
   const wasLiked = props.post.isLiked
   const previousCount = props.post.likeCount
 
   feedStore.updatePostEngagement(props.post.id, {
     isLiked: !wasLiked,
-    likeCount: wasLiked ? previousCount - 1 : previousCount + 1,
+    likeCount: wasLiked ? Math.max(0, previousCount - 1) : previousCount + 1,
   })
 
   try {
@@ -57,135 +51,75 @@ async function toggleLike(event: Event) {
   }
 }
 
-async function toggleSave(event: Event) {
-  event.stopPropagation()
+const recipeImage = computed(() => {
+  return props.post.imageUrl || `https://picsum.photos/400/600?random=${props.post.id}`
+})
 
-  const wasSaved = props.post.isSaved
-  const previousCount = props.post.saveCount
-
-  feedStore.updatePostEngagement(props.post.id, {
-    isSaved: !wasSaved,
-    saveCount: wasSaved ? previousCount - 1 : previousCount + 1,
-  })
-
-  try {
-    if (wasSaved) {
-      await socialApi.unsavePost(props.post.id)
-    } else {
-      await socialApi.savePost(props.post.id)
-    }
-  } catch (error) {
-    feedStore.updatePostEngagement(props.post.id, {
-      isSaved: wasSaved,
-      saveCount: previousCount,
-    })
-    uiStore.showToast('Failed to update save', 'error')
-  }
-}
-
-async function toggleFollow(event: Event) {
-  event.stopPropagation()
-
-  if (isFollowLoading.value) return
-
-  isFollowLoading.value = true
-
-  try {
-    if (isFollowingUser.value) {
-      await usersStore.unfollowUser(props.post.user.id)
-      isFollowingUser.value = false
-      uiStore.showToast('Unfollowed user', 'success')
-    } else {
-      await usersStore.followUser(props.post.user.id)
-      isFollowingUser.value = true
-      uiStore.showToast('Following user', 'success')
-    }
-  } catch (error) {
-    uiStore.showToast('Failed to update follow status', 'error')
-  } finally {
-    isFollowLoading.value = false
-  }
-}
+const tags = computed(() => {
+  return props.post.tags || ['Healthy', 'Nutrisipe']
+})
 </script>
 
 <template>
   <div
-    class="group relative rounded-2xl overflow-hidden bg-white dark:bg-gray-800 shadow-sm hover:shadow-xl transition-shadow cursor-pointer"
-    @mouseenter="isHovered = true"
-    @mouseleave="isHovered = false"
+    class="recipe-card group relative break-inside-avoid mb-6 rounded-card overflow-hidden cursor-pointer shadow-card transition-all duration-revamp border-1.5 border-glass-border bg-[#111]"
     @click="emit('click', post.id)"
   >
-    <div class="relative">
-      <LazyImage :src="post.imageUrl" :alt="post.title" class="w-full h-auto object-cover" />
+    <!-- Background Image -->
+    <img
+      :src="recipeImage"
+      :alt="post.title"
+      class="recipe-img w-full block transition-transform duration-500 group-hover:scale-105"
+    />
 
-      <div
-        v-if="isHovered"
-        class="absolute inset-0 bg-black bg-opacity-40 transition-opacity flex items-center justify-center gap-2"
-      >
-        <button
-          @click="toggleSave"
-          class="p-3 bg-white rounded-full hover:scale-110 transition-transform"
-          :class="{ 'text-primary-base': post.isSaved }"
-        >
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-          </svg>
-        </button>
-      </div>
+    <!-- Top Actions -->
+    <button
+      @click="toggleLike"
+      class="card-heart-btn absolute top-3 right-3 z-10 w-9.5 h-9.5 rounded-full bg-black/45 backdrop-blur-md border border-white/20 flex items-center justify-center cursor-pointer transition-all duration-revamp group-hover:opacity-100 group-hover:translate-y-0 opacity-0 -translate-y-1 scale-90"
+      :class="{ 'liked bg-orange/85 !opacity-100 !translate-y-0 !scale-100': post.isLiked }"
+    >
+      <span class="text-white text-base">{{ post.isLiked ? '❤️' : '🤍' }}</span>
+    </button>
+
+    <div
+      class="card-like-count absolute top-3 right-14 z-10 bg-black/45 backdrop-blur-md border border-white/20 rounded-full px-3 py-1.5 font-montserrat font-bold text-xs text-white transition-all duration-revamp delay-75 group-hover:opacity-100 group-hover:translate-y-0 opacity-0 -translate-y-1 scale-90"
+      :class="{ '!opacity-100 !translate-y-0 !scale-100': post.isLiked }"
+    >
+      {{ formatNumber(post.likeCount) }}
     </div>
 
-    <div class="p-4">
-      <h3 class="font-semibold text-lg line-clamp-2 text-gray-900 dark:text-white">
+    <!-- Bottom Overlay -->
+    <div class="card-overlay absolute bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none">
+      <div class="card-tags flex gap-1.5 flex-wrap mb-2">
+        <span
+          v-for="tag in tags.slice(0, 2)"
+          :key="tag"
+          class="card-tag px-2.5 py-0.5 rounded-full bg-orange/75 backdrop-blur-sm text-white text-[10px] font-bold tracking-wider uppercase"
+        >
+          {{ tag }}
+        </span>
+      </div>
+
+      <h3 class="card-title font-montserrat font-extrabold text-sm leading-snug text-white drop-shadow-md mb-2.5">
         {{ post.title }}
       </h3>
 
-      <div class="flex items-center justify-between mt-3">
-        <div class="flex items-center min-w-0 flex-1">
-          <UserAvatar :user="post.user" size="sm" />
-          <span class="ml-2 text-sm text-gray-600 dark:text-gray-400 truncate">
-            {{ post.user.displayName }}
-          </span>
-        </div>
-
-        <button
-          v-if="showFollowButton && isHovered"
-          @click="toggleFollow"
-          :disabled="isFollowLoading"
-          class="ml-2 px-3 py-1 text-xs font-medium bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-        >
-          {{ isFollowLoading ? '...' : 'Follow' }}
-        </button>
-      </div>
-
-      <div class="flex items-center mt-3 text-sm text-gray-500 dark:text-gray-400 gap-4">
-        <button
-          @click="toggleLike"
-          class="flex items-center hover:text-error-base transition-colors"
-          :class="{ 'text-error-base': post.isLiked }"
-        >
-          <svg
-            class="w-5 h-5 mr-1"
-            :fill="post.isLiked ? 'currentColor' : 'none'"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-            />
-          </svg>
-          <span>{{ formatNumber(post.likeCount) }}</span>
-        </button>
-
-        <span class="flex items-center">
-          <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-          </svg>
-          <span>{{ formatNumber(post.saveCount) }}</span>
+      <div class="card-author-row flex items-center gap-2 pointer-events-auto">
+        <UserAvatar :user="post.user" size="sm" class="!w-6.5 !h-6.5 border-1.5 border-white/50" />
+        <span class="card-author-name text-xs font-semibold text-white/90 truncate">
+          {{ post.user.displayName }}
+        </span>
+        <span class="card-time ml-auto text-[11px] font-medium text-white/65">
+          {{ post.category }}
         </span>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.recipe-card:hover {
+  transform: translateY(-7px) scale(1.015);
+  box-shadow: 0 20px 56px rgba(20, 10, 0, 0.2);
+}
+</style>

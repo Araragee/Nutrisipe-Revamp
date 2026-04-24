@@ -1,207 +1,30 @@
-<template>
-  <div class="max-w-7xl mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8">Explore</h1>
-
-    <!-- Search Bar -->
-    <div class="mb-8">
-      <div class="relative">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search posts, users, recipes..."
-          class="w-full px-4 py-3 pl-12 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 focus:ring-2 focus:ring-orange-500"
-          @input="debouncedSearch"
-          @keyup.enter="performSearch"
-        />
-        <svg class="absolute left-4 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      </div>
-
-      <!-- Search Type Tabs -->
-      <div class="flex gap-2 mt-4" v-if="searchQuery">
-        <button
-          v-for="type in searchTypes"
-          :key="type.value"
-          @click="searchType = type.value; performSearch()"
-          :class="[
-            'px-4 py-2 rounded-lg font-medium transition-colors',
-            searchType === type.value
-              ? 'bg-orange-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'
-          ]"
-        >
-          {{ type.label }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Search Results -->
-    <div v-if="searchQuery && searchResults" class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">Search Results</h2>
-
-      <!-- Posts Results -->
-      <div v-if="searchType === 'all' || searchType === 'posts'">
-        <h3 class="text-lg font-medium mb-3">Posts ({{ searchResults.counts?.posts || 0 }})</h3>
-        <div v-if="searchResults.posts?.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <PinCard v-for="post in searchResults.posts" :key="post.id" :post="post" @click="handlePostClick" />
-        </div>
-        <p v-else class="text-gray-500 mb-8">No posts found</p>
-      </div>
-
-      <!-- Users Results -->
-      <div v-if="searchType === 'all' || searchType === 'users'">
-        <h3 class="text-lg font-medium mb-3">Users ({{ searchResults.counts?.users || 0 }})</h3>
-        <div v-if="searchResults.users?.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          <UserCard v-for="user in searchResults.users" :key="user.id" :user="user" />
-        </div>
-        <p v-else class="text-gray-500 mb-8">No users found</p>
-      </div>
-    </div>
-
-    <!-- Categories Section -->
-    <div v-if="!searchQuery" class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">Browse by Category</h2>
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <RouterLink
-          v-for="category in categories"
-          :key="category.name"
-          :to="`/explore/category/${category.name}`"
-          class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-700"
-        >
-          <div class="text-xl mb-2">{{ getCategoryIcon(category.name) }}</div>
-          <h3 class="font-semibold">{{ category.name }}</h3>
-          <p class="text-sm text-gray-500">{{ category.count }} posts</p>
-        </RouterLink>
-      </div>
-    </div>
-
-    <!-- Trending Section -->
-    <div v-if="!searchQuery">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-2xl font-semibold">Trending Now</h2>
-        <select
-          v-model="trendingPeriod"
-          @change="loadTrending"
-          class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800"
-        >
-          <option value="24h">Last 24 hours</option>
-          <option value="7days">Last 7 days</option>
-          <option value="30days">Last 30 days</option>
-          <option value="all">All time</option>
-        </select>
-      </div>
-
-      <div v-if="loadingTrending" class="text-center py-8">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-      </div>
-
-      <div v-else-if="trendingPosts.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <PinCard v-for="post in trendingPosts" :key="post.id" :post="post" @click="handlePostClick" />
-      </div>
-
-      <p v-else class="text-center text-gray-500 py-8">No trending posts</p>
-    </div>
-
-    <!-- Post Detail Modal -->
-    <PostDetailModal
-      :post-id="selectedPostId"
-      :show="showPostDetail"
-      @close="handleCloseDetail"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { searchApi } from '@/http/endpoints/search'
+import FeedHeader from '@/components/feed/FeedHeader.vue'
 import PinCard from '@/components/feed/PinCard.vue'
 import UserCard from '@/components/user/UserCard.vue'
-import PostDetailModal from '@/components/post/PostDetailModal.vue'
+import RecipeModal from '@/components/feed/RecipeModal.vue'
 
 const searchQuery = ref('')
-const searchType = ref('all')
-const searchTypes = [
-  { label: 'All', value: 'all' },
-  { label: 'Posts', value: 'posts' },
-  { label: 'Users', value: 'users' },
-]
-
-const searchResults = ref<any>(null)
-const searching = ref(false)
-
-const categories = ref<any[]>([])
+const selectedCategory = ref('All')
 const trendingPosts = ref<any[]>([])
-const trendingPeriod = ref('7days')
 const loadingTrending = ref(false)
+const searchResults = ref<any>(null)
+const isSearching = ref(false)
 
 const selectedPostId = ref<string | null>(null)
-const showPostDetail = ref(false)
+const showPostModal = ref(false)
 
 function handlePostClick(postId: string) {
   selectedPostId.value = postId
-  showPostDetail.value = true
-}
-
-function handleCloseDetail() {
-  showPostDetail.value = false
-  selectedPostId.value = null
-}
-
-let searchTimeout: NodeJS.Timeout
-
-onMounted(async () => {
-  await Promise.all([
-    loadCategories(),
-    loadTrending(),
-  ])
-})
-
-function debouncedSearch() {
-  clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    if (searchQuery.value.length >= 2) {
-      performSearch()
-    }
-  }, 500)
-}
-
-async function performSearch() {
-  if (!searchQuery.value || searchQuery.value.length < 2) return
-
-  searching.value = true
-  try {
-    const response = await searchApi.search({
-      q: searchQuery.value,
-      type: searchType.value,
-      page: 1,
-      limit: 20,
-    })
-    searchResults.value = response.data
-  } catch (error) {
-    console.error('Search error:', error)
-  } finally {
-    searching.value = false
-  }
-}
-
-async function loadCategories() {
-  try {
-    const response = await searchApi.getCategories()
-    categories.value = response.data.data
-  } catch (error) {
-    console.error('Load categories error:', error)
-  }
+  showPostModal.value = true
 }
 
 async function loadTrending() {
   loadingTrending.value = true
   try {
-    const response = await searchApi.getTrending({
-      period: trendingPeriod.value,
-      page: 1,
-      limit: 12,
-    })
+    const response = await searchApi.getTrending({ period: '7days', page: 1, limit: 12 })
     trendingPosts.value = response.data.data
   } catch (error) {
     console.error('Load trending error:', error)
@@ -210,24 +33,132 @@ async function loadTrending() {
   }
 }
 
-function getCategoryIcon(category: string): string {
-  const icons: Record<string, string> = {
-    Italian: '🍝',
-    Chinese: '🥡',
-    Mexican: '🌮',
-    Japanese: '🍱',
-    Indian: '🍛',
-    American: '🍔',
-    French: '🥐',
-    Thai: '🍜',
-    Mediterranean: '🥗',
-    Dessert: '🍰',
-    Breakfast: '🥞',
-    Vegan: '🌱',
-    Vegetarian: '🥕',
-    Seafood: '🦞',
-    BBQ: '🍖',
+async function handleSearch(query?: string) {
+  if (query !== undefined) searchQuery.value = query
+  if (!searchQuery.value && selectedCategory.value === 'All') {
+    searchResults.value = null
+    return
   }
-  return icons[category] || '🍽️'
+
+  isSearching.value = true
+  try {
+    // TODO: Improve search result mapping to distinguish between posts and users in the UI
+    const response = await searchApi.search({
+      q: searchQuery.value || selectedCategory.value,
+      type: 'all',
+      page: 1,
+      limit: 20,
+    })
+    searchResults.value = response.data
+  } catch (error) {
+    console.error('Search error:', error)
+  } finally {
+    isSearching.value = false
+  }
 }
+
+function handleFilter(category: string) {
+  selectedCategory.value = category
+  handleSearch()
+}
+
+onMounted(() => {
+  loadTrending()
+})
+
+const collections = [
+  { title: 'Summer Salads', count: 24, image: 'https://picsum.photos/400/300?random=1', color: 'from-green-400 to-emerald-500' },
+  { title: 'High Protein', count: 18, image: 'https://picsum.photos/400/300?random=2', color: 'from-orange-400 to-red-500' },
+  { title: 'Quick & Easy', count: 42, image: 'https://picsum.photos/400/300?random=3', color: 'from-blue-400 to-indigo-500' },
+]
 </script>
+
+<template>
+  <div class="explore-view min-h-screen">
+    <FeedHeader @search="handleSearch" @filter="handleFilter" />
+
+    <div class="explore-hero relative h-[300px] flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+      <div class="absolute inset-0 z-0">
+        <img src="https://picsum.photos/1200/400?random=88" class="w-full h-full object-cover opacity-20 dark:opacity-10 blur-sm" />
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-background"></div>
+      </div>
+
+      <div class="relative z-10 animate-revamp">
+        <h1 class="font-montserrat font-extrabold text-4xl tracking-tight mb-3">Explore Nutrisipe</h1>
+        <p class="text-text-muted text-lg max-w-lg mx-auto">Discover trending recipes, top creators & curated collections for your healthy journey.</p>
+      </div>
+    </div>
+
+    <div class="px-8 pb-20">
+      <!-- Search Results -->
+      <div v-if="searchResults || isSearching" class="mb-12 animate-fadeIn">
+        <h2 class="font-montserrat font-extrabold text-2xl mb-6">Search Results</h2>
+        <div v-if="isSearching" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+           <div v-for="i in 4" :key="i" class="h-64 bg-background-secondary rounded-card animate-pulse"></div>
+        </div>
+        <div v-else-if="searchResults?.posts?.length" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <PinCard v-for="post in searchResults.posts" :key="post.id" :post="post" @click="handlePostClick" />
+        </div>
+        <div v-else class="text-center py-12 bg-background-secondary rounded-3xl border-1.5 border-dashed border-glass-border">
+          <p class="text-text-dim">No results found for your search.</p>
+        </div>
+      </div>
+
+      <!-- Collections -->
+      <div v-if="!searchResults" class="mb-12">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="font-montserrat font-extrabold text-2xl">Curated Collections</h2>
+          <button class="text-orange font-bold text-sm hover:underline">View All</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div v-for="col in collections" :key="col.title" class="group relative h-48 rounded-3xl overflow-hidden cursor-pointer shadow-card transition-all hover:-translate-y-1">
+            <img :src="col.image" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+            <div :class="['absolute inset-0 bg-gradient-to-t opacity-60', col.color]"></div>
+            <div class="absolute inset-0 p-6 flex flex-col justify-end">
+              <h3 class="font-montserrat font-extrabold text-xl text-white drop-shadow-md">{{ col.title }}</h3>
+              <p class="text-white/80 text-sm font-medium">{{ col.count }} recipes</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trending -->
+      <div v-if="!searchResults" class="mb-12">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="font-montserrat font-extrabold text-2xl">Trending This Week</h2>
+          <div class="flex gap-2">
+            <button class="w-10 h-10 rounded-full border border-glass-border flex items-center justify-center text-text-dim hover:text-orange">‹</button>
+            <button class="w-10 h-10 rounded-full border border-glass-border flex items-center justify-center text-text-dim hover:text-orange">›</button>
+          </div>
+        </div>
+
+        <div v-if="loadingTrending" class="grid grid-cols-2 md:grid-cols-4 gap-6">
+           <div v-for="i in 4" :key="i" class="h-64 bg-background-secondary rounded-card animate-pulse"></div>
+        </div>
+        <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+           <PinCard v-for="post in trendingPosts" :key="post.id" :post="post" @click="handlePostClick" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Recipe Modal -->
+    <RecipeModal :post-id="selectedPostId" :show="showPostModal" @close="showPostModal = false" />
+  </div>
+</template>
+
+<style scoped>
+@keyframes revamp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-revamp {
+  animation: revamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in;
+}
+</style>

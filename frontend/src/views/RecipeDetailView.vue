@@ -1,360 +1,207 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { postsApi } from '@/http/endpoints/posts'
+import { socialApi } from '@/http/endpoints/social'
 import { useAuthStore } from '@/stores/auth'
-import { recipesApi, commentsApi } from '@/api'
-import type { Recipe, Comment } from '@/types'
+import { useUiStore } from '@/stores/ui'
+import UserAvatar from '@/components/user/UserAvatar.vue'
+import PinGrid from '@/components/feed/PinGrid.vue'
+import type { Post } from '@/typescript/interface/Post'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const uiStore = useUiStore()
 
-const recipe = ref<Recipe | null>(null)
-const comments = ref<Comment[]>([])
-const relatedRecipes = ref<Recipe[]>([])
-const loading = ref(true)
-const commentText = ref('')
-const submittingComment = ref(false)
+const post = ref<Post | null>(null)
+const relatedPosts = ref<Post[]>([])
+const isLoading = ref(true)
+const activeTab = ref('ingredients')
 
-const recipeId = computed(() => Number(route.params.id))
-const isOwner = computed(() => authStore.user?.id === recipe.value?.user_id)
-const isSaved = computed(() => recipe.value?.is_saved || false)
+const postId = computed(() => route.params.id as string)
+const isOwner = computed(() => authStore.user?.id === post.value?.userId)
 
-const loadRecipe = async () => {
-  loading.value = true
+const nutritionFacts = computed(() => {
+  const n = post.value?.recipe?.nutrition
+  return [
+    { label: 'Calories', val: n?.calories || '0', unit: 'kcal', icon: '⚡' },
+    { label: 'Protein', val: n?.protein || '0', unit: 'g', icon: '💪' },
+    { label: 'Carbs', val: n?.carbs || '0', unit: 'g', icon: '🌾' },
+    { label: 'Fat', val: n?.fat || '0', unit: 'g', icon: '🥑' },
+  ]
+})
+
+async function loadPost() {
+  if (!postId.value) return
+  isLoading.value = true
   try {
-    const response = await recipesApi.getRecipe(recipeId.value)
-    recipe.value = response.data.data
-    await Promise.all([loadComments(), loadRelatedRecipes()])
+    const response = await postsApi.getById(postId.value)
+    post.value = response.data.data
+
+    // Fetch related (trending for now)
+    const feedRes = await postsApi.getFeed(1, 10)
+    relatedPosts.value = feedRes.data.data.filter(p => p.id !== postId.value)
   } catch (error) {
-    console.error('Failed to load recipe:', error)
+    console.error('Failed to load post:', error)
+    uiStore.showToast('Post not found', 'error')
     router.push('/')
   } finally {
-    loading.value = false
+    isLoading.value = false
   }
 }
 
-const loadComments = async () => {
+async function toggleLike() {
+  if (!post.value || !authStore.isAuthenticated) return
+  const wasLiked = post.value.isLiked
+  post.value.isLiked = !wasLiked
+  post.value.likeCount += wasLiked ? -1 : 1
   try {
-    const response = await commentsApi.getComments(recipeId.value)
-    comments.value = response.data.data
-  } catch (error) {
-    console.error('Failed to load comments:', error)
+    if (wasLiked) await socialApi.unlikePost(post.value.id)
+    else await socialApi.likePost(post.value.id)
+  } catch {
+    post.value.isLiked = wasLiked
+    post.value.likeCount += wasLiked ? 1 : -1
   }
 }
 
-const loadRelatedRecipes = async () => {
+async function toggleSave() {
+  if (!post.value || !authStore.isAuthenticated) return
+  const wasSaved = post.value.isSaved
+  post.value.isSaved = !wasSaved
+  post.value.saveCount += wasSaved ? -1 : 1
   try {
-    const response = await recipesApi.getRelatedRecipes(recipeId.value)
-    relatedRecipes.value = response.data.data
-  } catch (error) {
-    console.error('Failed to load related recipes:', error)
+    if (wasSaved) await socialApi.unsavePost(post.value.id)
+    else await socialApi.savePost(post.value.id)
+  } catch {
+    post.value.isSaved = wasSaved
+    post.value.saveCount += wasSaved ? 1 : -1
   }
 }
 
-const toggleSave = async () => {
-  if (!authStore.isAuthenticated) {
-    router.push('/login')
-    return
-  }
+onMounted(loadPost)
+watch(postId, loadPost)
 
-  try {
-    if (isSaved.value) {
-      await recipesApi.unsaveRecipe(recipeId.value)
-    } else {
-      await recipesApi.saveRecipe(recipeId.value)
-    }
-    await loadRecipe()
-  } catch (error) {
-    console.error('Failed to toggle save:', error)
-  }
-}
-
-const submitComment = async () => {
-  if (!authStore.isAuthenticated) {
-    router.push('/login')
-    return
-  }
-
-  if (!commentText.value.trim()) return
-
-  submittingComment.value = true
-  try {
-    await commentsApi.createComment(recipeId.value, commentText.value)
-    commentText.value = ''
-    await loadComments()
-  } catch (error) {
-    console.error('Failed to submit comment:', error)
-  } finally {
-    submittingComment.value = false
-  }
-}
-
-const deleteComment = async (commentId: number) => {
-  if (!confirm('Are you sure you want to delete this comment?')) return
-
-  try {
-    await commentsApi.deleteComment(commentId)
-    await loadComments()
-  } catch (error) {
-    console.error('Failed to delete comment:', error)
-  }
-}
-
-const deleteRecipe = async () => {
-  if (!confirm('Are you sure you want to delete this recipe? This action cannot be undone.')) return
-
-  try {
-    await recipesApi.deleteRecipe(recipeId.value)
-    router.push('/')
-  } catch (error) {
-    console.error('Failed to delete recipe:', error)
-  }
-}
-
-const toggleHide = async () => {
-  try {
-    await recipesApi.toggleHide(recipeId.value)
-    await loadRecipe()
-  } catch (error) {
-    console.error('Failed to toggle hide:', error)
-  }
-}
-
-onMounted(() => {
-  loadRecipe()
+const recipeImage = computed(() => {
+  return post.value?.imageUrl || `https://picsum.photos/800/1000?random=${post.value?.id}`
 })
 </script>
 
 <template>
-  <div v-if="loading" class="max-w-7xl mx-auto px-4 py-8">
-    <div class="text-center py-12">
-      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-base"></div>
-      <p class="text-gray-600 mt-4">Loading recipe...</p>
-    </div>
-  </div>
-
-  <div v-else-if="recipe" class="max-w-7xl mx-auto px-4 py-8">
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-      <div class="aspect-video bg-gray-200 overflow-hidden">
-        <img
-          v-if="recipe.image"
-          :src="`http://localhost:8000/storage/${recipe.image}`"
-          :alt="recipe.title"
-          class="w-full h-full object-cover"
-        />
-      </div>
-
-      <div class="p-6">
-        <div class="flex items-start justify-between mb-4">
-          <div class="flex-1">
-            <div class="flex items-center gap-3 mb-2">
-              <h1 class="text-heading-2 font-bold text-gray-900">{{ recipe.title }}</h1>
-              <span class="px-3 py-1 bg-primary-100 text-primary-700 text-sm font-medium rounded-full">
-                {{ recipe.category }}
-              </span>
-              <span v-if="recipe.is_hidden" class="px-3 py-1 bg-error-100 text-error-700 text-sm font-medium rounded-full">
-                Hidden
-              </span>
-            </div>
-            <div class="flex items-center gap-4 text-sm text-gray-600">
-              <router-link :to="`/users/${recipe.user.id}`" class="hover:text-primary-base">
-                By {{ recipe.user.name }}
-              </router-link>
-              <span>• Serves {{ recipe.nutrition_fact.yield_amount }}</span>
-              <span>• {{ recipe.saved_by_count }} saves</span>
-              <span>• {{ recipe.comments_count }} comments</span>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button
-              @click="toggleSave"
-              :class="[
-                'px-4 py-2 rounded-lg font-medium transition-colors',
-                isSaved
-                  ? 'bg-error-base text-white hover:bg-error-700'
-                  : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-              ]"
-            >
-              {{ isSaved ? '❤️ Saved' : '🤍 Save' }}
-            </button>
-
-            <template v-if="isOwner || authStore.isAdmin">
-              <router-link
-                v-if="isOwner"
-                :to="`/recipes/${recipe.id}/edit`"
-                class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Edit
-              </router-link>
-              <button
-                v-if="isOwner"
-                @click="toggleHide"
-                class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                {{ recipe.is_hidden ? 'Unhide' : 'Hide' }}
-              </button>
-              <button
-                @click="deleteRecipe"
-                class="px-4 py-2 bg-error-base text-white rounded-lg hover:bg-error-700 transition-colors"
-              >
-                Delete
-              </button>
-            </template>
-          </div>
-        </div>
-
-        <p class="text-gray-700 mb-6">{{ recipe.description }}</p>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <h2 class="text-heading-4 font-semibold text-gray-900 mb-4">Ingredients</h2>
-            <ul class="space-y-2">
-              <li
-                v-for="ingredient in recipe.recipe_ingredients"
-                :key="ingredient.id"
-                class="flex items-center gap-2 text-gray-700"
-              >
-                <span class="w-2 h-2 bg-primary-base rounded-full"></span>
-                <span>{{ ingredient.amount }}g {{ ingredient.name }}</span>
-                <span v-if="ingredient.is_custom" class="text-xs text-gray-500">(custom)</span>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h2 class="text-heading-4 font-semibold text-gray-900 mb-4">Nutrition Facts</h2>
-            <div class="bg-gray-50 rounded-lg p-4 space-y-2">
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Serving Size:</span>
-                <span class="font-medium text-gray-900">{{ recipe.nutrition_fact.serving_size }}g</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Energy:</span>
-                <span class="font-medium text-gray-900">{{ recipe.nutrition_fact.energy }} kcal</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Protein:</span>
-                <span class="font-medium text-gray-900">{{ recipe.nutrition_fact.protein }}g</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Fat:</span>
-                <span class="font-medium text-gray-900">{{ recipe.nutrition_fact.fat }}g</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Carbohydrates:</span>
-                <span class="font-medium text-gray-900">{{ recipe.nutrition_fact.carb }}g</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Calcium:</span>
-                <span class="font-medium text-gray-900">{{ recipe.nutrition_fact.calcium }}mg</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-600">Iron:</span>
-                <span class="font-medium text-gray-900">{{ recipe.nutrition_fact.iron }}mg</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h2 class="text-heading-4 font-semibold text-gray-900 mb-4">Instructions</h2>
-          <ol class="space-y-3">
-            <li
-              v-for="(step, index) in recipe.procedure"
-              :key="index"
-              class="flex gap-4"
-            >
-              <span class="flex-shrink-0 w-8 h-8 bg-primary-base text-white rounded-full flex items-center justify-center font-semibold">
-                {{ index + 1 }}
-              </span>
-              <p class="text-gray-700 pt-1">{{ step }}</p>
-            </li>
-          </ol>
-        </div>
-      </div>
+  <div class="recipe-detail-view min-h-screen bg-background">
+    <div v-if="isLoading" class="flex items-center justify-center py-20">
+       <div class="w-12 h-12 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-      <h2 class="text-heading-4 font-semibold text-gray-900 mb-4">
-        Comments ({{ comments.length }})
-      </h2>
+    <div v-else-if="post" class="max-w-7xl mx-auto px-6 py-10 md:py-16">
+       <div class="flex flex-col lg:flex-row gap-12">
+          <!-- Left: Hero Image -->
+          <div class="w-full lg:w-1/2 shrink-0">
+             <div class="relative rounded-[40px] overflow-hidden shadow-2xl group border-1.5 border-glass-border">
+                <img :src="recipeImage" class="w-full object-cover aspect-[4/5]" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
-      <div v-if="authStore.isAuthenticated" class="mb-6">
-        <textarea
-          v-model="commentText"
-          placeholder="Add a comment..."
-          rows="3"
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-base focus:border-transparent resize-none"
-        ></textarea>
-        <button
-          @click="submitComment"
-          :disabled="!commentText.trim() || submittingComment"
-          class="mt-2 px-4 py-2 bg-primary-base text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {{ submittingComment ? 'Posting...' : 'Post Comment' }}
-        </button>
-      </div>
-
-      <div v-else class="mb-6 p-4 bg-gray-50 rounded-lg text-center">
-        <p class="text-gray-600">
-          <router-link to="/login" class="text-primary-base hover:underline">Sign in</router-link>
-          to leave a comment
-        </p>
-      </div>
-
-      <div class="space-y-4">
-        <div
-          v-for="comment in comments"
-          :key="comment.id"
-          class="border-b border-gray-200 pb-4 last:border-0"
-        >
-          <div class="flex items-start justify-between mb-2">
-            <div>
-              <router-link :to="`/users/${comment.user.id}`" class="font-medium text-gray-900 hover:text-primary-base">
-                {{ comment.user.name }}
-              </router-link>
-              <span class="text-sm text-gray-500 ml-2">
-                {{ new Date(comment.created_at).toLocaleDateString() }}
-              </span>
-            </div>
-            <button
-              v-if="authStore.user?.id === comment.user.id || authStore.isAdmin"
-              @click="deleteComment(comment.id)"
-              class="text-sm text-error-base hover:text-error-700"
-            >
-              Delete
-            </button>
+                <button
+                  @click="toggleLike"
+                  class="absolute top-6 right-6 w-14 h-14 rounded-full bg-surface/80 backdrop-blur-xl border border-glass-border flex items-center justify-center text-2xl transition-all active:scale-90"
+                  :class="post.isLiked ? 'text-orange shadow-lg shadow-orange/20' : 'text-text-dim'"
+                >
+                  {{ post.isLiked ? '❤️' : '🤍' }}
+                </button>
+             </div>
           </div>
-          <p class="text-gray-700">{{ comment.comment }}</p>
-        </div>
-      </div>
-    </div>
 
-    <div v-if="relatedRecipes.length > 0" class="bg-white rounded-xl shadow-lg p-6">
-      <h2 class="text-heading-4 font-semibold text-gray-900 mb-4">Related Recipes</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div
-          v-for="related in relatedRecipes"
-          :key="related.id"
-          @click="router.push(`/recipes/${related.id}`)"
-          class="cursor-pointer hover:shadow-md transition-shadow rounded-lg overflow-hidden border border-gray-200"
-        >
-          <div class="aspect-video bg-gray-200 overflow-hidden">
-            <img
-              v-if="related.image"
-              :src="`http://localhost:8000/storage/${related.image}`"
-              :alt="related.title"
-              class="w-full h-full object-cover"
-            />
+          <!-- Right: Details -->
+          <div class="flex-1 flex flex-col pt-4">
+             <div class="flex items-center gap-3 mb-6">
+                <span class="px-4 py-1.5 rounded-full bg-orange text-white text-xs font-bold tracking-widest uppercase">{{ post.category }}</span>
+                <div class="flex items-center gap-1.5 text-orange font-bold text-sm">★ {{ post.averageRating?.toFixed(1) || '0.0' }} ({{ post.ratingCount }})</div>
+             </div>
+
+             <h1 class="font-montserrat font-extrabold text-4xl md:text-5xl tracking-tight leading-[1.1] mb-8">{{ post.title }}</h1>
+
+             <div class="flex items-center gap-4 p-5 bg-background-secondary rounded-3xl border border-glass-border mb-10">
+                <UserAvatar :user="post.user" size="md" class="border-2 border-orange" />
+                <div class="flex-1">
+                   <p class="font-bold text-[15px]">{{ post.user.displayName }}</p>
+                   <p class="text-xs text-text-dim font-bold uppercase tracking-wider">@{{ post.user.username }}</p>
+                </div>
+                <button v-if="!isOwner" class="btn-primary py-2.5 px-6 !text-xs">Follow</button>
+                <button v-else @click="router.push(`/recipes/${post.id}/edit`)" class="btn-secondary py-2.5 px-6 !text-xs">Edit Post</button>
+             </div>
+
+             <!-- Nutrition Row -->
+             <div class="grid grid-cols-4 gap-4 mb-10">
+                <div v-for="n in nutritionFacts" :key="n.label" class="bg-background-secondary/50 rounded-2xl p-4 text-center border border-glass-border">
+                  <span class="text-2xl mb-1.5 block">{{ n.icon }}</span>
+                  <span class="font-montserrat font-extrabold text-lg block leading-none mb-1">{{ n.val }}</span>
+                  <span class="text-[9px] text-text-dim uppercase font-bold tracking-widest">{{ n.label }}</span>
+                </div>
+             </div>
+
+             <!-- Tabs -->
+             <div class="flex gap-10 border-b border-glass-border mb-8">
+                <button
+                  v-for="t in ['ingredients', 'instructions', 'comments']"
+                  :key="t"
+                  @click="activeTab = t"
+                  :class="[
+                    'pb-4 text-sm font-bold uppercase tracking-widest transition-all border-b-2',
+                    activeTab === t ? 'text-orange border-orange' : 'text-text-muted border-transparent hover:text-text'
+                  ]"
+                >
+                  {{ t }}
+                </button>
+             </div>
+
+             <div class="flex-1 mb-10">
+                <div v-if="activeTab === 'ingredients'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <template v-if="post.recipe?.ingredients && post.recipe.ingredients.length > 0">
+                     <div v-for="(ing, idx) in post.recipe.ingredients" :key="idx" class="flex items-center gap-4 p-4 bg-background-secondary/30 rounded-2xl border border-glass-border">
+                        <div class="w-2.5 h-2.5 rounded-full bg-orange"></div>
+                        <span class="text-[15px] font-medium">{{ ing.name }}</span>
+                        <span class="ml-auto font-bold text-orange text-sm">{{ ing.qty }}</span>
+                     </div>
+                   </template>
+                   <div v-else class="col-span-full text-center py-10 text-text-dim italic">No ingredients listed.</div>
+                </div>
+
+                <div v-if="activeTab === 'instructions'" class="space-y-8">
+                   <template v-if="post.recipe?.instructions && post.recipe.instructions.length > 0">
+                     <div v-for="step in post.recipe.instructions" :key="step.step" class="flex gap-6">
+                        <div class="w-10 h-10 rounded-full bg-orange text-white font-montserrat font-extrabold flex items-center justify-center shrink-0 shadow-lg shadow-orange/30">{{ step.step }}</div>
+                        <div>
+                           <p class="text-text-muted leading-relaxed">{{ step.text }}</p>
+                        </div>
+                     </div>
+                   </template>
+                   <div v-else class="text-center py-10 text-text-dim italic">No instructions listed.</div>
+                </div>
+
+                <div v-if="activeTab === 'comments'" class="py-10 text-center bg-background-secondary/50 rounded-3xl border-2 border-dashed border-glass-border">
+                   <p class="text-text-dim font-bold uppercase tracking-widest text-xs">Join the conversation</p>
+                   <button class="mt-4 text-orange font-extrabold hover:underline">Sign in to comment</button>
+                </div>
+             </div>
+
+             <!-- Actions -->
+             <div class="flex gap-4">
+                <button @click="toggleSave" class="flex-1 btn-primary flex items-center justify-center gap-2 h-14">
+                  <span>{{ post.isSaved ? '🔖' : '🤍' }}</span>
+                  {{ post.isSaved ? 'Saved to Collection' : 'Save Recipe' }}
+                </button>
+                <button class="flex-1 btn-secondary flex items-center justify-center gap-2 h-14">
+                  <span>📤</span> Share
+                </button>
+             </div>
           </div>
-          <div class="p-3">
-            <h3 class="font-medium text-gray-900 line-clamp-1">{{ related.title }}</h3>
-            <p class="text-sm text-gray-600 line-clamp-1">{{ related.user.name }}</p>
-          </div>
-        </div>
-      </div>
+       </div>
+
+       <!-- Related Posts -->
+       <div class="mt-24">
+          <h2 class="font-montserrat font-extrabold text-3xl tracking-tight mb-10">You might also like</h2>
+          <PinGrid :posts="relatedPosts" />
+       </div>
     </div>
   </div>
 </template>

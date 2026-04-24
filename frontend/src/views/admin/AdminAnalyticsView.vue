@@ -1,153 +1,3 @@
-<template>
-  <div class="max-w-7xl mx-auto px-4 py-8">
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-3xl font-bold">Platform Analytics</h1>
-      <RouterLink
-        to="/admin"
-        class="text-orange-500 hover:text-orange-600 font-medium"
-      >
-        ← Back to Dashboard
-      </RouterLink>
-    </div>
-
-    <!-- Time Period Selector -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-      <div class="flex gap-4">
-        <button
-          v-for="period in periods"
-          :key="period"
-          @click="selectedPeriod = period"
-          :class="[
-            'px-4 py-2 rounded-lg font-medium transition-colors',
-            selectedPeriod === period
-              ? 'bg-orange-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-          ]"
-        >
-          {{ period }}
-        </button>
-      </div>
-    </div>
-
-    <!-- User Growth -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-      <h2 class="text-xl font-semibold mb-4">User Growth</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Users</p>
-          <p class="text-3xl font-bold">{{ stats?.users.total || 0 }}</p>
-          <p class="text-sm text-green-600 mt-1">+{{ stats?.users.newToday || 0 }} today</p>
-        </div>
-        <div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Active Users</p>
-          <p class="text-3xl font-bold">{{ stats?.users.active || 0 }}</p>
-          <p class="text-sm text-gray-500 mt-1">
-            {{ ((stats?.users.active || 0) / (stats?.users.total || 1) * 100).toFixed(1) }}% of total
-          </p>
-        </div>
-        <div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Banned Users</p>
-          <p class="text-3xl font-bold text-red-600">{{ stats?.users.banned || 0 }}</p>
-          <p class="text-sm text-gray-500 mt-1">
-            {{ ((stats?.users.banned || 0) / (stats?.users.total || 1) * 100).toFixed(1) }}% of total
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Content Statistics -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-      <h2 class="text-xl font-semibold mb-4">Content Statistics</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Posts</p>
-          <p class="text-3xl font-bold">{{ stats?.content.posts || 0 }}</p>
-          <p class="text-sm text-blue-600 mt-1">+{{ stats?.content.newPostsToday || 0 }} today</p>
-        </div>
-        <div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Comments</p>
-          <p class="text-3xl font-bold">{{ stats?.content.comments || 0 }}</p>
-          <p class="text-sm text-gray-500 mt-1">
-            {{ ((stats?.content.comments || 0) / (stats?.content.posts || 1)).toFixed(1) }} avg per post
-          </p>
-        </div>
-        <div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Posts per User</p>
-          <p class="text-3xl font-bold">
-            {{ ((stats?.content.posts || 0) / (stats?.users.total || 1)).toFixed(1) }}
-          </p>
-          <p class="text-sm text-gray-500 mt-1">Average content creation</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Engagement Metrics -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-      <h2 class="text-xl font-semibold mb-4">Engagement Overview</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-          <div class="text-2xl mb-2">❤️</div>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Likes</p>
-          <p class="text-2xl font-bold">-</p>
-          <p class="text-xs text-gray-500 mt-1">Coming soon</p>
-        </div>
-        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-          <div class="text-2xl mb-2">💬</div>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Comments</p>
-          <p class="text-2xl font-bold">{{ stats?.content.comments || 0 }}</p>
-          <p class="text-xs text-gray-500 mt-1">Total interactions</p>
-        </div>
-        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-          <div class="text-2xl mb-2">🔖</div>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Saves</p>
-          <p class="text-2xl font-bold">-</p>
-          <p class="text-xs text-gray-500 mt-1">Coming soon</p>
-        </div>
-        <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-          <div class="text-2xl mb-2">👥</div>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Follows</p>
-          <p class="text-2xl font-bold">-</p>
-          <p class="text-xs text-gray-500 mt-1">Coming soon</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Moderation Activity -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-4">Moderation Activity</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Pending Reports</p>
-          <p class="text-3xl font-bold text-orange-600">{{ stats?.moderation.pendingReports || 0 }}</p>
-          <p class="text-sm text-gray-500 mt-1">Requires attention</p>
-        </div>
-        <div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Reports</p>
-          <p class="text-3xl font-bold">-</p>
-          <p class="text-sm text-gray-500 mt-1">Coming soon</p>
-        </div>
-        <div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Resolution Rate</p>
-          <p class="text-3xl font-bold">-</p>
-          <p class="text-sm text-gray-500 mt-1">Coming soon</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Note about future enhancements -->
-    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-6">
-      <p class="text-sm text-blue-900 dark:text-blue-300">
-        <strong>📊 Coming Soon:</strong> Advanced analytics including charts, trend analysis, user activity heatmaps, and detailed engagement metrics.
-      </p>
-    </div>
-
-    <!-- Error State -->
-    <div v-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mt-4">
-      <p class="text-red-600 dark:text-red-400">{{ error }}</p>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -159,7 +9,8 @@ const authStore = useAuthStore()
 
 const stats = ref<any>(null)
 const error = ref('')
-const selectedPeriod = ref('Today')
+const isLoading = ref(true)
+const selectedPeriod = ref('7 Days')
 const periods = ['Today', '7 Days', '30 Days', 'All Time']
 
 onMounted(async () => {
@@ -167,16 +18,100 @@ onMounted(async () => {
     router.push('/')
     return
   }
-
   await loadStats()
 })
 
 async function loadStats() {
+  isLoading.value = true
   try {
     const response = await adminApi.getStats()
     stats.value = response.data.data
   } catch (err: any) {
     error.value = err.response?.data?.error || 'Failed to load statistics'
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
+
+<template>
+  <div class="admin-analytics-view min-h-screen bg-background py-16 px-6 md:px-12">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <div>
+           <RouterLink to="/admin" class="text-xs font-bold uppercase tracking-widest text-orange hover:underline mb-2 block">← Dashboard</RouterLink>
+           <h1 class="font-montserrat font-extrabold text-4xl tracking-tight">Platform Insights</h1>
+        </div>
+
+        <div class="flex bg-background-secondary border border-glass-border p-1.5 rounded-2xl">
+           <button
+             v-for="p in periods" :key="p"
+             @click="selectedPeriod = p"
+             :class="['px-5 py-2 rounded-xl text-xs font-bold transition-all', selectedPeriod === p ? 'bg-orange text-white' : 'text-text-muted hover:text-white']"
+           >
+             {{ p }}
+           </button>
+        </div>
+      </div>
+
+      <div v-if="isLoading" class="flex justify-center py-20">
+         <div class="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
+      </div>
+
+      <div v-else-if="stats" class="space-y-12">
+        <!-- Growth Section -->
+        <section>
+           <h2 class="font-montserrat font-extrabold text-xl mb-6 tracking-tight uppercase">User Growth</h2>
+           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="bg-background-secondary border border-glass-border rounded-[32px] p-8">
+                 <p class="text-text-dim font-bold text-[10px] uppercase tracking-widest mb-4">Total Population</p>
+                 <div class="text-4xl font-montserrat font-extrabold mb-2">{{ stats.users.total }}</div>
+                 <div class="text-green-500 font-bold text-xs">+{{ stats.users.newToday }} today</div>
+              </div>
+              <div class="bg-background-secondary border border-glass-border rounded-[32px] p-8">
+                 <p class="text-text-dim font-bold text-[10px] uppercase tracking-widest mb-4">Active Participation</p>
+                 <div class="text-4xl font-montserrat font-extrabold mb-2">{{ stats.users.active }}</div>
+                 <div class="text-text-muted font-bold text-xs">{{ ((stats.users.active / stats.users.total) * 100).toFixed(1) }}% retention rate</div>
+              </div>
+              <div class="bg-background-secondary border border-glass-border rounded-[32px] p-8">
+                 <p class="text-text-dim font-bold text-[10px] uppercase tracking-widest mb-4">Safety Index</p>
+                 <div class="text-4xl font-montserrat font-extrabold mb-2 text-red-500">{{ stats.users.banned }}</div>
+                 <div class="text-text-muted font-bold text-xs">Citizens restricted</div>
+              </div>
+           </div>
+        </section>
+
+        <!-- Content Section -->
+        <section>
+           <h2 class="font-montserrat font-extrabold text-xl mb-6 tracking-tight uppercase">Content & Engagement</h2>
+           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="bg-background-secondary border border-glass-border rounded-[32px] p-8">
+                 <p class="text-text-dim font-bold text-[10px] uppercase tracking-widest mb-4">Recipe Volume</p>
+                 <div class="text-4xl font-montserrat font-extrabold mb-2">{{ stats.content.posts }}</div>
+                 <div class="text-orange font-bold text-xs">+{{ stats.content.newPostsToday }} since midnight</div>
+              </div>
+              <div class="bg-background-secondary border border-glass-border rounded-[32px] p-8">
+                 <p class="text-text-dim font-bold text-[10px] uppercase tracking-widest mb-4">Social Interaction</p>
+                 <div class="text-4xl font-montserrat font-extrabold mb-2">{{ stats.content.comments }}</div>
+                 <div class="text-text-muted font-bold text-xs">{{ (stats.content.comments / stats.content.posts).toFixed(1) }} comments/recipe</div>
+              </div>
+              <div class="bg-background-secondary border border-glass-border rounded-[32px] p-8">
+                 <p class="text-text-dim font-bold text-[10px] uppercase tracking-widest mb-4">Creative Density</p>
+                 <div class="text-4xl font-montserrat font-extrabold mb-2">{{ (stats.content.posts / stats.users.total).toFixed(2) }}</div>
+                 <div class="text-text-muted font-bold text-xs">Recipes per citizen</div>
+              </div>
+           </div>
+        </section>
+
+        <!-- Technical Status -->
+        <div class="bg-orange-soft/20 border border-orange/30 rounded-[40px] p-10 flex flex-col md:flex-row items-center gap-8">
+           <div class="w-20 h-20 bg-orange/20 rounded-full flex items-center justify-center text-3xl shrink-0">📊</div>
+           <div class="flex-1 text-center md:text-left">
+              <h3 class="font-montserrat font-extrabold text-2xl mb-2">Advanced Charts coming soon</h3>
+              <p class="text-text-muted max-w-lg">We're currently building deep-dive visual analytics for trend forecasting, heatmaps, and ingredient correlation matrices. Stay tuned for the next update.</p>
+           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

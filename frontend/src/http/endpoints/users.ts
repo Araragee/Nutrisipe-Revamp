@@ -33,4 +33,9 @@ export const usersApi = {
 
   updateProfile: (data: { displayName?: string; bio?: string; avatarUrl?: string }) =>
     httpClient.put<ApiResponse<User>>('/users/profile', data),
+
+  getSavedPosts: (id: string, page = 1, limit = 20) =>
+    httpClient.get<PaginatedResponse<any>>(`/users/${id}/saved`, {
+      params: { page, limit },
+    }),
 }

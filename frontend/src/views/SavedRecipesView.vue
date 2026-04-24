@@ -1,92 +1,123 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { usersApi } from '@/http/endpoints/users'
 import { useAuthStore } from '@/stores/auth'
-import { usersApi } from '@/api'
-import type { Recipe } from '@/types'
+import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+import PinGrid from '@/components/feed/PinGrid.vue'
+import PinSkeleton from '@/components/feed/PinSkeleton.vue'
+import FeedHeader from '@/components/feed/FeedHeader.vue'
+import RecipeModal from '@/components/feed/RecipeModal.vue'
+import type { Post } from '@/typescript/interface/Post'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { isNearBottom } = useInfiniteScroll()
 
-const recipes = ref<Recipe[]>([])
-const loading = ref(true)
+const posts = ref<Post[]>([])
+const isLoading = ref(true)
+const hasMore = ref(true)
+const page = ref(1)
+const selectedPostId = ref<string | null>(null)
+const showPostModal = ref(false)
 
-const loadSavedRecipes = async () => {
-  if (!authStore.user) return
+function handlePostClick(postId: string) {
+  selectedPostId.value = postId
+  showPostModal.value = true
+}
 
-  loading.value = true
+async function fetchSavedPosts(reset = false) {
+  if (!authStore.user?.id) return
+  if (isLoading.value && !reset) return
+
+  isLoading.value = true
+  if (reset) {
+    page.value = 1
+    posts.value = []
+    hasMore.value = true
+  }
+
   try {
-    const response = await usersApi.getUserSavedRecipes(authStore.user!.id as any)
-    recipes.value = response.data.data
+    const response = await usersApi.getSavedPosts(authStore.user.id, page.value, 20)
+
+    // The endpoint returns Post objects (sometimes nested in a Save object, let's map if needed)
+    // Based on backend usersController.getSavedPostsHandler, it usually returns the posts directly or mapped
+    const newPosts = response.data.data.map((item: any) => item.post || item)
+
+    if (reset) {
+      posts.value = newPosts
+    } else {
+      posts.value.push(...newPosts)
+    }
+    hasMore.value = page.value < response.data.pagination.totalPages
+    page.value++
   } catch (error) {
-    console.error('Failed to load saved recipes:', error)
+    console.error('Failed to load saved posts:', error)
   } finally {
-    loading.value = false
+    isLoading.value = false
   }
 }
 
 onMounted(() => {
-  loadSavedRecipes()
+  if (!authStore.isAuthenticated) {
+    router.push('/login')
+    return
+  }
+  fetchSavedPosts(true)
+})
+
+watch(isNearBottom, (near) => {
+  if (near && !isLoading.value && hasMore.value) {
+    fetchSavedPosts()
+  }
 })
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 py-8">
-    <div class="mb-8">
-      <h1 class="text-heading-2 font-bold text-gray-900 mb-2">Saved Recipes</h1>
-      <p class="text-gray-600">Your collection of saved recipes</p>
-    </div>
+  <div class="saved-recipes-view min-h-screen">
+    <FeedHeader />
 
-    <div v-if="loading" class="text-center py-12">
-      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-base"></div>
-      <p class="text-gray-600 mt-4">Loading saved recipes...</p>
-    </div>
+    <div class="px-8 py-6">
+      <div class="mb-8">
+        <h2 class="font-montserrat font-extrabold text-2xl tracking-tight mb-1">
+          Saved Recipes
+        </h2>
+        <p class="text-text-dim text-sm">Your personal collection of healthy inspirations.</p>
+      </div>
 
-    <div v-else-if="recipes.length === 0" class="text-center py-12 bg-white rounded-xl shadow-sm">
-      <p class="text-gray-600 text-lg">No saved recipes yet</p>
-      <p class="text-gray-500 mt-2">Start exploring and save recipes you love</p>
-      <button
-        @click="router.push('/recipes')"
-        class="mt-4 px-6 py-2 bg-primary-base text-white rounded-lg hover:bg-primary-700 transition-colors"
-      >
-        Browse Recipes
-      </button>
-    </div>
+      <PinGrid
+        v-if="posts.length > 0"
+        :posts="posts"
+        @post-click="handlePostClick"
+      />
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div
-        v-for="recipe in recipes"
-        :key="recipe.id"
-        @click="router.push(`/recipes/${recipe.id}`)"
-        class="bg-white rounded-xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all transform hover:-translate-y-1"
+        v-if="isLoading"
+        class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-4"
       >
-        <div class="aspect-video bg-gray-200 overflow-hidden">
-          <img
-            v-if="recipe.image"
-            :src="`http://localhost:8000/storage/${recipe.image}`"
-            :alt="recipe.title"
-            class="w-full h-full object-cover"
-          />
-        </div>
-        <div class="p-4">
-          <div class="flex items-start justify-between mb-2">
-            <h3 class="font-semibold text-lg text-gray-900 line-clamp-1">{{ recipe.title }}</h3>
-            <span class="px-2 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full whitespace-nowrap ml-2">
-              {{ recipe.category }}
-            </span>
-          </div>
-          <p class="text-gray-600 text-sm line-clamp-2 mb-3">{{ recipe.description }}</p>
-          <div class="flex items-center justify-between text-sm">
-            <div class="flex items-center gap-2 text-gray-700">
-              <span class="font-medium">{{ recipe.user.name }}</span>
-            </div>
-            <div class="flex items-center gap-3 text-gray-500">
-              <span>❤️ {{ recipe.saved_by_count }}</span>
-              <span>💬 {{ recipe.comments_count }}</span>
-            </div>
-          </div>
-        </div>
+        <PinSkeleton v-for="i in 5" :key="i" />
+      </div>
+
+      <div
+        v-if="!isLoading && posts.length === 0"
+        class="flex flex-col items-center justify-center py-24 text-center"
+      >
+        <span class="text-5xl mb-6">🔖</span>
+        <h3 class="text-xl font-bold mb-2">No saved recipes yet</h3>
+        <p class="text-text-dim max-w-xs mx-auto">
+          Tap the heart on any recipe you love to save it to your collection.
+        </p>
+        <router-link to="/" class="mt-6 btn-primary px-8">
+          Discover Recipes
+        </router-link>
       </div>
     </div>
+
+    <!-- Post Detail Modal -->
+    <RecipeModal
+      :post-id="selectedPostId"
+      :show="showPostModal"
+      @close="showPostModal = false"
+    />
   </div>
 </template>
