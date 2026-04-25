@@ -5,10 +5,13 @@ import { prisma } from '../lib/prisma'
 
 export interface AuthRequest extends Request {
   userId?: string
+  user?: any
+  file?: any
+  files?: any
 }
 
 export async function auth(
-  req: Request,
+  req: AuthRequest,
   _res: Response,
   next: NextFunction
 ) {

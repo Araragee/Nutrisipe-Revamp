@@ -1,11 +1,12 @@
 import { Router } from 'express'
-import { auth } from '../middleware/auth'
+import { auth, AuthRequest } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
+import { transformPost } from '../utils/modelTransformer'
 
 const router = Router()
 
 // Search posts, users, and recipes
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, async (req: AuthRequest, res) => {
   try {
     const query = req.query.q as string
     const type = req.query.type as string // 'posts', 'users', 'all'
@@ -30,10 +31,10 @@ router.get('/', auth, async (req, res) => {
         where: {
           isPublic: true,
           OR: [
-            { title: { contains: searchQuery, mode: 'insensitive' } },
-            { description: { contains: searchQuery, mode: 'insensitive' } },
-            { category: { contains: searchQuery, mode: 'insensitive' } },
-            { tags: { has: searchQuery.toLowerCase() } },
+            { title: { contains: searchQuery } },
+            { description: { contains: searchQuery } },
+            { category: { contains: searchQuery } },
+            { tags: { contains: searchQuery.toLowerCase() } },
           ],
         },
         include: {
@@ -62,7 +63,7 @@ router.get('/', auth, async (req, res) => {
       })
 
       results.posts = posts.map(post => ({
-        ...post,
+        ...transformPost(post),
         isLiked: false, // Will be checked separately if needed
         isSaved: false,
       }))
@@ -75,8 +76,8 @@ router.get('/', auth, async (req, res) => {
           isActive: true,
           isBanned: false,
           OR: [
-            { username: { contains: searchQuery, mode: 'insensitive' } },
-            { displayName: { contains: searchQuery, mode: 'insensitive' } },
+            { username: { contains: searchQuery } },
+            { displayName: { contains: searchQuery } },
           ],
         },
         select: {
@@ -110,10 +111,10 @@ router.get('/', auth, async (req, res) => {
         where: {
           isPublic: true,
           OR: [
-            { title: { contains: searchQuery, mode: 'insensitive' } },
-            { description: { contains: searchQuery, mode: 'insensitive' } },
-            { category: { contains: searchQuery, mode: 'insensitive' } },
-            { tags: { has: searchQuery.toLowerCase() } },
+            { title: { contains: searchQuery } },
+            { description: { contains: searchQuery } },
+            { category: { contains: searchQuery } },
+            { tags: { contains: searchQuery.toLowerCase() } },
           ],
         },
       }) : results.posts.length,
@@ -122,8 +123,8 @@ router.get('/', auth, async (req, res) => {
           isActive: true,
           isBanned: false,
           OR: [
-            { username: { contains: searchQuery, mode: 'insensitive' } },
-            { displayName: { contains: searchQuery, mode: 'insensitive' } },
+            { username: { contains: searchQuery } },
+            { displayName: { contains: searchQuery } },
           ],
         },
       }) : results.users.length,
@@ -146,7 +147,7 @@ router.get('/', auth, async (req, res) => {
 })
 
 // Get trending/popular posts
-router.get('/trending', auth, async (req, res) => {
+router.get('/trending', auth, async (req: AuthRequest, res) => {
   try {
     const period = req.query.period as string || '7days' // 24h, 7days, 30days, all
     const page = parseInt(req.query.page as string) || 1
@@ -202,7 +203,7 @@ router.get('/trending', auth, async (req, res) => {
     })
 
     res.json({
-      data: posts,
+      data: posts.map(post => transformPost(post)),
       pagination: {
         page,
         limit,
@@ -217,7 +218,7 @@ router.get('/trending', auth, async (req, res) => {
 })
 
 // Get posts by category
-router.get('/category/:category', auth, async (req, res) => {
+router.get('/category/:category', auth, async (req: AuthRequest, res) => {
   try {
     const { category } = req.params
     const page = parseInt(req.query.page as string) || 1
@@ -228,7 +229,6 @@ router.get('/category/:category', auth, async (req, res) => {
         isPublic: true,
         category: {
           equals: category,
-          mode: 'insensitive',
         },
       },
       include: {
@@ -258,13 +258,12 @@ router.get('/category/:category', auth, async (req, res) => {
         isPublic: true,
         category: {
           equals: category,
-          mode: 'insensitive',
         },
       },
     })
 
     res.json({
-      data: posts,
+      data: posts.map(post => transformPost(post)),
       pagination: {
         page,
         limit,
@@ -279,7 +278,7 @@ router.get('/category/:category', auth, async (req, res) => {
 })
 
 // Get all unique categories
-router.get('/categories', auth, async (_req, res) => {
+router.get('/categories', auth, async (_req: AuthRequest, res) => {
   try {
     const categories = await prisma.post.groupBy({
       by: ['category'],
@@ -309,7 +308,7 @@ router.get('/categories', auth, async (_req, res) => {
 })
 
 // Get posts by tag
-router.get('/tag/:tag', auth, async (req, res) => {
+router.get('/tag/:tag', auth, async (req: AuthRequest, res) => {
   try {
     const { tag } = req.params
     const page = parseInt(req.query.page as string) || 1
@@ -319,7 +318,7 @@ router.get('/tag/:tag', auth, async (req, res) => {
       where: {
         isPublic: true,
         tags: {
-          has: tag.toLowerCase(),
+          contains: tag.toLowerCase(),
         },
       },
       include: {
@@ -348,13 +347,13 @@ router.get('/tag/:tag', auth, async (req, res) => {
       where: {
         isPublic: true,
         tags: {
-          has: tag.toLowerCase(),
+          contains: tag.toLowerCase(),
         },
       },
     })
 
     res.json({
-      data: posts,
+      data: posts.map(post => transformPost(post)),
       pagination: {
         page,
         limit,

@@ -1,11 +1,11 @@
 import { Router } from 'express'
-import { auth } from '../middleware/auth'
+import { auth, AuthRequest } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
 
 const router = Router()
 
 // Get all collections for the current user
-router.get('/my-collections', auth, async (req, res) => {
+router.get('/my-collections', auth, async (req: AuthRequest, res) => {
   try {
     const collections = await prisma.collection.findMany({
       where: {
@@ -45,7 +45,7 @@ router.get('/my-collections', auth, async (req, res) => {
 })
 
 // Get collections for a specific user (public only)
-router.get('/user/:userId', auth, async (req, res) => {
+router.get('/user/:userId', auth, async (req: AuthRequest, res) => {
   try {
     const { userId } = req.params
     const isOwnProfile = userId === req.user!.id
@@ -89,7 +89,7 @@ router.get('/user/:userId', auth, async (req, res) => {
 })
 
 // Get a single collection with all posts
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params
     const page = parseInt(req.query.page as string) || 1
@@ -180,7 +180,7 @@ router.get('/:id', auth, async (req, res) => {
 })
 
 // Create a new collection
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, async (req: AuthRequest, res) => {
   try {
     const { name, description, isPublic } = req.body
 
@@ -218,7 +218,7 @@ router.post('/', auth, async (req, res) => {
 })
 
 // Update a collection
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params
     const { name, description, isPublic } = req.body
@@ -261,7 +261,7 @@ router.put('/:id', auth, async (req, res) => {
 })
 
 // Delete a collection
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params
 
@@ -291,7 +291,7 @@ router.delete('/:id', auth, async (req, res) => {
 })
 
 // Add a post to a collection
-router.post('/:id/posts/:postId', auth, async (req, res) => {
+router.post('/:id/posts/:postId', auth, async (req: AuthRequest, res) => {
   try {
     const { id, postId } = req.params
 
@@ -349,7 +349,7 @@ router.post('/:id/posts/:postId', auth, async (req, res) => {
 })
 
 // Remove a post from a collection
-router.delete('/:id/posts/:postId', auth, async (req, res) => {
+router.delete('/:id/posts/:postId', auth, async (req: AuthRequest, res) => {
   try {
     const { id, postId } = req.params
 

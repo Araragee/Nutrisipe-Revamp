@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma'
 import { AppError } from '../middleware/errorHandler'
+import { transformPost } from '../utils/modelTransformer'
 import { createNotification } from './notificationService'
 
 interface ForkRecipeData {
@@ -54,7 +55,7 @@ export async function forkRecipe(
         description,
         imageUrl: originalPost.imageUrl, // Copy original image by default
         category: originalPost.category,
-        tags: originalPost.tags,
+        tags: JSON.stringify(originalPost.tags || []),
         isVariation: true,
         isPublic: true
       }
@@ -69,9 +70,9 @@ export async function forkRecipe(
         cookTime: recipeData.cookTime ?? originalPost.recipe!.cookTime,
         totalTime: recipeData.totalTime ?? originalPost.recipe!.totalTime,
         difficulty: recipeData.difficulty ?? originalPost.recipe!.difficulty,
-        ingredients: recipeData.ingredients ?? originalPost.recipe!.ingredients,
-        instructions: recipeData.instructions ?? originalPost.recipe!.instructions,
-        nutrition: recipeData.nutrition ?? originalPost.recipe!.nutrition
+        ingredients: JSON.stringify(recipeData.ingredients ?? originalPost.recipe!.ingredients ?? []),
+        instructions: JSON.stringify(recipeData.instructions ?? originalPost.recipe!.instructions ?? []),
+        nutrition: JSON.stringify(recipeData.nutrition ?? originalPost.recipe!.nutrition ?? null)
       }
     })
 
@@ -96,8 +97,13 @@ export async function forkRecipe(
     return {
       variation,
       variationPost: {
-        ...variationPost,
-        recipe: variationRecipe
+        ...transformPost(variationPost),
+        recipe: {
+          ...variationRecipe,
+          ingredients: JSON.parse(variationRecipe.ingredients as string),
+          instructions: JSON.parse(variationRecipe.instructions as string),
+          nutrition: variationRecipe.nutrition ? JSON.parse(variationRecipe.nutrition as string) : null
+        }
       }
     }
   })
@@ -165,7 +171,18 @@ export async function getVariations(
   ])
 
   return {
-    variations,
+    variations: variations.map(v => ({
+      ...v,
+      variationPost: {
+        ...transformPost(v.variationPost),
+        recipe: v.variationPost.recipe ? {
+          ...v.variationPost.recipe,
+          ingredients: JSON.parse(v.variationPost.recipe.ingredients as string),
+          instructions: JSON.parse(v.variationPost.recipe.instructions as string),
+          nutrition: v.variationPost.recipe.nutrition ? JSON.parse(v.variationPost.recipe.nutrition as string) : null
+        } : null
+      }
+    })),
     pagination: {
       page,
       limit,
@@ -202,7 +219,15 @@ export async function getOriginalRecipe(postId: string) {
 
   return {
     variation,
-    originalPost: variation.originalPost
+    originalPost: {
+      ...transformPost(variation.originalPost),
+      recipe: variation.originalPost.recipe ? {
+        ...variation.originalPost.recipe,
+        ingredients: JSON.parse(variation.originalPost.recipe.ingredients as string),
+        instructions: JSON.parse(variation.originalPost.recipe.instructions as string),
+        nutrition: variation.originalPost.recipe.nutrition ? JSON.parse(variation.originalPost.recipe.nutrition as string) : null
+      } : null
+    }
   }
 }
 
@@ -247,7 +272,7 @@ export async function getVariationChain(postId: string) {
   // Traverse up to find the root
   while (currentPost.variationOf) {
     chain.unshift({
-      post: currentPost.variationOf.originalPost,
+      post: transformPost(currentPost.variationOf.originalPost),
       variation: currentPost.variationOf
     })
 

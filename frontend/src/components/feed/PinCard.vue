@@ -1,65 +1,66 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { socialApi } from '@/http/endpoints/social'
-import { useFeedStore } from '@/stores/feed'
-import { useUsersStore } from '@/stores/users'
-import { useAuthStore } from '@/stores/auth'
-import { useUiStore } from '@/stores/ui'
-import UserAvatar from '@/components/user/UserAvatar.vue'
-import { formatNumber } from '@/utils/format'
-import type { Post } from '@/typescript/interface/Post'
+import { ref, computed } from "vue";
+import { socialApi } from "@/http/endpoints/social";
+import { useFeedStore } from "@/stores/feed";
+import { useUsersStore } from "@/stores/users";
+import { useAuthStore } from "@/stores/auth";
+import { useUiStore } from "@/stores/ui";
+import UserAvatar from "@/components/user/UserAvatar.vue";
+import { formatNumber } from "@/utils/format";
+import type { Post } from "@/typescript/interface/Post";
 
 interface Props {
-  post: Post
+  post: Post;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  click: [postId: string]
-}>()
+  click: [postId: string];
+}>();
 
-const feedStore = useFeedStore()
-const usersStore = useUsersStore()
-const authStore = useAuthStore()
-const uiStore = useUiStore()
+const feedStore = useFeedStore();
+const usersStore = useUsersStore();
+const authStore = useAuthStore();
+const uiStore = useUiStore();
 
 async function toggleLike(event: Event) {
-  event.stopPropagation()
-  if (!authStore.isAuthenticated) return
+  event.stopPropagation();
+  if (!authStore.isAuthenticated) return;
 
-  const wasLiked = props.post.isLiked
-  const previousCount = props.post.likeCount
+  const wasLiked = props.post.isLiked;
+  const previousCount = props.post.likeCount;
 
   feedStore.updatePostEngagement(props.post.id, {
     isLiked: !wasLiked,
     likeCount: wasLiked ? Math.max(0, previousCount - 1) : previousCount + 1,
-  })
+  });
 
   try {
     if (wasLiked) {
-      await socialApi.unlikePost(props.post.id)
+      await socialApi.unlikePost(props.post.id);
     } else {
-      await socialApi.likePost(props.post.id)
+      await socialApi.likePost(props.post.id);
     }
   } catch (error) {
     feedStore.updatePostEngagement(props.post.id, {
       isLiked: wasLiked,
       likeCount: previousCount,
-    })
-    uiStore.showToast('Failed to update like', 'error')
+    });
+    uiStore.showToast("Failed to update like", "error");
   }
 }
 
 const recipeImage = computed(() => {
-  if (!props.post.imageUrl) return `https://picsum.photos/400/600?random=${props.post.id}`
-  if (props.post.imageUrl.startsWith('http')) return props.post.imageUrl
-  return `http://localhost:3000/${props.post.imageUrl}`
-})
+  if (!props.post.imageUrl)
+    return `https://picsum.photos/400/600?random=${props.post.id}`;
+  if (props.post.imageUrl.startsWith("http")) return props.post.imageUrl;
+  return `http://localhost:3001/${props.post.imageUrl}`;
+});
 
 const tags = computed(() => {
-  return props.post.tags || ['Healthy', 'Nutrisipe']
-})
+  return props.post.tags || ["Healthy", "Nutrisipe"];
+});
 </script>
 
 <template>
@@ -78,9 +79,12 @@ const tags = computed(() => {
     <button
       @click="toggleLike"
       class="card-heart-btn absolute top-3 right-3 z-10 w-9.5 h-9.5 rounded-full bg-black/45 backdrop-blur-md border border-white/20 flex items-center justify-center cursor-pointer transition-all duration-revamp group-hover:opacity-100 group-hover:translate-y-0 opacity-0 -translate-y-1 scale-90"
-      :class="{ 'liked bg-orange/85 !opacity-100 !translate-y-0 !scale-100': post.isLiked }"
+      :class="{
+        'liked bg-orange/85 !opacity-100 !translate-y-0 !scale-100':
+          post.isLiked,
+      }"
     >
-      <span class="text-white text-base">{{ post.isLiked ? '❤️' : '🤍' }}</span>
+      <span class="text-white text-base">{{ post.isLiked ? "❤️" : "🤍" }}</span>
     </button>
 
     <div
@@ -91,7 +95,9 @@ const tags = computed(() => {
     </div>
 
     <!-- Bottom Overlay -->
-    <div class="card-overlay absolute bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none">
+    <div
+      class="card-overlay absolute bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none"
+    >
       <div class="card-tags flex gap-1.5 flex-wrap mb-2">
         <span
           v-for="tag in tags.slice(0, 2)"
@@ -102,13 +108,21 @@ const tags = computed(() => {
         </span>
       </div>
 
-      <h3 class="card-title font-montserrat font-extrabold text-sm leading-snug text-white drop-shadow-md mb-2.5">
+      <h3
+        class="card-title font-montserrat font-extrabold text-sm leading-snug text-white drop-shadow-md mb-2.5"
+      >
         {{ post.title }}
       </h3>
 
       <div class="card-author-row flex items-center gap-2 pointer-events-auto">
-        <UserAvatar :user="post.user" size="sm" class="!w-6.5 !h-6.5 border-1.5 border-white/50" />
-        <span class="card-author-name text-xs font-semibold text-white/90 truncate">
+        <UserAvatar
+          :user="post.user"
+          size="sm"
+          class="!w-6.5 !h-6.5 border-1.5 border-white/50"
+        />
+        <span
+          class="card-author-name text-xs font-semibold text-white/90 truncate"
+        >
           {{ post.user.displayName }}
         </span>
         <span class="card-time ml-auto text-[11px] font-medium text-white/65">

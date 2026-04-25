@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma'
 import { AppError } from '../middleware/errorHandler'
+import { transformPost } from '../utils/modelTransformer'
 
 interface CreatePostData {
   title: string
@@ -108,11 +109,14 @@ export async function getFeed(userId: string, page: number = 1, limit: number = 
   const likedPostIds = new Set(likes.map(l => l.postId))
   const savedPostIds = new Set(saves.map(s => s.postId))
 
-  const postsWithEngagement = allPosts.map(post => ({
-    ...post,
-    isLiked: likedPostIds.has(post.id),
-    isSaved: savedPostIds.has(post.id),
-  }))
+  const postsWithEngagement = allPosts.map(post => {
+    const transformed = transformPost(post)
+    return {
+      ...transformed,
+      isLiked: likedPostIds.has(post.id),
+      isSaved: savedPostIds.has(post.id),
+    }
+  })
 
   const total = await prisma.post.count({
     where: { isPublic: true },
@@ -171,13 +175,13 @@ export async function getPostById(postId: string, userId?: string) {
     ])
 
     return {
-      ...post,
+      ...transformPost(post),
       isLiked: !!isLiked,
       isSaved: !!isSaved,
     }
   }
 
-  return post
+  return transformPost(post)
 }
 
 export async function getPostsByUser(targetUserId: string, currentUserId: string | undefined, page: number = 1, limit: number = 20) {
@@ -226,11 +230,16 @@ export async function getPostsByUser(targetUserId: string, currentUserId: string
     const likedPostIds = new Set(likes.map(l => l.postId))
     const savedPostIds = new Set(saves.map(s => s.postId))
 
-    postsWithEngagement = posts.map(post => ({
-      ...post,
-      isLiked: likedPostIds.has(post.id),
-      isSaved: savedPostIds.has(post.id),
-    }))
+    postsWithEngagement = posts.map(post => {
+      const transformed = transformPost(post)
+      return {
+        ...transformed,
+        isLiked: likedPostIds.has(post.id),
+        isSaved: savedPostIds.has(post.id),
+      }
+    })
+  } else {
+    postsWithEngagement = posts.map(post => transformPost(post))
   }
 
   const total = await prisma.post.count({
@@ -261,7 +270,7 @@ export async function createPost(userId: string, data: CreatePostData) {
       description: postData.description,
       imageUrl: postData.imageUrl,
       category: postData.category,
-      tags: postData.tags,
+      tags: JSON.stringify(postData.tags || []),
       isPublic: postData.isPublic ?? true,
       recipe: recipe ? {
         create: {
@@ -269,9 +278,9 @@ export async function createPost(userId: string, data: CreatePostData) {
           prepTime: recipe.prepTime,
           cookTime: recipe.cookTime,
           difficulty: recipe.difficulty,
-          ingredients: recipe.ingredients,
-          instructions: recipe.instructions,
-          nutrition: recipe.nutrition,
+          ingredients: JSON.stringify(recipe.ingredients || []),
+          instructions: JSON.stringify(recipe.instructions || []),
+          nutrition: recipe.nutrition ? JSON.stringify(recipe.nutrition) : undefined,
         }
       } : undefined
     },
@@ -288,7 +297,7 @@ export async function createPost(userId: string, data: CreatePostData) {
     },
   })
 
-  return post
+  return transformPost(post)
 }
 
 export async function updatePost(postId: string, userId: string, data: Partial<CreatePostData>) {
@@ -310,7 +319,7 @@ export async function updatePost(postId: string, userId: string, data: Partial<C
   const updatedPost = await prisma.post.update({
     where: { id: postId },
     data: {
-      ...postData,
+      tags: postData.tags ? JSON.stringify(postData.tags) : undefined,
       recipe: recipe ? {
         upsert: {
           create: {
@@ -318,18 +327,18 @@ export async function updatePost(postId: string, userId: string, data: Partial<C
             prepTime: recipe.prepTime,
             cookTime: recipe.cookTime,
             difficulty: recipe.difficulty,
-            ingredients: recipe.ingredients,
-            instructions: recipe.instructions,
-            nutrition: recipe.nutrition,
+            ingredients: JSON.stringify(recipe.ingredients || []),
+            instructions: JSON.stringify(recipe.instructions || []),
+            nutrition: recipe.nutrition ? JSON.stringify(recipe.nutrition) : undefined,
           },
           update: {
             servings: recipe.servings,
             prepTime: recipe.prepTime,
             cookTime: recipe.cookTime,
             difficulty: recipe.difficulty,
-            ingredients: recipe.ingredients,
-            instructions: recipe.instructions,
-            nutrition: recipe.nutrition,
+            ingredients: recipe.ingredients ? JSON.stringify(recipe.ingredients) : undefined,
+            instructions: recipe.instructions ? JSON.stringify(recipe.instructions) : undefined,
+            nutrition: recipe.nutrition ? JSON.stringify(recipe.nutrition) : undefined,
           }
         }
       } : undefined
@@ -347,7 +356,7 @@ export async function updatePost(postId: string, userId: string, data: Partial<C
     },
   })
 
-  return updatedPost
+  return transformPost(updatedPost)
 }
 
 export async function deletePost(postId: string, userId: string) {
@@ -382,9 +391,9 @@ export async function searchPosts(
   const where: any = {
     isPublic: true,
     OR: [
-      { title: { contains: query, mode: 'insensitive' } },
-      { description: { contains: query, mode: 'insensitive' } },
-      { tags: { has: query.toLowerCase() } },
+      { title: { contains: query } },
+      { description: { contains: query } },
+      { tags: { contains: query.toLowerCase() } },
     ],
   }
 
@@ -427,13 +436,16 @@ export async function searchPosts(
           }),
         ])
 
+        const transformed = transformPost(post)
         return {
-          ...post,
+          ...transformed,
           isLiked: !!isLiked,
           isSaved: !!isSaved,
         }
       })
     )
+  } else {
+    postsWithEngagement = posts.map(post => transformPost(post))
   }
 
   const total = await prisma.post.count({ where })

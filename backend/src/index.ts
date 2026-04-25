@@ -43,6 +43,21 @@ app.use(limiter)
 app.use(express.json())
 app.use('/uploads', express.static('uploads'))
 
+app.get('/', (_req, res) => {
+  res.json({
+    message: 'Nutrisipe API is running',
+    version: '1.0.0',
+    docs: '/health',
+    endpoints: [
+      '/api/auth',
+      '/api/posts',
+      '/api/users',
+      '/api/search',
+      '/api/feed'
+    ]
+  })
+})
+
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })

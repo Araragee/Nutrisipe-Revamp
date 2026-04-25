@@ -86,7 +86,7 @@ export async function uploadVideoWithThumbnailHandler(
   next: NextFunction
 ) {
   try {
-    const files = req.files as { [fieldname: string]: Express.Multer.File[] }
+    const files = req.files as { [fieldname: string]: any[] }
 
     if (!files.video || files.video.length === 0) {
       throw new AppError(400, 'No video file provided')
@@ -128,7 +128,7 @@ export async function uploadVideoWithThumbnailHandler(
     })
   } catch (error) {
     // Clean up temp files if they exist
-    const files = req.files as { [fieldname: string]: Express.Multer.File[] }
+    const files = req.files as { [fieldname: string]: any[] }
     if (files) {
       const allFiles = [
         ...(files.video || []),

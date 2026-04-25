@@ -3,29 +3,23 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
-}
-
-enum UserRole {
-  USER
-  MODERATOR
-  ADMIN
 }
 
 model User {
   id              String    @id @default(uuid())
-  username        String    @unique @db.VarChar(50)
-  email           String    @unique @db.VarChar(255)
+  username        String    @unique
+  email           String    @unique
   passwordHash    String    @map("password_hash")
-  displayName     String    @map("display_name") @db.VarChar(100)
+  displayName     String    @map("display_name")
   avatarUrl       String?   @map("avatar_url")
-  bio             String?   @db.Text
-  role            UserRole  @default(USER)
+  bio             String?
+  role            String    @default("USER")
   isActive        Boolean   @default(true) @map("is_active")
   isBanned        Boolean   @default(false) @map("is_banned")
   bannedAt        DateTime? @map("banned_at")
-  banReason       String?   @map("ban_reason") @db.Text
+  banReason       String?   @map("ban_reason")
   followerCount   Int       @default(0) @map("follower_count")
   followingCount  Int       @default(0) @map("following_count")
   createdAt       DateTime  @default(now()) @map("created_at")
@@ -61,14 +55,14 @@ model User {
 model Post {
   id            String    @id @default(uuid())
   userId        String    @map("user_id")
-  title         String    @db.VarChar(255)
-  description   String?   @db.Text
+  title         String
+  description   String?
   imageUrl      String    @map("image_url")
   videoUrl      String?   @map("video_url")
   thumbnailUrl  String?   @map("thumbnail_url")
   videoDuration Int?      @map("video_duration")
-  category      String    @db.VarChar(50)
-  tags          String[]
+  category      String
+  tags          String    @default("[]")
   likeCount     Int       @default(0) @map("like_count")
   saveCount     Int       @default(0) @map("save_count")
   commentCount  Int       @default(0) @map("comment_count")
@@ -95,7 +89,6 @@ model Post {
   @@index([userId])
   @@index([createdAt])
   @@index([category])
-  @@index([tags], type: Gin)
 }
 
 model Recipe {
@@ -105,10 +98,10 @@ model Recipe {
   prepTime        Int?      @map("prep_time")
   cookTime        Int?      @map("cook_time")
   totalTime       Int?      @map("total_time")
-  difficulty      String?   @db.VarChar(20)
-  ingredients     Json
-  instructions    Json
-  nutrition       Json?
+  difficulty      String?
+  ingredients     String    @default("[]")
+  instructions    String    @default("[]")
+  nutrition       String?
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
@@ -167,7 +160,7 @@ model Comment {
   id        String    @id @default(uuid())
   userId    String    @map("user_id")
   postId    String    @map("post_id")
-  content   String    @db.Text
+  content   String
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
 
@@ -186,7 +179,7 @@ model Notification {
   id         String    @id @default(uuid())
   userId     String    @map("user_id")
   actorId    String    @map("actor_id")
-  type       String    @db.VarChar(50)
+  type       String
   postId     String?   @map("post_id")
   commentId  String?   @map("comment_id")
   isRead     Boolean   @default(false) @map("is_read")
@@ -202,40 +195,18 @@ model Notification {
   @@index([isRead])
 }
 
-enum ReportStatus {
-  PENDING
-  REVIEWING
-  RESOLVED
-  DISMISSED
-}
-
-enum ReportType {
-  POST
-  COMMENT
-  USER
-}
-
-enum ReportReason {
-  SPAM
-  HARASSMENT
-  INAPPROPRIATE_CONTENT
-  MISINFORMATION
-  COPYRIGHT
-  OTHER
-}
-
 model Report {
   id             String       @id @default(uuid())
   reporterId     String       @map("reporter_id")
   reportedUserId String?      @map("reported_user_id")
   postId         String?      @map("post_id")
   commentId      String?      @map("comment_id")
-  type           ReportType
-  reason         ReportReason
-  description    String?      @db.Text
-  status         ReportStatus @default(PENDING)
+  type           String
+  reason         String
+  description    String?
+  status         String       @default("PENDING")
   moderatorId    String?      @map("moderator_id")
-  moderatorNote  String?      @map("moderator_note") @db.Text
+  moderatorNote  String?      @map("moderator_note")
   resolvedAt     DateTime?    @map("resolved_at")
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
@@ -257,8 +228,8 @@ model Report {
 model Collection {
   id          String   @id @default(uuid())
   userId      String   @map("user_id")
-  name        String   @db.VarChar(100)
-  description String?  @db.Text
+  name        String
+  description String?
   isPublic    Boolean  @default(false) @map("is_public")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -286,7 +257,6 @@ model CollectionPost {
   @@index([postId])
 }
 
-// Direct Messaging Models
 model Conversation {
   id              String    @id @default(uuid())
   user1Id         String    @map("user1_id")
@@ -313,7 +283,7 @@ model Message {
   conversationId String       @map("conversation_id")
   senderId       String       @map("sender_id")
   recipientId    String       @map("recipient_id")
-  content        String       @db.Text
+  content        String
   isRead         Boolean      @default(false) @map("is_read")
   readAt         DateTime?    @map("read_at")
   createdAt      DateTime     @default(now()) @map("created_at")
@@ -331,17 +301,11 @@ model Message {
   @@index([isRead])
 }
 
-// Mentions Model
-enum MentionType {
-  POST
-  COMMENT
-}
-
 model Mention {
   id            String      @id @default(uuid())
   mentionedById String      @map("mentioned_by_id")
   mentionedId   String      @map("mentioned_id")
-  type          MentionType
+  type          String
   postId        String?     @map("post_id")
   commentId     String?     @map("comment_id")
   createdAt     DateTime    @default(now()) @map("created_at")
@@ -358,7 +322,6 @@ model Mention {
   @@index([createdAt])
 }
 
-// User Presence Model
 model UserPresence {
   userId       String   @id @map("user_id")
   isOnline     Boolean  @default(false) @map("is_online")
@@ -373,13 +336,12 @@ model UserPresence {
   @@index([lastSeenAt])
 }
 
-// Recipe Rating Model
 model Rating {
   id        String   @id @default(uuid())
   userId    String   @map("user_id")
   postId    String   @map("post_id")
   rating    Int      // 1-5 stars
-  review    String?  @db.Text
+  review    String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -393,13 +355,12 @@ model Rating {
   @@index([createdAt])
 }
 
-// Recipe Variation Model (Fork)
 model RecipeVariation {
   id              String   @id @default(uuid())
   originalPostId  String   @map("original_post_id")
   variationPostId String   @unique @map("variation_post_id")
   userId          String   @map("user_id")
-  description     String?  @db.Text
+  description     String?
   createdAt       DateTime @default(now()) @map("created_at")
 
   originalPost    Post     @relation("OriginalPost", fields: [originalPostId], references: [id], onDelete: Cascade)

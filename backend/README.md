@@ -49,7 +49,7 @@ This is the Node.js/Express API for the Nutrisipe platform. It uses Prisma ORM w
 
 ## API Documentation
 
-The server typically runs on `http://localhost:3000`. You can explore the database via Prisma Studio:
+The server typically runs on `http://localhost:3001`. You can explore the database via Prisma Studio:
 ```bash
 npm run prisma:studio
 ```

@@ -79,38 +79,45 @@ async function main() {
   const usersData = []
   
   // Fixed Admin
-  usersData.push({
-    id: randomUUID(),
-    username: 'admin',
-    email: 'admin@nutrisipe.com',
-    passwordHash,
-    displayName: 'Nutrisipe Admin',
-    avatarUrl: 'https://i.pravatar.cc/150?u=admin',
-    bio: 'Nutrisipe System Administrator',
+  const adminId = randomUUID()
+  await prisma.user.create({
+    data: {
+      id: adminId,
+      username: 'admin',
+      email: 'admin@nutrisipe.com',
+      passwordHash,
+      displayName: 'Nutrisipe Admin',
+      avatarUrl: 'https://i.pravatar.cc/150?u=admin',
+      bio: 'Nutrisipe System Administrator',
+      role: 'ADMIN',
+    }
   })
+  usersData.push({ id: adminId, username: 'admin' })
 
   for (let i = 0; i < 49; i++) {
     const firstName = randomElement(FIRST_NAMES)
     const lastName = randomElement(LAST_NAMES)
     const username = `${firstName.toLowerCase()}${lastName.toLowerCase()}${i + 1}`
-    usersData.push({
-      id: randomUUID(),
-      username,
-      email: `${username}@nutrisipe.com`,
-      passwordHash,
-      displayName: `${firstName} ${lastName}`,
-      avatarUrl: `https://i.pravatar.cc/150?u=${username}`,
-      bio: i % 3 === 0 ? 'Food enthusiast and home cook.' : null,
+    const userId = randomUUID()
+    await prisma.user.create({
+      data: {
+        id: userId,
+        username,
+        email: `${username}@nutrisipe.com`,
+        passwordHash,
+        displayName: `${firstName} ${lastName}`,
+        avatarUrl: `https://i.pravatar.cc/150?u=${username}`,
+        bio: i % 3 === 0 ? 'Food enthusiast and home cook.' : null,
+        role: 'USER',
+      }
     })
+    usersData.push({ id: userId, username })
   }
 
-  await prisma.user.createMany({ data: usersData })
   console.log(`✅ Created ${usersData.length} users`)
 
   console.log('📝 Preparing 150 posts and recipes...')
-  const postsData = []
-  const recipesData = []
-
+  
   for (let i = 0; i < 150; i++) {
     const postId = randomUUID()
     const user = randomElement(usersData)
@@ -118,66 +125,72 @@ async function main() {
     const category = isRecipe ? POST_CATEGORIES.RECIPE : POST_CATEGORIES.MEAL_PHOTO
     const title = isRecipe ? randomElement(RECIPE_TITLES) : 'Delicious Meal'
 
-    postsData.push({
-      id: postId,
-      userId: user.id,
-      title,
-      description: 'A wonderful meal shared on Nutrisipe.',
-      imageUrl: `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80&sig=${i}`,
-      category,
-      tags: randomElements(TAGS, randomInt(2, 4)),
-      createdAt: new Date(Date.now() - randomInt(1, 90) * 24 * 60 * 60 * 1000),
+    await prisma.post.create({
+      data: {
+        id: postId,
+        userId: user.id,
+        title,
+        description: 'A wonderful meal shared on Nutrisipe.',
+        imageUrl: `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80&sig=${i}`,
+        category,
+        tags: JSON.stringify(randomElements(TAGS, randomInt(2, 4))),
+        createdAt: new Date(Date.now() - randomInt(1, 90) * 24 * 60 * 60 * 1000),
+        recipe: isRecipe ? {
+          create: {
+            servings: randomInt(1, 4),
+            prepTime: randomInt(5, 20),
+            cookTime: randomInt(10, 45),
+            difficulty: randomElement(['Easy', 'Medium']),
+            ingredients: JSON.stringify([
+              { name: 'Fresh Ingredients', qty: 'as needed' },
+              { name: 'Olive Oil', qty: '2 tbsp' }
+            ]),
+            instructions: JSON.stringify([
+              { step: 1, text: 'Clean and prep all ingredients.' },
+              { step: 2, text: 'Cook thoroughly and enjoy!' }
+            ]),
+            nutrition: JSON.stringify({
+              calories: randomInt(300, 600).toString(),
+              protein: randomInt(15, 30).toString(),
+              carbs: randomInt(30, 60).toString(),
+              fat: randomInt(10, 25).toString()
+            })
+          }
+        } : undefined
+      }
     })
-
-    if (isRecipe) {
-      recipesData.push({
-        id: randomUUID(),
-        postId,
-        servings: randomInt(1, 4),
-        prepTime: randomInt(5, 20),
-        cookTime: randomInt(10, 45),
-        difficulty: randomElement(['Easy', 'Medium']),
-        ingredients: [
-          { name: 'Fresh Ingredients', qty: 'as needed' },
-          { name: 'Olive Oil', qty: '2 tbsp' }
-        ],
-        instructions: [
-          { step: 1, text: 'Clean and prep all ingredients.' },
-          { step: 2, text: 'Cook thoroughly and enjoy!' }
-        ],
-        nutrition: {
-          calories: randomInt(300, 600).toString(),
-          protein: randomInt(15, 30).toString(),
-          carbs: randomInt(30, 60).toString(),
-          fat: randomInt(10, 25).toString()
-        }
-      })
-    }
   }
-
-  await prisma.post.createMany({ data: postsData })
-  await prisma.recipe.createMany({ data: recipesData })
-  console.log(`✅ Created ${postsData.length} posts and ${recipesData.length} recipes`)
+  
+  console.log(`✅ Created 150 posts and recipes`)
 
   console.log('🤝 Creating follows...')
-  const followsData = []
   for (const user of usersData) {
     const targets = randomElements(usersData.filter(u => u.id !== user.id), randomInt(3, 8))
     for (const target of targets) {
-      followsData.push({ followerId: user.id, followingId: target.id })
+      try {
+        await prisma.follow.create({
+          data: { followerId: user.id, followingId: target.id }
+        })
+      } catch (e) {
+        // Skip duplicates
+      }
     }
   }
-  await prisma.follow.createMany({ data: followsData, skipDuplicates: true })
 
   console.log('❤️ Creating engagement...')
-  const likesData = []
-  for (const post of postsData) {
-    const likers = randomElements(usersData, randomInt(5, 20))
-    for (const liker of likers) {
-      likesData.push({ userId: liker.id, postId: post.id })
-    }
+  const allPosts = await prisma.post.findMany({ select: { id: true } })
+  for (const user of usersData) {
+      const randomPosts = randomElements(allPosts, randomInt(5, 15))
+      for (const post of randomPosts) {
+          try {
+              await prisma.like.create({
+                  data: { userId: user.id, postId: post.id }
+              })
+          } catch (e) {
+              // Skip duplicates
+          }
+      }
   }
-  await prisma.like.createMany({ data: likesData, skipDuplicates: true })
 
   console.log('\n🎉 Seed completed successfully!')
   console.log(`\n🔑 Login with: admin@nutrisipe.com / password123`)

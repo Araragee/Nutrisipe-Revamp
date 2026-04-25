@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma'
 import { AppError } from '../middleware/errorHandler'
+import { transformPost } from '../utils/modelTransformer'
 import { createNotification } from './notificationService'
 
 interface CreateRatingData {
@@ -208,7 +209,10 @@ export async function getUserRatings(
   ])
 
   return {
-    ratings,
+    ratings: ratings.map(r => ({
+      ...r,
+      post: transformPost(r.post)
+    })),
     pagination: {
       page,
       limit,

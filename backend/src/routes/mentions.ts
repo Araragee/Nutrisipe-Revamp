@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { authenticate } from '../middleware/auth';
+import { authenticate, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -36,8 +36,7 @@ export async function processMentions(
   const users = await prisma.user.findMany({
     where: {
       username: {
-        in: usernames,
-        mode: 'insensitive' // Case-insensitive matching
+        in: usernames
       },
       isActive: true // Only mention active users
     },
@@ -85,7 +84,7 @@ export async function processMentions(
 }
 
 // Get all mentions for the authenticated user
-router.get('/', authenticate, async (req, res) => {
+router.get('/', authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.user!.id;
     const limit = parseInt(req.query.limit as string) || 50;
@@ -142,7 +141,7 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // Search users for @mention autocomplete
-router.get('/search', authenticate, async (req, res) => {
+router.get('/search', authenticate, async (req: AuthRequest, res) => {
   try {
     const query = (req.query.q as string || '').trim();
 
@@ -158,14 +157,12 @@ router.get('/search', authenticate, async (req, res) => {
             OR: [
               {
                 username: {
-                  contains: query,
-                  mode: 'insensitive'
+                  contains: query
                 }
               },
               {
                 displayName: {
-                  contains: query,
-                  mode: 'insensitive'
+                  contains: query
                 }
               }
             ]
@@ -198,7 +195,7 @@ router.get('/search', authenticate, async (req, res) => {
 });
 
 // Get mentions for a specific post
-router.get('/post/:postId', authenticate, async (req, res) => {
+router.get('/post/:postId', authenticate, async (req: AuthRequest, res) => {
   try {
     const { postId } = req.params;
 
@@ -236,7 +233,7 @@ router.get('/post/:postId', authenticate, async (req, res) => {
 });
 
 // Get mentions for a specific comment
-router.get('/comment/:commentId', authenticate, async (req, res) => {
+router.get('/comment/:commentId', authenticate, async (req: AuthRequest, res) => {
   try {
     const { commentId } = req.params;
 

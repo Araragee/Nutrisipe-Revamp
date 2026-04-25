@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { auth } from '../middleware/auth'
+import { auth, AuthRequest } from '../middleware/auth'
 import { adminOnly } from '../middleware/roles'
 import { prisma } from '../lib/prisma'
 
@@ -65,7 +65,7 @@ router.get('/stats', auth, adminOnly, async (_req, res) => {
 })
 
 // Get all users with pagination
-router.get('/users', auth, adminOnly, async (req, res) => {
+router.get('/users', auth, adminOnly, async (req: AuthRequest, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1
     const limit = parseInt(req.query.limit as string) || 20
@@ -77,9 +77,9 @@ router.get('/users', auth, adminOnly, async (req, res) => {
 
     if (search) {
       where.OR = [
-        { username: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { displayName: { contains: search, mode: 'insensitive' } },
+        { username: { contains: search } },
+        { email: { contains: search } },
+        { displayName: { contains: search } },
       ]
     }
 
@@ -143,7 +143,7 @@ router.get('/users', auth, adminOnly, async (req, res) => {
 })
 
 // Update user role
-router.put('/users/:id/role', auth, adminOnly, async (req, res) => {
+router.put('/users/:id/role', auth, adminOnly, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params
     const { role } = req.body
@@ -173,7 +173,7 @@ router.put('/users/:id/role', auth, adminOnly, async (req, res) => {
 })
 
 // Ban user
-router.post('/users/:id/ban', auth, adminOnly, async (req, res) => {
+router.post('/users/:id/ban', auth, adminOnly, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params
     const { reason } = req.body
@@ -208,7 +208,7 @@ router.post('/users/:id/ban', auth, adminOnly, async (req, res) => {
 })
 
 // Unban user
-router.post('/users/:id/unban', auth, adminOnly, async (req, res) => {
+router.post('/users/:id/unban', auth, adminOnly, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params
 
@@ -236,7 +236,7 @@ router.post('/users/:id/unban', auth, adminOnly, async (req, res) => {
 })
 
 // Get all reports with pagination
-router.get('/reports', auth, adminOnly, async (req, res) => {
+router.get('/reports', auth, adminOnly, async (req: AuthRequest, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1
     const limit = parseInt(req.query.limit as string) || 20
@@ -323,7 +323,7 @@ router.get('/reports', auth, adminOnly, async (req, res) => {
 })
 
 // Update report status
-router.put('/reports/:id', auth, adminOnly, async (req, res) => {
+router.put('/reports/:id', auth, adminOnly, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params
     const { status, moderatorNote } = req.body
@@ -375,7 +375,7 @@ router.put('/reports/:id', auth, adminOnly, async (req, res) => {
 })
 
 // Delete post (content moderation)
-router.delete('/posts/:id', auth, adminOnly, async (req, res) => {
+router.delete('/posts/:id', auth, adminOnly, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params
 
@@ -391,7 +391,7 @@ router.delete('/posts/:id', auth, adminOnly, async (req, res) => {
 })
 
 // Delete comment (content moderation)
-router.delete('/comments/:id', auth, adminOnly, async (req, res) => {
+router.delete('/comments/:id', auth, adminOnly, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params
 

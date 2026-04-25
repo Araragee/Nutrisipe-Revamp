@@ -1,7 +1,7 @@
 # Quick Testing Guide - Nutrisipe Review
 
 ## 🚀 Current Status
-- Backend: ✅ Running on http://localhost:3000
+- Backend: ✅ Running on http://localhost:3001
 - Frontend: ⏳ Start with `npm run dev`
 - Database: ✅ Connected (Neon PostgreSQL)
 
@@ -237,7 +237,7 @@ npm run dev
 cd backend && npx prisma studio
 
 # Check backend health
-curl http://localhost:3000/health
+curl http://localhost:3001/health
 
 # View backend logs
 tail -f /tmp/backend.log

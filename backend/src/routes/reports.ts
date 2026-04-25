@@ -1,11 +1,11 @@
 import { Router } from 'express'
-import { auth } from '../middleware/auth'
+import { auth, AuthRequest } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
 
 const router = Router()
 
 // Create a report
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, async (req: AuthRequest, res) => {
   try {
     const { type, reason, description, postId, commentId, reportedUserId } = req.body
 
@@ -88,7 +88,7 @@ router.post('/', auth, async (req, res) => {
 })
 
 // Get user's reports
-router.get('/my-reports', auth, async (req, res) => {
+router.get('/my-reports', auth, async (req: AuthRequest, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1
     const limit = parseInt(req.query.limit as string) || 20

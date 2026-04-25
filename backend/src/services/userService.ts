@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma'
 import { AppError } from '../middleware/errorHandler'
+import { transformPost } from '../utils/modelTransformer'
 
 interface UpdateProfileData {
   displayName?: string
@@ -19,8 +20,8 @@ export async function searchUsers(
     prisma.user.findMany({
       where: {
         OR: [
-          { username: { contains: query, mode: 'insensitive' } },
-          { displayName: { contains: query, mode: 'insensitive' } },
+          { username: { contains: query } },
+          { displayName: { contains: query } },
         ],
       },
       select: {
@@ -39,8 +40,8 @@ export async function searchUsers(
     prisma.user.count({
       where: {
         OR: [
-          { username: { contains: query, mode: 'insensitive' } },
-          { displayName: { contains: query, mode: 'insensitive' } },
+          { username: { contains: query } },
+          { displayName: { contains: query } },
         ],
       },
     }),
@@ -334,7 +335,7 @@ export async function getSavedPosts(userId: string, page: number, limit: number)
   ])
 
   const posts = saves.map(save => ({
-    ...save.post,
+    ...transformPost(save.post),
     isLiked: false,
     isSaved: true,
     savedAt: save.createdAt,

@@ -1,6 +1,7 @@
-import { Request, Response, NextFunction } from 'express'
+import { Response, NextFunction } from 'express'
+import { AuthRequest } from './auth'
 
-export const adminOnly = (req: Request, res: Response, next: NextFunction) => {
+export const adminOnly = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.user) {
     res.status(401).json({ error: 'Unauthorized' })
     return
@@ -14,7 +15,7 @@ export const adminOnly = (req: Request, res: Response, next: NextFunction) => {
   next()
 }
 
-export const moderatorOrAdmin = (req: Request, res: Response, next: NextFunction) => {
+export const moderatorOrAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.user) {
     res.status(401).json({ error: 'Unauthorized' })
     return
