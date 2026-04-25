@@ -41,6 +41,7 @@ const limiter = rateLimit({
 app.use(limiter)
 
 app.use(express.json())
+app.use('/uploads', express.static('uploads'))
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })

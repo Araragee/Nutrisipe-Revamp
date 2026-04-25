@@ -124,7 +124,7 @@ function handleLogout() {
         </div>
       </div>
 
-      <BaseButton variant="critical" size="sm" alignment="center" class="w-full" @click="handleLogout">
+      <BaseButton button-type="critical" size="sm" align="center" class="w-full" @click="handleLogout">
         Logout
       </BaseButton>
     </div>

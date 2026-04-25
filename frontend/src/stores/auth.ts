@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
   const token = ref<string | null>(localStorage.getItem('auth_token'))
   const isLoading = ref(false)
+  const isInitialized = ref(false)
   const error = ref<string | null>(null)
 
   const isAuthenticated = computed(() => !!user.value && !!token.value)
@@ -117,8 +118,11 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function fetchUser() {
-    if (!token.value) return
-
+    if (!token.value) {
+      isInitialized.value = true
+      return
+    }
+    
     isLoading.value = true
     error.value = null
 
@@ -137,6 +141,7 @@ export const useAuthStore = defineStore('auth', () => {
       error.value = err.response?.data?.message || 'Failed to fetch user'
     } finally {
       isLoading.value = false
+      isInitialized.value = true
     }
   }
 
@@ -153,6 +158,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     isAdmin,
     isLoading,
+    isInitialized,
     error,
     login,
     loginWithGoogle,

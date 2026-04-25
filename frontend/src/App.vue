@@ -16,10 +16,9 @@ const shouldShowAppShell = computed(() => {
   return authStore.isAuthenticated && !noShellRoutes.includes(route.path)
 })
 
+// Authentication initialization is now handled in the router guard to prevent race conditions on refresh
 onMounted(async () => {
-  if (authStore.token) {
-    await authStore.fetchUser()
-  }
+  // Add any other non-auth initialization here
 })
 </script>
 

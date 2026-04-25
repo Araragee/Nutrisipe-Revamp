@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { socialApi } from '@/http/endpoints/social'
 import { postsApi } from '@/http/endpoints/posts'
 import { useAuthStore } from '@/stores/auth'
@@ -39,6 +39,7 @@ async function fetchPost() {
     const response = await postsApi.getById(props.postId)
     post.value = response.data.data
   } catch (error) {
+    console.error('Fetch post error:', error)
     uiStore.showToast('Failed to load recipe', 'error')
     emit('close')
   } finally {
@@ -50,8 +51,21 @@ onMounted(() => {
   if (props.show) fetchPost()
 })
 
+watch(() => [props.show, props.postId], ([newShow, newPostId]) => {
+  if (newShow && newPostId) {
+    fetchPost()
+  } else if (!newShow) {
+    // Clear post data when modal closes to prevent flash of old data
+    setTimeout(() => {
+      post.value = null
+    }, 300)
+  }
+})
+
 const recipeImage = computed(() => {
-  return post.value?.imageUrl || `https://picsum.photos/800/1000?random=${post.value?.id}`
+  if (!post.value?.imageUrl) return `https://picsum.photos/800/1000?random=${post.value?.id || Math.random()}`
+  if (post.value.imageUrl.startsWith('http')) return post.value.imageUrl
+  return `http://localhost:3000/${post.value.imageUrl}`
 })
 </script>
 
@@ -80,10 +94,10 @@ const recipeImage = computed(() => {
 
         <!-- Right: Content side -->
         <div class="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
-          <!-- Close button mobile -->
+          <!-- Close button -->
           <button
             @click="emit('close')"
-            class="md:hidden absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-background/50 backdrop-blur-md flex items-center justify-center text-text"
+            class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-xl transition-all border border-white/10 shadow-lg"
           >
             ✕
           </button>

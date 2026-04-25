@@ -1,63 +1,71 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import { useUiStore } from '@/stores/ui'
-import { usersApi } from '@/http/endpoints/users'
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
-import ImageUpload from '@/components/ui/ImageUpload.vue'
+import { ref, onMounted } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import { useUiStore } from "@/stores/ui";
+import { usersApi } from "@/http/endpoints/users";
+import LoadingSpinner from "@/components/ui/LoadingSpinner.vue";
+import ImageUpload from "@/components/ui/ImageUpload.vue";
 
-const showImageUpload = ref(false)
+const showImageUpload = ref(false);
 
-const authStore = useAuthStore()
-const uiStore = useUiStore()
+const authStore = useAuthStore();
+const uiStore = useUiStore();
 
-const displayName = ref('')
-const bio = ref('')
-const avatarUrl = ref('')
+const displayName = ref("");
+const bio = ref("");
+const avatarUrl = ref("");
 
-const isLoading = ref(false)
-const isSaving = ref(false)
+const isLoading = ref(false);
+const isSaving = ref(false);
 
 onMounted(() => {
   if (authStore.user) {
-    displayName.value = authStore.user.displayName || ''
-    bio.value = authStore.user.bio || ''
-    avatarUrl.value = authStore.user.avatarUrl || ''
+    displayName.value = authStore.user.displayName || "";
+    bio.value = authStore.user.bio || "";
+    avatarUrl.value = authStore.user.avatarUrl || "";
   }
-})
+});
 
 async function handleSave() {
   if (!displayName.value.trim()) {
-    uiStore.showToast('Display name is required', 'error')
-    return
+    uiStore.showToast("Display name is required", "error");
+    return;
   }
 
-  isSaving.value = true
+  isSaving.value = true;
 
   try {
     const response = await usersApi.updateProfile({
       displayName: displayName.value.trim(),
       bio: bio.value.trim() || undefined,
       avatarUrl: avatarUrl.value.trim() || undefined,
-    })
+    });
 
     // Update auth store with new user data
-    authStore.setUser(response.data.data)
+    authStore.setUser(response.data.data);
 
-    uiStore.showToast('Profile updated successfully', 'success')
+    uiStore.showToast("Profile updated successfully", "success");
   } catch (error: any) {
-    uiStore.showToast(error.response?.data?.message || 'Failed to update profile', 'error')
+    uiStore.showToast(
+      error.response?.data?.message || "Failed to update profile",
+      "error",
+    );
   } finally {
-    isSaving.value = false
+    isSaving.value = false;
   }
 }
 
 function handleCancel() {
   if (authStore.user) {
-    displayName.value = authStore.user.displayName || ''
-    bio.value = authStore.user.bio || ''
-    avatarUrl.value = authStore.user.avatarUrl || ''
+    displayName.value = authStore.user.displayName || "";
+    bio.value = authStore.user.bio || "";
+    avatarUrl.value = authStore.user.avatarUrl || "";
   }
+}
+
+function handleLogout() {
+  authStore.logout();
+  window.location.href = "/login";
 }
 </script>
 
@@ -66,8 +74,12 @@ function handleCancel() {
     <div class="max-w-4xl mx-auto px-4 py-8">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Settings</h1>
-        <p class="text-gray-600 dark:text-gray-400">Manage your profile and preferences</p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Settings
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400">
+          Manage your profile and preferences
+        </p>
       </div>
 
       <LoadingSpinner v-if="isLoading" class="mt-8" />
@@ -83,7 +95,9 @@ function handleCancel() {
           <div class="space-y-6">
             <!-- Avatar Section -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
+              >
                 Profile Picture
               </label>
 
@@ -110,7 +124,7 @@ function handleCancel() {
                     @click="showImageUpload = !showImageUpload"
                     class="text-sm text-orange-500 hover:text-orange-600 font-medium"
                   >
-                    {{ showImageUpload ? 'Hide upload' : 'Upload new picture' }}
+                    {{ showImageUpload ? "Hide upload" : "Upload new picture" }}
                   </button>
                 </div>
               </div>
@@ -191,13 +205,15 @@ function handleCancel() {
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div
+          class="flex gap-4 pt-6 border-t border-gray-200 dark:border-gray-700"
+        >
           <button
             @click="handleSave"
             :disabled="isSaving"
             class="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {{ isSaving ? 'Saving...' : 'Save Changes' }}
+            {{ isSaving ? "Saving..." : "Save Changes" }}
           </button>
           <button
             @click="handleCancel"
@@ -241,6 +257,25 @@ function handleCancel() {
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div
+      class="mt-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-red-100 dark:border-red-900/30"
+    >
+      <h2 class="text-xl font-semibold text-red-600 dark:text-red-400 mb-4">
+        Danger Zone
+      </h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+        Logout from your account. You will need to login again to access your
+        saved recipes and profile.
+      </p>
+      <button
+        @click="handleLogout"
+        class="px-6 py-3 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-medium rounded-lg hover:bg-red-200 dark:hover:bg-red-900/40 transition-colors"
+      >
+        Logout of Nutrisipe
+      </button>
     </div>
   </div>
 </template>

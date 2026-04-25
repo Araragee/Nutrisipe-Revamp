@@ -52,7 +52,9 @@ async function toggleLike(event: Event) {
 }
 
 const recipeImage = computed(() => {
-  return props.post.imageUrl || `https://picsum.photos/400/600?random=${props.post.id}`
+  if (!props.post.imageUrl) return `https://picsum.photos/400/600?random=${props.post.id}`
+  if (props.post.imageUrl.startsWith('http')) return props.post.imageUrl
+  return `http://localhost:3000/${props.post.imageUrl}`
 })
 
 const tags = computed(() => {
@@ -62,7 +64,7 @@ const tags = computed(() => {
 
 <template>
   <div
-    class="recipe-card group relative break-inside-avoid mb-6 rounded-card overflow-hidden cursor-pointer shadow-card transition-all duration-revamp border-1.5 border-glass-border bg-[#111]"
+    class="recipe-card group relative break-inside-avoid mb-6 rounded-card overflow-hidden cursor-pointer shadow-card transition-all duration-revamp border-1.5 border-glass-border bg-[#111] min-h-[280px] aspect-[3/4]"
     @click="emit('click', post.id)"
   >
     <!-- Background Image -->

@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import * as bcrypt from 'bcryptjs'
+import { randomUUID } from 'crypto'
 
 const prisma = new PrismaClient()
 
@@ -27,139 +28,16 @@ const LAST_NAMES = [
 ]
 
 const RECIPE_TITLES = [
-  'Spicy Thai Green Curry',
-  'Lemon Herb Grilled Chicken',
-  'Vegan Buddha Bowl',
-  'Classic Italian Carbonara',
-  'Mediterranean Quinoa Salad',
-  'Honey Garlic Salmon',
-  'Mexican Street Tacos',
-  'Creamy Mushroom Risotto',
-  'Korean Bibimbap',
-  'Japanese Teriyaki Bowl',
-  'Greek Chicken Souvlaki',
-  'Indian Butter Chicken',
-  'Vietnamese Pho',
-  'Spanish Paella',
-  'French Ratatouille',
-  'American BBQ Ribs',
-  'Thai Pad Thai',
-  'Italian Caprese Salad',
-  'Middle Eastern Falafel',
-  'Chinese Kung Pao Chicken',
-  'Moroccan Tagine',
-  'Brazilian Feijoada',
-  'Peruvian Ceviche',
-  'Turkish Kebabs',
-  'Lebanese Hummus Bowl',
-  'Australian Meat Pie',
-  'Caribbean Jerk Chicken',
-  'Ethiopian Doro Wat',
-  'German Schnitzel',
-  'Swedish Meatballs',
-  'Polish Pierogi',
-  'Russian Borscht',
-  'Hungarian Goulash',
-  'Austrian Wiener Schnitzel',
-  'Swiss Fondue',
-  'Belgian Waffles',
-  'Dutch Stroopwafel',
-  'Norwegian Salmon',
-  'Danish Smørrebrød',
-  'Finnish Salmon Soup',
-  'Icelandic Lamb Stew',
-  'Portuguese Bacalhau',
-  'Irish Stew',
-  'Scottish Haggis',
-  'English Fish and Chips',
-  'Welsh Rarebit',
-  'Cuban Sandwich',
-  'Argentine Empanadas',
-  'Chilean Sea Bass',
-  'Uruguayan Asado'
-]
-
-const MEAL_PHOTO_TITLES = [
-  'Weekend Brunch Spread',
-  'Healthy Breakfast Bowl',
-  'Sunday Roast Dinner',
-  'Colorful Smoothie Bowl',
-  'Homemade Pizza Night',
-  'Fresh Summer Salad',
-  'Cozy Soup and Bread',
-  'Asian Fusion Platter',
-  'Gourmet Burger Creation',
-  'Elegant Dessert Plate',
-  'Farm-to-Table Feast',
-  'Meal Prep Sunday',
-  'Date Night Dinner',
-  'Kids Lunch Box Ideas',
-  'Picnic Basket Delights'
-]
-
-const NUTRITION_TIP_TITLES = [
-  'Benefits of Omega-3 Fatty Acids',
-  'How to Read Nutrition Labels',
-  'Plant-Based Protein Sources',
-  'Importance of Hydration',
-  'Superfoods You Should Eat',
-  'Meal Timing for Energy',
-  'Understanding Macronutrients',
-  'Anti-Inflammatory Foods',
-  'Gut Health and Probiotics',
-  'Healthy Snack Ideas',
-  'Portion Control Tips',
-  'Benefits of Fiber',
-  'Vitamin D Sources',
-  'Iron-Rich Foods',
-  'Calcium Beyond Dairy'
-]
-
-const COOKING_TECHNIQUE_TITLES = [
-  'Perfect Knife Skills',
-  'How to Sear Meat Properly',
-  'Emulsification Technique',
-  'Blanching Vegetables',
-  'Making Perfect Pasta',
-  'Bread Baking Basics',
-  'Tempering Chocolate',
-  'Stock Making 101',
-  'Poaching Fish',
-  'Caramelizing Onions'
-]
-
-const RECIPE_DESCRIPTIONS = [
-  'A delicious and healthy meal that comes together in 30 minutes.',
-  'Perfect for weeknight dinners or meal prep.',
-  'This recipe is packed with flavor and nutrition.',
-  'A family favorite that never disappoints.',
-  'Simple ingredients, amazing results.',
-  'Tried and tested recipe with 5-star reviews.',
-  'A modern twist on a classic dish.',
-  'Restaurant-quality meal you can make at home.',
-  'Nutritionist-approved and incredibly tasty.',
-  'Gluten-free and dairy-free option available.'
+  'Spicy Thai Green Curry', 'Lemon Herb Grilled Chicken', 'Vegan Buddha Bowl', 'Classic Italian Carbonara',
+  'Mediterranean Quinoa Salad', 'Honey Garlic Salmon', 'Mexican Street Tacos', 'Creamy Mushroom Risotto',
+  'Korean Bibimbap', 'Japanese Teriyaki Bowl', 'Greek Chicken Souvlaki', 'Indian Butter Chicken',
+  'Vietnamese Pho', 'Spanish Paella', 'French Ratatouille', 'American BBQ Ribs', 'Thai Pad Thai',
+  'Italian Caprese Salad', 'Middle Eastern Falafel', 'Chinese Kung Pao Chicken'
 ]
 
 const TAGS = [
   'healthy', 'quick', 'easy', 'vegetarian', 'vegan', 'gluten-free', 'dairy-free',
-  'high-protein', 'low-carb', 'keto', 'paleo', 'meal-prep', 'dinner', 'lunch',
-  'breakfast', 'snack', 'dessert', 'comfort-food', 'asian', 'italian', 'mexican',
-  'mediterranean', 'indian', 'thai', 'japanese', 'chinese', 'french', 'american',
-  'seafood', 'chicken', 'beef', 'pork', 'pasta', 'rice', 'salad', 'soup', 'stew'
-]
-
-const BIOS = [
-  'Home cook sharing family recipes',
-  'Passionate about healthy eating',
-  'Food blogger and recipe developer',
-  'Nutrition enthusiast',
-  'Weekend warrior in the kitchen',
-  'Plant-based chef',
-  'Baking is my therapy',
-  'Creating delicious memories',
-  'Foodie and photographer',
-  'Making cooking fun and easy'
+  'high-protein', 'low-carb', 'keto', 'paleo', 'meal-prep', 'dinner'
 ]
 
 function randomElement<T>(arr: T[]): T {
@@ -176,239 +54,133 @@ function randomInt(min: number, max: number): number {
 }
 
 async function main() {
-  console.log('🌱 Starting seed...')
+  console.log('🌱 Starting optimized seed...')
 
   console.log('🧹 Cleaning database...')
+  await prisma.recipeVariation.deleteMany()
+  await prisma.rating.deleteMany()
+  await prisma.mention.deleteMany()
+  await prisma.message.deleteMany()
+  await prisma.conversation.deleteMany()
+  await prisma.collectionPost.deleteMany()
+  await prisma.collection.deleteMany()
+  await prisma.report.deleteMany()
+  await prisma.comment.deleteMany()
   await prisma.save.deleteMany()
   await prisma.like.deleteMany()
   await prisma.follow.deleteMany()
+  await prisma.recipe.deleteMany()
   await prisma.post.deleteMany()
   await prisma.user.deleteMany()
 
   const passwordHash = await bcrypt.hash('password123', 10)
 
-  console.log('👥 Creating 50 users...')
-  const users = []
+  console.log('👥 Preparing users...')
+  const usersData = []
+  
+  // Fixed Admin
+  usersData.push({
+    id: randomUUID(),
+    username: 'admin',
+    email: 'admin@nutrisipe.com',
+    passwordHash,
+    displayName: 'Nutrisipe Admin',
+    avatarUrl: 'https://i.pravatar.cc/150?u=admin',
+    bio: 'Nutrisipe System Administrator',
+  })
 
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 49; i++) {
     const firstName = randomElement(FIRST_NAMES)
     const lastName = randomElement(LAST_NAMES)
-    const username = `${firstName.toLowerCase()}${lastName.toLowerCase()}${i > 0 ? i : ''}`
-    const email = `${username}@nutrisipe.com`
-
-    const user = await prisma.user.create({
-      data: {
-        username,
-        email,
-        passwordHash,
-        displayName: `${firstName} ${lastName}`,
-        avatarUrl: `https://i.pravatar.cc/150?u=${username}`,
-        bio: i % 3 === 0 ? randomElement(BIOS) : null,
-      },
+    const username = `${firstName.toLowerCase()}${lastName.toLowerCase()}${i + 1}`
+    usersData.push({
+      id: randomUUID(),
+      username,
+      email: `${username}@nutrisipe.com`,
+      passwordHash,
+      displayName: `${firstName} ${lastName}`,
+      avatarUrl: `https://i.pravatar.cc/150?u=${username}`,
+      bio: i % 3 === 0 ? 'Food enthusiast and home cook.' : null,
     })
-    users.push(user)
   }
 
-  console.log(`✅ Created ${users.length} users`)
+  await prisma.user.createMany({ data: usersData })
+  console.log(`✅ Created ${usersData.length} users`)
 
-  console.log('📝 Creating 250 posts...')
-  const posts = []
-  const categoryWeights = [
-    { category: POST_CATEGORIES.RECIPE, weight: 0.6 },
-    { category: POST_CATEGORIES.MEAL_PHOTO, weight: 0.25 },
-    { category: POST_CATEGORIES.NUTRITION_TIP, weight: 0.1 },
-    { category: POST_CATEGORIES.COOKING_TECHNIQUE, weight: 0.05 },
-  ]
+  console.log('📝 Preparing 150 posts and recipes...')
+  const postsData = []
+  const recipesData = []
 
-  for (let i = 0; i < 250; i++) {
-    const rand = Math.random()
-    let cumulative = 0
-    let selectedCategory = POST_CATEGORIES.RECIPE
+  for (let i = 0; i < 150; i++) {
+    const postId = randomUUID()
+    const user = randomElement(usersData)
+    const isRecipe = Math.random() > 0.3
+    const category = isRecipe ? POST_CATEGORIES.RECIPE : POST_CATEGORIES.MEAL_PHOTO
+    const title = isRecipe ? randomElement(RECIPE_TITLES) : 'Delicious Meal'
 
-    for (const { category, weight } of categoryWeights) {
-      cumulative += weight
-      if (rand < cumulative) {
-        selectedCategory = category
-        break
-      }
-    }
-
-    let title = ''
-    let imageQuery = 'food'
-
-    switch (selectedCategory) {
-      case POST_CATEGORIES.RECIPE:
-        title = randomElement(RECIPE_TITLES)
-        imageQuery = title.toLowerCase().replace(/ /g, '-')
-        break
-      case POST_CATEGORIES.MEAL_PHOTO:
-        title = randomElement(MEAL_PHOTO_TITLES)
-        imageQuery = 'meal,food'
-        break
-      case POST_CATEGORIES.NUTRITION_TIP:
-        title = randomElement(NUTRITION_TIP_TITLES)
-        imageQuery = 'nutrition,healthy'
-        break
-      case POST_CATEGORIES.COOKING_TECHNIQUE:
-        title = randomElement(COOKING_TECHNIQUE_TITLES)
-        imageQuery = 'cooking,kitchen'
-        break
-    }
-
-    const user = randomElement(users)
-    const postTags = randomElements(TAGS, randomInt(2, 5))
-    const description = selectedCategory === POST_CATEGORIES.RECIPE
-      ? randomElement(RECIPE_DESCRIPTIONS)
-      : null
-
-    const createdDaysAgo = randomInt(1, 90)
-    const createdAt = new Date()
-    createdAt.setDate(createdAt.getDate() - createdDaysAgo)
-
-    const post = await prisma.post.create({
-      data: {
-        userId: user.id,
-        title,
-        description,
-        imageUrl: `https://source.unsplash.com/800x${randomInt(600, 1000)}/?${imageQuery}&sig=${i}`,
-        category: selectedCategory,
-        tags: postTags,
-        createdAt,
-      },
+    postsData.push({
+      id: postId,
+      userId: user.id,
+      title,
+      description: 'A wonderful meal shared on Nutrisipe.',
+      imageUrl: `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80&sig=${i}`,
+      category,
+      tags: randomElements(TAGS, randomInt(2, 4)),
+      createdAt: new Date(Date.now() - randomInt(1, 90) * 24 * 60 * 60 * 1000),
     })
-    posts.push(post)
-  }
 
-  console.log(`✅ Created ${posts.length} posts`)
-
-  console.log('🤝 Creating follows (each user follows 5-15 others)...')
-  const followsToCreate = []
-  const followSet = new Set()
-
-  for (const user of users) {
-    const numToFollow = randomInt(5, 15)
-    const potentialFollows = users.filter(u => u.id !== user.id)
-    const usersToFollow = randomElements(potentialFollows, numToFollow)
-
-    for (const toFollow of usersToFollow) {
-      const key = `${user.id}:${toFollow.id}`
-      if (!followSet.has(key)) {
-        followSet.add(key)
-        followsToCreate.push({
-          followerId: user.id,
-          followingId: toFollow.id,
-        })
-      }
+    if (isRecipe) {
+      recipesData.push({
+        id: randomUUID(),
+        postId,
+        servings: randomInt(1, 4),
+        prepTime: randomInt(5, 20),
+        cookTime: randomInt(10, 45),
+        difficulty: randomElement(['Easy', 'Medium']),
+        ingredients: [
+          { name: 'Fresh Ingredients', qty: 'as needed' },
+          { name: 'Olive Oil', qty: '2 tbsp' }
+        ],
+        instructions: [
+          { step: 1, text: 'Clean and prep all ingredients.' },
+          { step: 2, text: 'Cook thoroughly and enjoy!' }
+        ],
+        nutrition: {
+          calories: randomInt(300, 600).toString(),
+          protein: randomInt(15, 30).toString(),
+          carbs: randomInt(30, 60).toString(),
+          fat: randomInt(10, 25).toString()
+        }
+      })
     }
   }
 
-  await prisma.follow.createMany({ data: followsToCreate })
-  console.log(`✅ Created ${followsToCreate.length} follows`)
+  await prisma.post.createMany({ data: postsData })
+  await prisma.recipe.createMany({ data: recipesData })
+  console.log(`✅ Created ${postsData.length} posts and ${recipesData.length} recipes`)
 
-  console.log('❤️ Creating likes (random engagement)...')
-  const likesToCreate = []
-  const likeSet = new Set()
+  console.log('🤝 Creating follows...')
+  const followsData = []
+  for (const user of usersData) {
+    const targets = randomElements(usersData.filter(u => u.id !== user.id), randomInt(3, 8))
+    for (const target of targets) {
+      followsData.push({ followerId: user.id, followingId: target.id })
+    }
+  }
+  await prisma.follow.createMany({ data: followsData, skipDuplicates: true })
 
-  for (const post of posts) {
-    const likersCount = randomInt(0, 50)
-    const potentialLikers = users.filter(u => u.id !== post.userId)
-    const likers = randomElements(potentialLikers, Math.min(likersCount, potentialLikers.length))
-
+  console.log('❤️ Creating engagement...')
+  const likesData = []
+  for (const post of postsData) {
+    const likers = randomElements(usersData, randomInt(5, 20))
     for (const liker of likers) {
-      const key = `${liker.id}:${post.id}`
-      if (!likeSet.has(key)) {
-        likeSet.add(key)
-        likesToCreate.push({
-          userId: liker.id,
-          postId: post.id,
-        })
-      }
+      likesData.push({ userId: liker.id, postId: post.id })
     }
   }
-
-  await prisma.like.createMany({ data: likesToCreate })
-  console.log(`✅ Created ${likesToCreate.length} likes`)
-
-  console.log('🔖 Creating saves (random saves)...')
-  const savesToCreate = []
-  const saveSet = new Set()
-
-  for (const post of posts) {
-    const saversCount = randomInt(0, 30)
-    const potentialSavers = users.filter(u => u.id !== post.userId)
-    const savers = randomElements(potentialSavers, Math.min(saversCount, potentialSavers.length))
-
-    for (const saver of savers) {
-      const key = `${saver.id}:${post.id}`
-      if (!saveSet.has(key)) {
-        saveSet.add(key)
-        savesToCreate.push({
-          userId: saver.id,
-          postId: post.id,
-        })
-      }
-    }
-  }
-
-  await prisma.save.createMany({ data: savesToCreate })
-  console.log(`✅ Created ${savesToCreate.length} saves`)
-
-  console.log('🔢 Updating denormalized counts...')
-
-  // Count likes and saves per post
-  const postLikeCounts = new Map<string, number>()
-  const postSaveCounts = new Map<string, number>()
-
-  for (const like of likesToCreate) {
-    postLikeCounts.set(like.postId, (postLikeCounts.get(like.postId) || 0) + 1)
-  }
-
-  for (const save of savesToCreate) {
-    postSaveCounts.set(save.postId, (postSaveCounts.get(save.postId) || 0) + 1)
-  }
-
-  // Update posts in batch
-  for (const post of posts) {
-    await prisma.post.update({
-      where: { id: post.id },
-      data: {
-        likeCount: postLikeCounts.get(post.id) || 0,
-        saveCount: postSaveCounts.get(post.id) || 0,
-      },
-    })
-  }
-
-  // Count followers and following per user
-  const userFollowerCounts = new Map<string, number>()
-  const userFollowingCounts = new Map<string, number>()
-
-  for (const follow of followsToCreate) {
-    userFollowingCounts.set(follow.followerId, (userFollowingCounts.get(follow.followerId) || 0) + 1)
-    userFollowerCounts.set(follow.followingId, (userFollowerCounts.get(follow.followingId) || 0) + 1)
-  }
-
-  // Update users in batch
-  for (const user of users) {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        followerCount: userFollowerCounts.get(user.id) || 0,
-        followingCount: userFollowingCounts.get(user.id) || 0,
-      },
-    })
-  }
-
-  console.log('✅ Updated all counts')
+  await prisma.like.createMany({ data: likesData, skipDuplicates: true })
 
   console.log('\n🎉 Seed completed successfully!')
-  console.log(`\n📊 Summary:`)
-  console.log(`   Users: ${users.length}`)
-  console.log(`   Posts: ${posts.length}`)
-  console.log(`   Follows: ${followsToCreate.length}`)
-  console.log(`   Likes: ${likesToCreate.length}`)
-  console.log(`   Saves: ${savesToCreate.length}`)
-  console.log(`\n🔑 Demo accounts (all passwords: "password123"):`)
-  console.log(`   ${users.slice(0, 3).map(u => u.email).join('\n   ')}`)
+  console.log(`\n🔑 Login with: admin@nutrisipe.com / password123`)
 }
 
 main()
