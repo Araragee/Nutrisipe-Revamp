@@ -185,7 +185,7 @@ async function main() {
   await prisma.post.deleteMany()
   await prisma.user.deleteMany()
 
-  const passwordHash = await bcrypt.hash('password123', 10)
+  const passwordHash = await bcrypt.hash('demo-pass-123', 10)
 
   console.log('👥 Creating 50 users...')
   const users = []
@@ -407,7 +407,7 @@ async function main() {
   console.log(`   Follows: ${followsToCreate.length}`)
   console.log(`   Likes: ${likesToCreate.length}`)
   console.log(`   Saves: ${savesToCreate.length}`)
-  console.log(`\n🔑 Demo accounts (all passwords: "password123"):`)
+  console.log(`\n🔑 Demo accounts (all passwords: "demo-pass-123"):`)
   console.log(`   ${users.slice(0, 3).map(u => u.email).join('\n   ')}`)
 }
 

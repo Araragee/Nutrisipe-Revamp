@@ -1,4 +1,4 @@
-import { prisma } from '../lib/prisma'
+import prisma from '../config/database'
 import { AppError } from '../middleware/errorHandler'
 
 interface CreatePostData {

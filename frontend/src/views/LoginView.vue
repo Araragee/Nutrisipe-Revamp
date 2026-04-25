@@ -40,7 +40,7 @@ async function handleLogin() {
 
 function loginWithDemo(demoEmail: string) {
   email.value = demoEmail
-  password.value = 'password123'
+  password.value = 'demo-pass-123'
   handleLogin()
 }
 </script>
@@ -87,7 +87,7 @@ function loginWithDemo(demoEmail: string) {
       </form>
 
       <div class="mt-8">
-        <p class="text-xs text-text-dim text-center mb-3">Quick demo login (password: password123)</p>
+        <p class="text-xs text-text-dim text-center mb-3">Quick demo login (password: demo-pass-123)</p>
         <div class="flex gap-2">
           <button v-for="demo in demoAccounts" :key="demo.email" @click="loginWithDemo(demo.email)" class="flex-1 py-2 rounded-lg border border-orange/30 text-[10px] font-bold text-orange hover:bg-orange-soft transition-all">
             {{ demo.label }}

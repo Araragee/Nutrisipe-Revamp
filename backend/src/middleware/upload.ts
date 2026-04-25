@@ -4,17 +4,17 @@ import { AppError } from './errorHandler'
 
 // Configure storage
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
+  destination: (req, file, cb) => {
     cb(null, 'uploads/temp')
   },
-  filename: (_req, file, cb) => {
+  filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname))
   }
 })
 
 // File filter for videos
-const videoFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const videoFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const allowedMimeTypes = [
     'video/mp4',
     'video/mpeg',
@@ -32,7 +32,7 @@ const videoFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilter
 }
 
 // File filter for images
-const imageFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const imageFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const allowedMimeTypes = [
     'image/jpeg',
     'image/jpg',

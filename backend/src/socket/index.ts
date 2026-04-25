@@ -77,7 +77,7 @@ export function initializeSocketServer(httpServer: HTTPServer) {
 
     // Real-time Notifications
     socket.on('notification:read', async (notificationId: string) => {
-      await handleNotificationRead(socket, notificationId)
+      await handleNotificationRead(io, socket, notificationId)
     })
 
     // Presence Events
@@ -282,6 +282,7 @@ async function handleTypingIndicator(
 }
 
 async function handleNotificationRead(
+  io: SocketIOServer,
   socket: AuthenticatedSocket,
   notificationId: string
 ) {
