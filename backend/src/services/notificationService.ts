@@ -1,4 +1,4 @@
-import prisma from '../config/database'
+import { prisma } from '../lib/prisma'
 
 export type NotificationType = 'like' | 'comment' | 'follow' | 'mention' | 'rating' | 'variation'
 

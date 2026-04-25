@@ -189,9 +189,11 @@ router.get('/search', authenticate, async (req, res) => {
     });
 
     res.json({ users });
+    return;
   } catch (error) {
     console.error('Error searching users:', error);
     res.status(500).json({ error: 'Failed to search users' });
+    return;
   }
 });
 

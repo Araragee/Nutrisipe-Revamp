@@ -1,6 +1,6 @@
 import { Router, Response } from 'express'
 import { auth } from '../middleware/auth'
-import { AuthRequest } from '../types/express'
+import { AuthRequest } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
 
 const router = Router()
@@ -125,9 +125,11 @@ router.get(
         limit,
         conversationId: conversation.id
       })
+      return
     } catch (error) {
       console.error('Error fetching messages:', error)
       res.status(500).json({ error: 'Failed to fetch messages' })
+      return
     }
   }
 )
@@ -202,10 +204,10 @@ router.post('/send', auth, async (req: AuthRequest, res: Response) => {
       io.to(`user:${recipientId}`).emit('message:new', message)
     }
 
-    res.status(201).json({ data: message })
+    return res.status(201).json({ data: message })
   } catch (error) {
     console.error('Error sending message:', error)
-    res.status(500).json({ error: 'Failed to send message' })
+    return res.status(500).json({ error: 'Failed to send message' })
   }
 })
 
@@ -257,9 +259,11 @@ router.put(
       })
 
       res.json({ success: true })
+      return
     } catch (error) {
       console.error('Error marking messages as read:', error)
       res.status(500).json({ error: 'Failed to mark messages as read' })
+      return
     }
   }
 )
@@ -320,9 +324,11 @@ router.delete('/:messageId', auth, async (req: AuthRequest, res: Response) => {
     })
 
     res.json({ success: true })
+    return
   } catch (error) {
     console.error('Error deleting message:', error)
     res.status(500).json({ error: 'Failed to delete message' })
+    return
   }
 })
 

@@ -1,4 +1,4 @@
-import prisma from '../config/database'
+import { prisma } from '../lib/prisma'
 
 export async function getSuggestedUsers(userId: string, limit: number = 15) {
   const currentUserFollowing = await prisma.follow.findMany({

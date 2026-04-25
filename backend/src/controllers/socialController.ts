@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express'
-import prisma from '../config/database'
+import { prisma } from '../lib/prisma'
 import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
 import { createNotification } from '../services/notificationService'
