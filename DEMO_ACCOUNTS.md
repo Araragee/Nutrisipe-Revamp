@@ -13,13 +13,19 @@ These accounts are generated during the seeding process. You can use any of thes
 
 | Name | Email | Role |
 | :--- | :--- | :--- |
-| Liam Smith | `liamsmith1@nutrisipe.com` | User |
-| Olivia Johnson | `oliviajohnson2@nutrisipe.com` | User |
-| Noah Williams | `noahwilliams3@nutrisipe.com` | User |
-| Ava Brown | `avabrown4@nutrisipe.com` | User |
-| Ethan Jones | `ethanjones5@nutrisipe.com` | User |
+| Michael Torres | `michaeltorres1@nutrisipe.com` | User |
+| Alexander Gonzalez | `alexandergonzalez2@nutrisipe.com` | User |
+| Ethan Garcia | `ethangarcia3@nutrisipe.com` | User |
+| Victoria Walker | `victoriawalker4@nutrisipe.com` | User |
+| Zoey Baker | `zoeybaker5@nutrisipe.com` | User |
 
 *Note: If these specific names don't work, it's because the names are randomized during seeding. You can check the backend logs during login attempts to see valid emails or look into the `dev.db` database.*
+
+### 🧪 Personalized Experience
+Each demo account is seeded with unique **Dietary Preferences** and **Cuisine Interests**. When you log in, you will notice:
+- **Personalized Feed**: The home feed is ranked based on the user's preferred cuisines.
+- **Dietary Filters**: Quick filters in the sidebar/menu are tailored to the user's dietary goals (e.g., Vegan, Keto).
+- **Profile Activity**: The "Activity" tab on profiles shows real engagement data seeded for these users.
 
 ---
 

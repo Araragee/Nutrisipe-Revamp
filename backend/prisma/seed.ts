@@ -90,6 +90,13 @@ async function main() {
       avatarUrl: 'https://i.pravatar.cc/150?u=admin',
       bio: 'Nutrisipe System Administrator',
       role: 'ADMIN',
+      preferences: {
+        create: {
+          cuisines: JSON.stringify(['Italian', 'Mediterranean']),
+          dietary: JSON.stringify(['Gluten-Free']),
+          allergies: JSON.stringify([]),
+        }
+      }
     }
   })
   usersData.push({ id: adminId, username: 'admin' })
@@ -109,6 +116,13 @@ async function main() {
         avatarUrl: `https://i.pravatar.cc/150?u=${username}`,
         bio: i % 3 === 0 ? 'Food enthusiast and home cook.' : null,
         role: 'USER',
+        preferences: {
+          create: {
+            cuisines: JSON.stringify(randomElements(['Italian', 'Mexican', 'Asian', 'Mediterranean', 'American'], randomInt(1, 3))),
+            dietary: JSON.stringify(randomElements(['Vegan', 'Keto', 'Gluten-Free', 'Low-Carb'], randomInt(0, 2))),
+            allergies: JSON.stringify(randomElements(['Nuts', 'Dairy', 'Soy', 'Shellfish'], randomInt(0, 1))),
+          }
+        }
       }
     })
     usersData.push({ id: userId, username })

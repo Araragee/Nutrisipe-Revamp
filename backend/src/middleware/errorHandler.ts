@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import { env } from '../config/env'
 
 export class AppError extends Error {
   constructor(
@@ -16,7 +17,9 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ) {
-  console.error('Error:', err)
+  if (env.NODE_ENV === 'development') {
+    console.error('Error:', err)
+  }
 
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
@@ -28,6 +31,7 @@ export function errorHandler(
 
   res.status(500).json({
     success: false,
-    message: 'Internal server error',
+    message: env.NODE_ENV === 'development' ? err.message : 'Internal server error',
+    stack: env.NODE_ENV === 'development' ? err.stack : undefined
   })
 }

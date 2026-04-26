@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { debounce } from '@/utils/performance'
 
 const props = defineProps<{
   initialQuery?: string
@@ -16,6 +17,14 @@ const activeCategory = ref('All')
 const categories = [
   'All', 'Vegan', 'Keto', 'Gluten-Free', 'Quick', 'Desserts', 'Breakfast', 'Dinner'
 ]
+
+const debouncedSearch = debounce(() => {
+  emit('search', searchQuery.value)
+}, 500)
+
+watch(searchQuery, () => {
+  debouncedSearch()
+})
 
 function handleSearch() {
   emit('search', searchQuery.value)

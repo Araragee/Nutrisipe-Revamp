@@ -90,7 +90,9 @@ const nutriScoreClass = computed(() => {
     <img
       :src="recipeImage"
       :alt="post.title"
-      class="recipe-img w-full block transition-transform duration-500 group-hover:scale-105"
+      loading="lazy"
+      decoding="async"
+      class="recipe-img w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 will-change-transform"
     />
 
     <!-- Top Actions -->
