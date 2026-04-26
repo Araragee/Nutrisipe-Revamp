@@ -1,3 +1,5 @@
+import { calculateNutriScore } from './nutriScore'
+
 export function transformPost(post: any) {
   if (!post) return post
 
@@ -41,6 +43,10 @@ export function transformRecipe(recipe: any) {
     } catch (e) {
       recipe.nutrition = null
     }
+  }
+
+  if (recipe.nutrition) {
+    recipe.nutriScore = calculateNutriScore(recipe.nutrition)
   }
 
   return recipe

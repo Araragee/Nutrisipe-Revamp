@@ -20,6 +20,165 @@ interface CreatePostData {
   }
 }
 
+export async function getFollowingFeed(userId: string, page: number = 1, limit: number = 20) {
+  const skip = (page - 1) * limit
+
+  const followedUsers = await prisma.follow.findMany({
+    where: { followerId: userId },
+    select: { followingId: true },
+  })
+
+  const followedUserIds = followedUsers.map(f => f.followingId)
+
+  if (followedUserIds.length === 0) {
+    return {
+      posts: [],
+      pagination: {
+        page,
+        limit,
+        total: 0,
+        totalPages: 0,
+      },
+    }
+  }
+
+  const posts = await prisma.post.findMany({
+    where: {
+      userId: { in: followedUserIds },
+      isPublic: true,
+    },
+    take: limit,
+    skip,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          displayName: true,
+          avatarUrl: true,
+        },
+      },
+    },
+  })
+
+  const postIds = posts.map(p => p.id)
+
+  const [likes, saves] = await Promise.all([
+    prisma.like.findMany({
+      where: {
+        userId,
+        postId: { in: postIds },
+      },
+      select: { postId: true },
+    }),
+    prisma.save.findMany({
+      where: {
+        userId,
+        postId: { in: postIds },
+      },
+      select: { postId: true },
+    }),
+  ])
+
+  const likedPostIds = new Set(likes.map(l => l.postId))
+  const savedPostIds = new Set(saves.map(s => s.postId))
+
+  const postsWithEngagement = posts.map(post => {
+    const transformed = transformPost(post)
+    return {
+      ...transformed,
+      isLiked: likedPostIds.has(post.id),
+      isSaved: savedPostIds.has(post.id),
+    }
+  })
+
+  const total = await prisma.post.count({
+    where: {
+      userId: { in: followedUserIds },
+      isPublic: true,
+    },
+  })
+
+  return {
+    posts: postsWithEngagement,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  }
+}
+
+export async function getRelatedPosts(postId: string, userId?: string, limit: number = 6) {
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { category: true, tags: true },
+  })
+
+  if (!post) {
+    throw new AppError(404, 'Post not found')
+  }
+
+  const tags = JSON.parse(post.tags || '[]')
+
+  const relatedPosts = await prisma.post.findMany({
+    where: {
+      id: { not: postId },
+      isPublic: true,
+      OR: [
+        { category: post.category },
+        ...tags.map((tag: string) => ({ tags: { contains: tag } })),
+      ],
+    },
+    take: limit,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          displayName: true,
+          avatarUrl: true,
+        },
+      },
+    },
+  })
+
+  const postIds = relatedPosts.map(p => p.id)
+
+  let likedPostIds = new Set<string>()
+  let savedPostIds = new Set<string>()
+
+  if (userId) {
+    const [likes, saves] = await Promise.all([
+      prisma.like.findMany({
+        where: {
+          userId,
+          postId: { in: postIds },
+        },
+        select: { postId: true },
+      }),
+      prisma.save.findMany({
+        where: {
+          userId,
+          postId: { in: postIds },
+        },
+        select: { postId: true },
+      }),
+    ])
+    likedPostIds = new Set(likes.map(l => l.postId))
+    savedPostIds = new Set(saves.map(s => s.postId))
+  }
+
+  return relatedPosts.map(p => ({
+    ...transformPost(p),
+    isLiked: likedPostIds.has(p.id),
+    isSaved: savedPostIds.has(p.id),
+  }))
+}
+
 export async function getFeed(userId: string, page: number = 1, limit: number = 20) {
   const skip = (page - 1) * limit
 
@@ -380,8 +539,8 @@ export async function deletePost(postId: string, userId: string) {
 }
 
 export async function searchPosts(
-  userId: string | undefined,
   query: string,
+  userId?: string,
   category?: string,
   page: number = 1,
   limit: number = 20
@@ -393,7 +552,7 @@ export async function searchPosts(
     OR: [
       { title: { contains: query } },
       { description: { contains: query } },
-      { tags: { contains: query.toLowerCase() } },
+      { tags: { contains: query } },
     ],
   }
 
@@ -401,11 +560,168 @@ export async function searchPosts(
     where.category = category
   }
 
-  const posts = await prisma.post.findMany({
-    where,
-    take: limit,
-    skip,
-    orderBy: { createdAt: 'desc' },
+  const [posts, total] = await Promise.all([
+    prisma.post.findMany({
+      where,
+      take: limit,
+      skip,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+          },
+        },
+        recipe: true,
+      },
+    }),
+    prisma.post.count({ where }),
+  ])
+
+  let likedPostIds = new Set<string>()
+  let savedPostIds = new Set<string>()
+
+  if (userId) {
+    const postIds = posts.map((p) => p.id)
+    const [likes, saves] = await Promise.all([
+      prisma.like.findMany({
+        where: { userId, postId: { in: postIds } },
+        select: { postId: true },
+      }),
+      prisma.save.findMany({
+        where: { userId, postId: { in: postIds } },
+        select: { postId: true },
+      }),
+    ])
+    likedPostIds = new Set(likes.map((l) => l.postId))
+    savedPostIds = new Set(saves.map((s) => s.postId))
+  }
+
+  return {
+    posts: posts.map((post) => ({
+      ...transformPost(post),
+      isLiked: likedPostIds.has(post.id),
+      isSaved: savedPostIds.has(post.id),
+    })),
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  }
+}
+
+export async function getAllIngredients() {
+  const recipes = await prisma.recipe.findMany({
+    select: { ingredients: true },
+  })
+
+  const ingredientNames = new Set<string>()
+
+  recipes.forEach((recipe) => {
+    try {
+      const ingredients = typeof recipe.ingredients === 'string' ? JSON.parse(recipe.ingredients) : recipe.ingredients
+      if (Array.isArray(ingredients)) {
+        ingredients.forEach((ing: any) => {
+          if (ing && typeof ing.name === 'string') {
+            ingredientNames.add(ing.name.toLowerCase().trim())
+          }
+        })
+      }
+    } catch (e) {
+      // Ignore invalid JSON
+    }
+  })
+
+  return Array.from(ingredientNames).sort()
+}
+
+export async function getPostsByTag(tag: string, userId?: string, page: number = 1, limit: number = 20) {
+  const skip = (page - 1) * limit
+
+  const where: any = {
+    isPublic: true,
+    tags: { contains: tag },
+  }
+
+  const [posts, total] = await Promise.all([
+    prisma.post.findMany({
+      where,
+      take: limit,
+      skip,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+          },
+        },
+        recipe: true,
+      },
+    }),
+    prisma.post.count({ where }),
+  ])
+
+  let likedPostIds = new Set<string>()
+  let savedPostIds = new Set<string>()
+
+  if (userId) {
+    const postIds = posts.map((p) => p.id)
+    const [likes, saves] = await Promise.all([
+      prisma.like.findMany({
+        where: { userId, postId: { in: postIds } },
+        select: { postId: true },
+      }),
+      prisma.save.findMany({
+        where: { userId, postId: { in: postIds } },
+        select: { postId: true },
+      }),
+    ])
+    likedPostIds = new Set(likes.map((l) => l.postId))
+    savedPostIds = new Set(saves.map((s) => s.postId))
+  }
+
+
+  return {
+    posts: posts.map((post) => ({
+      ...transformPost(post),
+      isLiked: likedPostIds.has(post.id),
+      isSaved: savedPostIds.has(post.id),
+    })),
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  }
+}
+
+export async function getRecommendations(userId: string, page: number = 1, limit: number = 20) {
+  const skip = (page - 1) * limit
+
+  // 1. Get user preferences
+  const preferences = await prisma.userPreference.findUnique({
+    where: { userId },
+  })
+
+  const prefTags = preferences ? JSON.parse(preferences.dietary || '[]') : []
+  const prefCuisines = preferences ? JSON.parse(preferences.cuisines || '[]') : []
+  const dislikedIngredients = preferences ? JSON.parse(preferences.allergies || '[]') : []
+
+  // 2. Fetch public posts that don't contain disliked ingredients
+  const allPublicPosts = await prisma.post.findMany({
+    where: {
+      isPublic: true,
+      NOT: { userId }, // Don't recommend own posts
+    },
     include: {
       user: {
         select: {
@@ -415,48 +731,77 @@ export async function searchPosts(
           avatarUrl: true,
         },
       },
+      recipe: true,
     },
+    orderBy: { createdAt: 'desc' },
+    take: 100, // Pull a candidate set
   })
 
-  let postsWithEngagement = posts
+  // 3. Score and rank posts
+  const scoredPosts = allPublicPosts.map((post) => {
+    let score = 0
+    const tags = post.tags ? (typeof post.tags === 'string' ? JSON.parse(post.tags) : post.tags) : []
+    const ingredients = post.recipe ? (typeof post.recipe.ingredients === 'string' ? JSON.parse(post.recipe.ingredients) : post.recipe.ingredients) : []
+    const ingredientNames = Array.isArray(ingredients) ? ingredients.map((i: any) => i.name.toLowerCase()) : []
 
-  if (userId) {
-    postsWithEngagement = await Promise.all(
-      posts.map(async (post) => {
-        const [isLiked, isSaved] = await Promise.all([
-          prisma.like.findUnique({
-            where: {
-              userId_postId: { userId, postId: post.id },
-            },
-          }),
-          prisma.save.findUnique({
-            where: {
-              userId_postId: { userId, postId: post.id },
-            },
-          }),
-        ])
+    // Tag match (Weight: 1.5)
+    const tagMatch = Array.isArray(tags) ? tags.filter((t: string) => prefTags.includes(t)).length : 0
+    score += tagMatch * 1.5
 
-        const transformed = transformPost(post)
-        return {
-          ...transformed,
-          isLiked: !!isLiked,
-          isSaved: !!isSaved,
-        }
-      })
-    )
-  } else {
-    postsWithEngagement = posts.map(post => transformPost(post))
-  }
+    // Cuisine match (Weight: 1.0)
+    if (prefCuisines.includes(post.category)) {
+      score += 2.0 // Category matches one of preferred cuisines
+    }
 
-  const total = await prisma.post.count({ where })
+    // Average rating (Weight: 1.0)
+    score += (post.averageRating || 0) * 1.0
+
+    // Recent bonus (Weight: 0.5 per day up to 5 days)
+    const daysOld = (Date.now() - new Date(post.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+    if (daysOld < 5) score += (5 - daysOld) * 0.5
+
+    // Disliked penalty
+    if (ingredientNames.some((i: string) => dislikedIngredients.includes(i))) {
+      score -= 50
+    }
+
+    return { ...post, score }
+  })
+
+  const sortedPosts = scoredPosts
+    .filter((p) => p.score > -10) // Filter out hard dislikes
+    .sort((a, b) => b.score - a.score)
+    .slice(skip, skip + limit)
+
+  // 4. Transform and check engagement
+  const postIds = sortedPosts.map((p) => p.id)
+  const [likes, saves] = await Promise.all([
+    prisma.like.findMany({
+      where: { userId, postId: { in: postIds } },
+      select: { postId: true },
+    }),
+    prisma.save.findMany({
+      where: { userId, postId: { in: postIds } },
+      select: { postId: true },
+    }),
+  ])
+
+  const likedPostIds = new Set(likes.map((l) => l.postId))
+  const savedPostIds = new Set(saves.map((s) => s.postId))
 
   return {
-    posts: postsWithEngagement,
+    posts: sortedPosts.map((post) => ({
+      ...transformPost(post),
+      isLiked: likedPostIds.has(post.id),
+      isSaved: savedPostIds.has(post.id),
+      relevanceScore: post.score,
+    })),
     pagination: {
       page,
       limit,
-      total,
-      totalPages: Math.ceil(total / limit),
+      total: scoredPosts.length,
+      totalPages: Math.ceil(scoredPosts.length / limit),
     },
   }
 }
+

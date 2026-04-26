@@ -10,6 +10,20 @@ export interface User {
   createdAt: string
   role?: 'USER' | 'MODERATOR' | 'ADMIN'
   isFollowing?: boolean
+  settings?: {
+    darkMode: boolean
+  }
+  preferences?: UserPreference
+}
+
+export interface UserPreference {
+  id: string
+  userId: string
+  cuisines: string
+  allergies: string
+  dietary: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface UserBasic {

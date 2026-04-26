@@ -2,10 +2,14 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useUiStore } from '@/stores/ui'
+import { preferencesApi } from '@/http/endpoints/preferences'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const uiStore = useUiStore()
 const step = ref(0)
+const isSaving = ref(false)
 
 const steps = ["Dietary Preferences", "Health Goals", "Follow Creators"]
 
@@ -27,8 +31,22 @@ function toggle(arr: string[], val: string) {
 }
 
 async function finish() {
-  // Save preferences to user profile via backend if needed
-  router.push('/')
+  if (isSaving.value) return
+  isSaving.value = true
+  try {
+    await preferencesApi.update({
+      dietary: selectedDiets.value,
+      cuisines: selectedGoals.value, // Mapping goals to cuisines for now as per schema
+    })
+    uiStore.showToast('Preferences saved!', 'success')
+    router.push('/')
+  } catch (error) {
+    console.error('Failed to save preferences:', error)
+    uiStore.showToast('Failed to save preferences', 'error')
+    router.push('/') // Still go to home if failed
+  } finally {
+    isSaving.value = false
+  }
 }
 </script>
 

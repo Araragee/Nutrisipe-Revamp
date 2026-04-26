@@ -7,6 +7,7 @@ import { AppError } from '../middleware/errorHandler'
 const createCommentSchema = z.object({
   postId: z.string().uuid(),
   content: z.string().min(1).max(1000),
+  parentId: z.string().uuid().optional(),
 })
 
 const updateCommentSchema = z.object({
@@ -48,8 +49,9 @@ export async function getCommentsByPostHandler(
     const { postId } = req.params
     const page = parseInt(req.query.page as string) || 1
     const limit = parseInt(req.query.limit as string) || 20
+    const parentId = req.query.parentId as string | undefined
 
-    const result = await commentService.getCommentsByPost(postId, page, limit)
+    const result = await commentService.getCommentsByPost(postId, page, limit, parentId)
 
     res.json({
       success: true,
@@ -60,6 +62,7 @@ export async function getCommentsByPostHandler(
     next(error)
   }
 }
+
 
 export async function deleteCommentHandler(
   req: AuthRequest,

@@ -16,6 +16,12 @@ const router = createRouter({
       meta: { requiresGuest: true },
     },
     {
+      path: '/register',
+      name: 'register',
+      component: () => import('@/views/RegisterView.vue'),
+      meta: { requiresGuest: true },
+    },
+    {
       path: '/onboarding',
       name: 'onboarding',
       component: () => import('@/views/OnboardingView.vue'),
@@ -48,7 +54,7 @@ const router = createRouter({
     {
       path: '/recipes',
       name: 'recipes',
-      component: () => import('@/views/RecipesView.vue'),
+      redirect: { name: 'home', query: { scope: 'all' } }
     },
     {
       path: '/recipes/create',
@@ -68,9 +74,14 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/recipes/:id/variations/compare',
+      name: 'recipe-variation-compare',
+      component: () => import('@/views/VariationView.vue'),
+    },
+    {
       path: '/users/:id',
       name: 'user-profile',
-      component: () => import('@/views/UserProfileView.vue'),
+      redirect: to => ({ name: 'profile', params: { userId: to.params.id } })
     },
     {
       path: '/saved',
@@ -81,8 +92,7 @@ const router = createRouter({
     {
       path: '/following',
       name: 'following-feed',
-      component: () => import('@/views/FollowingFeedView.vue'),
-      meta: { requiresAuth: true },
+      redirect: { name: 'home', query: { scope: 'following' } }
     },
     {
       path: '/ingredients',

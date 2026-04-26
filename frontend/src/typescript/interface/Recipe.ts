@@ -1,6 +1,6 @@
 export interface RecipeIngredient {
-  item: string
-  amount: string
+  name: string
+  quantity: string
   unit?: string
 }
 
@@ -29,6 +29,7 @@ export interface Recipe {
   ingredients: RecipeIngredient[]
   instructions: RecipeInstruction[]
   nutrition?: RecipeNutrition
+  nutriScore?: 'A' | 'B' | 'C' | 'D' | 'E'
   createdAt: string
   updatedAt: string
 }

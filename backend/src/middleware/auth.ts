@@ -60,5 +60,36 @@ export async function auth(
   }
 }
 
-// Alias for backwards compatibility
 export const authenticate = auth
+
+export async function optionalAuthenticate(
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction
+) {
+  try {
+    const authHeader = req.headers.authorization
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return next()
+    }
+
+    const token = authHeader.substring(7)
+    const payload = verifyToken(token)
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { id: true, email: true, username: true, role: true },
+    })
+
+    if (user) {
+      req.user = user
+      req.userId = payload.userId
+    }
+    
+    next()
+  } catch (error) {
+    // Just continue without user
+    next()
+  }
+}

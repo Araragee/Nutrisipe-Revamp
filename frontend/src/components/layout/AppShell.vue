@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useNotificationsStore } from '@/stores/notifications'
+import { socketService } from '@/services/socket'
 import UserAvatar from '@/components/user/UserAvatar.vue'
+import NotificationDropdown from '@/components/notifications/NotificationDropdown.vue'
 
 const props = defineProps<{
   showShell: boolean
 }>()
 
 const authStore = useAuthStore()
+const notificationsStore = useNotificationsStore()
 const router = useRouter()
 const isCollapsed = ref(false)
 const showNotifs = ref(false)
@@ -38,6 +42,22 @@ function handleLogout() {
 const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value
 }
+
+function handleNewNotification(notification: any) {
+  notificationsStore.notifications.unshift(notification)
+  notificationsStore.unreadCount++
+}
+
+onMounted(() => {
+  if (authStore.isAuthenticated) {
+    notificationsStore.fetchNotifications()
+    socketService.onNotificationNew(handleNewNotification)
+  }
+})
+
+onUnmounted(() => {
+  socketService.offNotificationNew(handleNewNotification)
+})
 </script>
 
 <template>
@@ -53,13 +73,16 @@ const toggleSidebar = () => {
         <div class="sidebar-logo font-montserrat font-extrabold text-xl">
           Nutri<span class="text-orange">sipe</span>
         </div>
-        <button
-          @click="showNotifs = !showNotifs"
-          class="sidebar-bell w-8.5 h-8.5 rounded-xl border-1.5 border-glass-border flex items-center justify-center text-text-muted hover:border-orange hover:text-orange hover:bg-orange-soft transition-all relative"
-        >
-          <span class="text-lg">🔔</span>
-          <span class="badge absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-orange text-white text-[8px] font-extrabold flex items-center justify-center border-2 border-background">3</span>
-        </button>
+        <div class="relative">
+          <button
+            @click="showNotifs = !showNotifs"
+            class="sidebar-bell w-8.5 h-8.5 rounded-xl border-1.5 border-glass-border flex items-center justify-center text-text-muted hover:border-orange hover:text-orange hover:bg-orange-soft transition-all relative"
+          >
+            <span class="text-lg">🔔</span>
+            <span v-if="notificationsStore.unreadCount > 0" class="badge absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-orange text-white text-[8px] font-extrabold flex items-center justify-center border-2 border-background">{{ notificationsStore.unreadCount }}</span>
+          </button>
+          <NotificationDropdown v-if="showNotifs" @close="showNotifs = false" class="absolute left-0 mt-2 z-50" />
+        </div>
       </div>
 
       <nav class="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
@@ -77,6 +100,20 @@ const toggleSidebar = () => {
 
       <div class="sidebar-spacer flex-1"></div>
 
+      <!-- Personalized Tags -->
+      <div v-if="authStore.user?.preferences" class="px-6 mb-6">
+        <h3 class="text-[10px] font-bold text-text-dim uppercase tracking-widest mb-3">Quick Filters</h3>
+        <div class="flex flex-wrap gap-2">
+          <RouterLink
+            v-for="tag in JSON.parse(authStore.user.preferences.dietary || '[]').slice(0, 5)"
+            :key="tag"
+            :to="`/?scope=all&tag=${tag}`"
+            class="px-2.5 py-1 rounded-lg bg-background-secondary text-[11px] font-semibold text-text-muted hover:text-orange hover:bg-orange-soft transition-all"
+          >
+            #{{ tag }}
+          </RouterLink>
+        </div>
+      </div>
       <div v-if="authStore.user" class="sidebar-user p-4 m-4 rounded-2xl hover:bg-background-secondary transition-all cursor-pointer">
         <div class="flex items-center gap-3">
           <UserAvatar :user="authStore.user" size="md" class="border-2 border-orange" />
@@ -130,9 +167,11 @@ const toggleSidebar = () => {
     <!-- Mobile Top App Bar -->
     <div class="md:hidden fixed top-0 left-0 right-0 h-16 bg-surface/80 backdrop-blur-xl border-b border-glass-border flex items-center justify-between px-5 z-40">
       <div class="font-montserrat font-extrabold text-lg">Nutri<span class="text-orange">sipe</span></div>
-      <button class="w-9 h-9 rounded-full bg-orange-soft text-orange flex items-center justify-center">
+      <button @click="showNotifs = !showNotifs" class="w-9 h-9 rounded-full bg-orange-soft text-orange flex items-center justify-center relative">
         <span>🔔</span>
+        <span v-if="notificationsStore.unreadCount > 0" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-orange text-white text-[9px] font-bold flex items-center justify-center border-2 border-surface">{{ notificationsStore.unreadCount }}</span>
       </button>
+      <NotificationDropdown v-if="showNotifs" @close="showNotifs = false" class="fixed top-16 right-4 z-50 w-[calc(100vw-32px)] max-w-sm" />
     </div>
 
     <!-- Mobile Bottom Nav -->

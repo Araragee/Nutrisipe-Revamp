@@ -6,7 +6,13 @@ import { socialApi } from '@/http/endpoints/social'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import UserAvatar from '@/components/user/UserAvatar.vue'
+import FollowButton from '@/components/user/FollowButton.vue'
 import PinGrid from '@/components/feed/PinGrid.vue'
+import RatingList from '@/components/ratings/RatingList.vue'
+import VariationList from '@/components/recipe/VariationList.vue'
+import CollectionModal from '@/components/profile/CollectionModal.vue'
+import { variationsApi } from '@/http/endpoints/variations'
+import { ratingsApi } from '@/http/endpoints/ratings'
 import type { Post } from '@/typescript/interface/Post'
 
 const route = useRoute()
@@ -18,8 +24,11 @@ const post = ref<Post | null>(null)
 const relatedPosts = ref<Post[]>([])
 const isLoading = ref(true)
 const activeTab = ref('ingredients')
+const ratingListRef = ref<any>(null)
+const showCollectionModal = ref(false)
+const isForking = ref(false)
 
-const postId = computed(() => route.params.id as string)
+const postId = computed(() => (Array.isArray(route.params.id) ? route.params.id[0] : route.params.id) as string)
 const isOwner = computed(() => authStore.user?.id === post.value?.userId)
 
 const nutritionFacts = computed(() => {
@@ -32,6 +41,32 @@ const nutritionFacts = computed(() => {
   ]
 })
 
+async function forkRecipe() {
+  if (!authStore.isAuthenticated) {
+    uiStore.showToast('Please login to fork recipes', 'info')
+    return
+  }
+  if (!post.value) return
+  
+  isForking.value = true
+  try {
+    const forkData = {
+      title: `${post.value.title} (My version)`,
+      description: post.value.description,
+      variationDescription: 'Inspired by the original',
+      ...post.value.recipe
+    }
+    const response = await variationsApi.fork(post.value.id, forkData)
+    uiStore.showToast('Recipe forked! Redirecting to edit...', 'success')
+    router.push(`/recipes/${response.data.data.variationPost.id}/edit`)
+  } catch (error) {
+    console.error('Failed to fork recipe:', error)
+    uiStore.showToast('Failed to fork recipe', 'error')
+  } finally {
+    isForking.value = false
+  }
+}
+
 async function loadPost() {
   if (!postId.value) return
   isLoading.value = true
@@ -39,9 +74,9 @@ async function loadPost() {
     const response = await postsApi.getById(postId.value)
     post.value = response.data.data
 
-    // Fetch related (trending for now)
-    const feedRes = await postsApi.getFeed(1, 10)
-    relatedPosts.value = feedRes.data.data.filter(p => p.id !== postId.value)
+    // Fetch real related posts
+    const relatedRes = await postsApi.getRelated(postId.value)
+    relatedPosts.value = relatedRes.data.data
   } catch (error) {
     console.error('Failed to load post:', error)
     uiStore.showToast('Post not found', 'error')
@@ -51,8 +86,27 @@ async function loadPost() {
   }
 }
 
+async function handleRatingSubmit(data: { rating: number; review?: string }) {
+  if (!post.value) return
+  try {
+    await ratingsApi.createOrUpdateRating(post.value.id, data.rating, data.review)
+    uiStore.showToast('Rating submitted!', 'success')
+    
+    // Refresh post and rating list
+    const response = await postsApi.getById(postId.value)
+    post.value = response.data.data
+    ratingListRef.value?.refresh()
+  } catch (error) {
+    console.error('Failed to submit rating:', error)
+    uiStore.showToast('Failed to submit rating', 'error')
+  }
+}
+
 async function toggleLike() {
-  if (!post.value || !authStore.isAuthenticated) return
+  if (!post.value || !authStore.isAuthenticated) {
+    uiStore.showToast('Please sign in to like', 'info')
+    return
+  }
   const wasLiked = post.value.isLiked
   post.value.isLiked = !wasLiked
   post.value.likeCount += wasLiked ? -1 : 1
@@ -66,7 +120,10 @@ async function toggleLike() {
 }
 
 async function toggleSave() {
-  if (!post.value || !authStore.isAuthenticated) return
+  if (!post.value || !authStore.isAuthenticated) {
+    uiStore.showToast('Please sign in to save', 'info')
+    return
+  }
   const wasSaved = post.value.isSaved
   post.value.isSaved = !wasSaved
   post.value.saveCount += wasSaved ? -1 : 1
@@ -126,23 +183,25 @@ const recipeImage = computed(() => {
                    <p class="font-bold text-[15px]">{{ post.user.displayName }}</p>
                    <p class="text-xs text-text-dim font-bold uppercase tracking-wider">@{{ post.user.username }}</p>
                 </div>
-                <button v-if="!isOwner" class="btn-primary py-2.5 px-6 !text-xs">Follow</button>
+                <div v-if="!isOwner">
+                  <FollowButton :user-id="post.user.id" :is-following="post.user.isFollowing" />
+                </div>
                 <button v-else @click="router.push(`/recipes/${post.id}/edit`)" class="btn-secondary py-2.5 px-6 !text-xs">Edit Post</button>
              </div>
 
              <!-- Nutrition Row -->
              <div class="grid grid-cols-4 gap-4 mb-10">
                 <div v-for="n in nutritionFacts" :key="n.label" class="bg-background-secondary/50 rounded-2xl p-4 text-center border border-glass-border">
-                  <span class="text-2xl mb-1.5 block">{{ n.icon }}</span>
-                  <span class="font-montserrat font-extrabold text-lg block leading-none mb-1">{{ n.val }}</span>
-                  <span class="text-[9px] text-text-dim uppercase font-bold tracking-widest">{{ n.label }}</span>
+                   <span class="text-2xl mb-1.5 block">{{ n.icon }}</span>
+                   <span class="font-montserrat font-extrabold text-lg block leading-none mb-1">{{ n.val }}</span>
+                   <span class="text-[9px] text-text-dim uppercase font-bold tracking-widest">{{ n.label }}</span>
                 </div>
              </div>
 
              <!-- Tabs -->
              <div class="flex gap-10 border-b border-glass-border mb-8">
                 <button
-                  v-for="t in ['ingredients', 'instructions', 'comments']"
+                  v-for="t in ['ingredients', 'instructions', 'reviews']"
                   :key="t"
                   @click="activeTab = t"
                   :class="[
@@ -160,7 +219,7 @@ const recipeImage = computed(() => {
                      <div v-for="(ing, idx) in post.recipe.ingredients" :key="idx" class="flex items-center gap-4 p-4 bg-background-secondary/30 rounded-2xl border border-glass-border">
                         <div class="w-2.5 h-2.5 rounded-full bg-orange"></div>
                         <span class="text-[15px] font-medium">{{ ing.name }}</span>
-                        <span class="ml-auto font-bold text-orange text-sm">{{ ing.qty }}</span>
+                        <span class="ml-auto font-bold text-orange text-sm">{{ ing.quantity }}</span>
                      </div>
                    </template>
                    <div v-else class="col-span-full text-center py-10 text-text-dim italic">No ingredients listed.</div>
@@ -178,21 +237,33 @@ const recipeImage = computed(() => {
                    <div v-else class="text-center py-10 text-text-dim italic">No instructions listed.</div>
                 </div>
 
-                <div v-if="activeTab === 'comments'" class="py-10 text-center bg-background-secondary/50 rounded-3xl border-2 border-dashed border-glass-border">
-                   <p class="text-text-dim font-bold uppercase tracking-widest text-xs">Join the conversation</p>
-                   <button class="mt-4 text-orange font-extrabold hover:underline">Sign in to comment</button>
+                <div v-if="activeTab === 'reviews'" class="space-y-8">
+                   <div v-if="authStore.isAuthenticated && !isOwner">
+                      <RatingInput @submit="handleRatingSubmit" />
+                      <div class="my-8 border-b border-glass-border"></div>
+                   </div>
+                   <RatingList ref="ratingListRef" :post-id="post.id" />
+                   <div class="my-10"></div>
+                   <CommentSection :post-id="post.id" />
                 </div>
              </div>
 
              <!-- Actions -->
-             <div class="flex gap-4">
-                <button @click="toggleSave" class="flex-1 btn-primary flex items-center justify-center gap-2 h-14">
-                  <span>{{ post.isSaved ? '🔖' : '🤍' }}</span>
-                  {{ post.isSaved ? 'Saved to Collection' : 'Save Recipe' }}
+             <div class="flex gap-4 mb-10">
+                <button @click="showCollectionModal = true" class="flex-1 btn-secondary flex items-center justify-center gap-2 h-14">
+                  <span>📁</span> Save to Collection
+                </button>
+                <button @click="forkRecipe" :disabled="isForking" class="flex-1 btn-primary flex items-center justify-center gap-2 h-14">
+                  <span>{{ isForking ? '⏳' : '🍴' }}</span> Fork Variation
                 </button>
                 <button class="flex-1 btn-secondary flex items-center justify-center gap-2 h-14">
                   <span>📤</span> Share
                 </button>
+             </div>
+
+             <!-- Variations -->
+             <div class="mt-12 border-t border-glass-border pt-12">
+                <VariationList :post-id="post.id" />
              </div>
           </div>
        </div>
@@ -203,5 +274,7 @@ const recipeImage = computed(() => {
           <PinGrid :posts="relatedPosts" />
        </div>
     </div>
+
+    <CollectionModal v-if="post && showCollectionModal" :show="showCollectionModal" :post-id="post.id" @close="showCollectionModal = false" />
   </div>
 </template>

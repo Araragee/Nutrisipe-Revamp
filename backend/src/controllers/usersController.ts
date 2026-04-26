@@ -161,3 +161,55 @@ export async function getSavedPostsHandler(req: AuthRequest, res: Response, next
     next(error)
   }
 }
+
+export async function getLikedPostsHandler(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params
+    const page = parseInt(req.query.page as string) || 1
+    const limit = parseInt(req.query.limit as string) || 20
+
+    const result = await userService.getLikedPosts(id, page, limit)
+
+    res.json({
+      success: true,
+      data: result.posts,
+      pagination: result.pagination,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function getUserPreferencesHandler(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.userId) {
+      throw new AppError(401, 'Unauthorized')
+    }
+
+    const preferences = await userService.getUserPreferences(req.userId)
+
+    res.json({
+      success: true,
+      data: preferences,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function updatePreferencesHandler(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.userId) {
+      throw new AppError(401, 'Unauthorized')
+    }
+
+    const preferences = await userService.updateUserPreferences(req.userId, req.body)
+
+    res.json({
+      success: true,
+      data: preferences,
+    })
+  } catch (error) {
+    next(error)
+  }
+}

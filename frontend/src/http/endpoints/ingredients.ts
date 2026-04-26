@@ -15,4 +15,6 @@ export const ingredientsApi = {
     httpClient.put<ApiResponse<Ingredient>>(`/ingredients/${id}`, data),
 
   delete: (id: string) => httpClient.delete<ApiResponse<void>>(`/ingredients/${id}`),
+
+  getNames: () => httpClient.get<ApiResponse<string[]>>('/posts/ingredients'),
 }

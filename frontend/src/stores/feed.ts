@@ -12,7 +12,7 @@ export const useFeedStore = defineStore('feed', () => {
   const error = ref<string | null>(null)
   const { cacheApiCall, invalidateCache } = useCache()
 
-  async function fetchFeed(reset = false) {
+  async function fetchFeed(reset = false, scope: 'all' | 'following' | 'recommendations' = 'all') {
     if (isLoading.value) return
 
     isLoading.value = true
@@ -25,11 +25,15 @@ export const useFeedStore = defineStore('feed', () => {
         hasMore.value = true
       }
 
-      const cacheKey = `feed_page_${currentPage.value}`
+      const cacheKey = `feed_${scope}_page_${currentPage.value}`
       const response = await cacheApiCall(
         cacheKey,
-        () => postsApi.getFeed(currentPage.value, 20),
-        2 * 60 * 1000 // Cache for 2 minutes
+        () => {
+          if (scope === 'following') return postsApi.getFollowingFeed(currentPage.value, 20)
+          if (scope === 'recommendations') return postsApi.getRecommendations(currentPage.value, 20)
+          return postsApi.getFeed(currentPage.value, 20)
+        },
+        scope === 'all' ? 2 * 60 * 1000 : 0 // Don't cache personalized feeds for too long
       )
 
       if (reset) {

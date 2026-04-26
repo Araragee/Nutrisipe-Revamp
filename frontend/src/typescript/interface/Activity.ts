@@ -1,21 +1,14 @@
-import type { ActivityType } from '../types/enums'
-import type { UserBasic } from './User'
-
-export interface ActivityLike {
-  type: 'like'
-  createdAt: string
-  post: {
-    id: string
-    title: string
-    imageUrl: string
-    user: UserBasic
+export interface Activity {
+  id: string
+  type: 'comment' | 'like' | 'follow' | 'rating'
+  date: string
+  data: {
+    content?: string
+    postTitle?: string
+    postId?: string
+    username?: string
+    displayName?: string
+    userId?: string
+    score?: number
   }
 }
-
-export interface ActivityFollow {
-  type: 'follow'
-  createdAt: string
-  user: UserBasic
-}
-
-export type Activity = ActivityLike | ActivityFollow

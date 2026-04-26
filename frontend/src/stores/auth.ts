@@ -62,6 +62,29 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function loginWithDev(email: string) {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const response = await authApi.devLogin({ email })
+      const { user: userData, token: authToken } = response.data.data
+
+      user.value = userData
+      token.value = authToken
+      localStorage.setItem('auth_token', authToken)
+
+      // Initialize socket connection
+      socketService.connect()
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Dev login failed'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   async function register(
     username: string,
     email: string,
@@ -162,6 +185,7 @@ export const useAuthStore = defineStore('auth', () => {
     error,
     login,
     loginWithGoogle,
+    loginWithDev,
     register,
     logout,
     logoutAll,

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
+import { postsApi } from '@/http/endpoints/posts'
 import { searchApi } from '@/http/endpoints/search'
 import FeedHeader from '@/components/feed/FeedHeader.vue'
 import PinCard from '@/components/feed/PinCard.vue'
-import UserCard from '@/components/user/UserCard.vue'
 import RecipeModal from '@/components/feed/RecipeModal.vue'
 
 const searchQuery = ref('')
@@ -12,6 +12,7 @@ const trendingPosts = ref<any[]>([])
 const loadingTrending = ref(false)
 const searchResults = ref<any>(null)
 const isSearching = ref(false)
+const pagination = ref({ page: 1, totalPages: 1 })
 
 const selectedPostId = ref<string | null>(null)
 const showPostModal = ref(false)
@@ -42,14 +43,14 @@ async function handleSearch(query?: string) {
 
   isSearching.value = true
   try {
-    // TODO: Improve search result mapping to distinguish between posts and users in the UI
-    const response = await searchApi.search({
-      q: searchQuery.value || selectedCategory.value,
-      type: 'all',
-      page: 1,
-      limit: 20,
-    })
-    searchResults.value = response.data
+    let response
+    if (selectedCategory.value !== 'All' && !searchQuery.value) {
+      response = await postsApi.getByTag(selectedCategory.value, pagination.value.page)
+    } else {
+      response = await postsApi.search(searchQuery.value, pagination.value.page)
+    }
+    searchResults.value = response.data.data
+    pagination.value.totalPages = response.data.pagination.totalPages
   } catch (error) {
     console.error('Search error:', error)
   } finally {
@@ -59,6 +60,7 @@ async function handleSearch(query?: string) {
 
 function handleFilter(category: string) {
   selectedCategory.value = category
+  pagination.value.page = 1
   handleSearch()
 }
 
@@ -96,8 +98,8 @@ const collections = [
         <div v-if="isSearching" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
            <div v-for="i in 4" :key="i" class="h-64 bg-background-secondary rounded-card animate-pulse"></div>
         </div>
-        <div v-else-if="searchResults?.posts?.length" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <PinCard v-for="post in searchResults.posts" :key="post.id" :post="post" @click="handlePostClick" />
+        <div v-else-if="searchResults?.length" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <PinCard v-for="post in searchResults" :key="post.id" :post="post" @click="handlePostClick" />
         </div>
         <div v-else class="text-center py-12 bg-background-secondary rounded-3xl border-1.5 border-dashed border-glass-border">
           <p class="text-text-dim">No results found for your search.</p>

@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import { postsApi } from '@/http/endpoints/posts'
 import { PostCategory } from '@/typescript/types/enums'
 import { useUiStore } from '@/stores/ui'
+import ImageUpload from '@/components/ui/ImageUpload.vue'
+import IngredientAutocomplete from '@/components/recipe/IngredientAutocomplete.vue'
 
 const router = useRouter()
 const uiStore = useUiStore()
@@ -15,11 +17,11 @@ const STEPS = ["Photo & Info", "Ingredients", "Method", "Nutrition"]
 const form = ref({
   title: '',
   description: '',
-  photo: null as string | null,
+  photo: '',
   time: '',
   servings: '',
   tag: '',
-  ingredients: [{ name: '', qty: '' }],
+  ingredients: [{ name: '', quantity: '' }],
   steps: [{ text: '' }],
   cals: '',
   protein: '',
@@ -27,25 +29,31 @@ const form = ref({
   fat: ''
 })
 
-const addIngredient = () => form.value.ingredients.push({ name: '', qty: '' })
+const addIngredient = () => form.value.ingredients.push({ name: '', quantity: '' })
 const removeIngredient = (i: number) => form.value.ingredients.splice(i, 1)
 
 const addStep = () => form.value.steps.push({ text: '' })
 const removeStep = (i: number) => form.value.steps.splice(i, 1)
 
 async function handleSubmit() {
+  if (!form.value.title || !form.value.photo) {
+    uiStore.showToast('Title and photo are required', 'error')
+    step.value = 0
+    return
+  }
+
   isSubmitting.value = true
   try {
     const postData = {
       title: form.value.title,
       description: form.value.description,
-      imageUrl: form.value.photo || 'https://picsum.photos/800/600',
+      imageUrl: form.value.photo,
       category: PostCategory.Recipe,
       tags: form.value.tag ? [form.value.tag.toLowerCase()] : [],
       recipe: {
         servings: parseInt(form.value.servings) || undefined,
         totalTime: parseInt(form.value.time) || undefined,
-        ingredients: form.value.ingredients.filter(i => i.name),
+        ingredients: form.value.ingredients.filter(i => i.name && i.quantity),
         instructions: form.value.steps.filter(s => s.text).map((s, idx) => ({ step: idx + 1, text: s.text })),
         nutrition: {
           calories: parseInt(form.value.cals) || 0,
@@ -116,18 +124,7 @@ function handleClose() {
 
           <!-- Step 0: Photo & Info -->
           <div v-if="step === 0" class="space-y-6">
-            <div
-              class="upload-zone border-2 border-dashed border-glass-border rounded-2xl p-12 bg-background-secondary flex flex-col items-center gap-3 cursor-pointer hover:border-orange hover:bg-orange-soft transition-all"
-              @click="form.photo = 'https://picsum.photos/800/600'"
-            >
-              <template v-if="!form.photo">
-                <span class="text-4xl">📸</span>
-                <span class="font-bold text-text">Drop your photo here</span>
-                <span class="text-xs text-text-dim">JPG, PNG or HEIC · Max 20MB</span>
-                <button class="mt-2 px-5 py-2 rounded-full border-1.5 border-orange text-orange font-bold text-xs">Upload from device</button>
-              </template>
-              <img v-else :src="form.photo" class="w-full h-48 object-cover rounded-xl" />
-            </div>
+            <ImageUpload v-model="form.photo" :max-size="10" />
 
             <div class="space-y-4">
               <div>
@@ -152,11 +149,16 @@ function handleClose() {
           </div>
 
           <!-- Step 1: Ingredients -->
-          <div v-if="step === 1" class="space-y-4">
-            <div v-for="(ing, i) in form.ingredients" :key="i" class="flex gap-3">
-              <input v-model="ing.name" class="flex-1 bg-background-secondary border-1.5 border-glass-border rounded-xl p-3.5 text-sm outline-none focus:border-orange" :placeholder="`Ingredient ${i+1}`" />
-              <input v-model="ing.qty" class="w-24 bg-background-secondary border-1.5 border-glass-border rounded-xl p-3.5 text-sm outline-none focus:border-orange" placeholder="Amount" />
-              <button @click="removeIngredient(i)" class="w-10 h-10 shrink-0 border-1.5 border-glass-border rounded-full flex items-center justify-center text-text-dim hover:border-red-500 hover:text-red-500 transition-all">✕</button>
+          <div v-if="step === 1" class="p-10 animate-revamp">
+            <h2 class="font-montserrat font-extrabold text-3xl mb-2">Ingredients</h2>
+            <p class="text-text-dim text-sm mb-10">Add the ingredients needed for your recipe.</p>
+            
+            <div class="space-y-4 mb-8">
+               <div v-for="(ing, i) in form.ingredients" :key="i" class="flex gap-3">
+                  <IngredientAutocomplete v-model="ing.name" :placeholder="`Ingredient ${i+1}`" class="flex-1" />
+                  <input v-model="ing.quantity" class="w-32 bg-background-secondary border border-glass-border rounded-xl p-4 text-sm outline-none focus:border-orange font-bold" placeholder="Amount" />
+                  <button @click="removeIngredient(i)" class="w-13 h-13 shrink-0 border border-glass-border rounded-full flex items-center justify-center text-text-dim hover:text-red-500">✕</button>
+               </div>
             </div>
             <button @click="addIngredient" class="w-full py-3.5 border-1.5 border-dashed border-glass-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add ingredient</button>
           </div>

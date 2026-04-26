@@ -80,3 +80,41 @@ export async function meHandler(req: AuthRequest, res: Response, next: NextFunct
     next(error)
   }
 }
+
+export async function googleLoginHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { email, displayName, avatarUrl, googleId } = req.body
+    if (!email) throw new AppError(400, 'Email is required')
+
+    const result = await authService.googleLogin(email, displayName, avatarUrl, googleId)
+    res.json({
+      success: true,
+      data: result,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function logoutHandler(_req: Request, res: Response, _next: NextFunction) {
+  // Placeholder for server-side token revocation if needed
+  res.json({
+    success: true,
+    message: 'Logged out successfully',
+  })
+}
+
+export async function devLoginHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { email } = req.body
+    if (!email) throw new AppError(400, 'Email is required')
+
+    const result = await authService.devLogin(email)
+    res.json({
+      success: true,
+      data: result,
+    })
+  } catch (error) {
+    next(error)
+  }
+}

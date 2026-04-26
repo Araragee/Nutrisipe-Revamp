@@ -7,10 +7,11 @@ import { emitPostCommented } from '../socket'
 interface CreateCommentData {
   postId: string
   content: string
+  parentId?: string
 }
 
 export async function createComment(userId: string, data: CreateCommentData) {
-  const { postId, content } = data
+  const { postId, content, parentId } = data
 
   // Verify post exists
   const post = await prisma.post.findUnique({
@@ -21,6 +22,16 @@ export async function createComment(userId: string, data: CreateCommentData) {
     throw new AppError(404, 'Post not found')
   }
 
+  // Verify parent comment exists if provided
+  if (parentId) {
+    const parent = await prisma.comment.findUnique({
+      where: { id: parentId },
+    })
+    if (!parent) {
+      throw new AppError(404, 'Parent comment not found')
+    }
+  }
+
   // Create comment and increment post comment count
   const [comment] = await prisma.$transaction([
     prisma.comment.create({
@@ -28,6 +39,7 @@ export async function createComment(userId: string, data: CreateCommentData) {
         userId,
         postId,
         content,
+        parentId,
       },
       include: {
         user: {
@@ -50,7 +62,7 @@ export async function createComment(userId: string, data: CreateCommentData) {
     }),
   ])
 
-  // Create notification for post owner (only if they're not the commenter)
+  // Create notification for post owner
   if (post.userId !== userId) {
     await createNotification({
       userId: post.userId,
@@ -61,10 +73,26 @@ export async function createComment(userId: string, data: CreateCommentData) {
     })
   }
 
+  // Create notification for parent comment owner if it's a reply
+  if (parentId) {
+    const parentComment = await prisma.comment.findUnique({
+      where: { id: parentId },
+    })
+    if (parentComment && parentComment.userId !== userId && parentComment.userId !== post.userId) {
+      await createNotification({
+        userId: parentComment.userId,
+        actorId: userId,
+        type: 'comment', // Could be 'reply' if we had that type
+        postId: postId,
+        commentId: comment.id,
+      })
+    }
+  }
+
   // Process @mentions in the comment
   await processMentions(content, userId, 'COMMENT', postId, comment.id)
 
-  // Emit real-time update - get updated comment count
+  // Emit real-time update
   const updatedPost = await prisma.post.findUnique({
     where: { id: postId },
     select: { commentCount: true }
@@ -77,13 +105,17 @@ export async function createComment(userId: string, data: CreateCommentData) {
 export async function getCommentsByPost(
   postId: string,
   page: number = 1,
-  limit: number = 20
+  limit: number = 20,
+  parentId: string | null = null
 ) {
   const skip = (page - 1) * limit
 
   const [comments, total] = await Promise.all([
     prisma.comment.findMany({
-      where: { postId },
+      where: { 
+        postId,
+        parentId: parentId || null
+      },
       include: {
         user: {
           select: {
@@ -93,6 +125,9 @@ export async function getCommentsByPost(
             avatarUrl: true,
           },
         },
+        _count: {
+          select: { replies: true }
+        }
       },
       orderBy: {
         createdAt: 'desc',
@@ -101,7 +136,10 @@ export async function getCommentsByPost(
       take: limit,
     }),
     prisma.comment.count({
-      where: { postId },
+      where: { 
+        postId,
+        parentId: parentId || null
+      },
     }),
   ])
 

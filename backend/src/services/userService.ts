@@ -194,61 +194,6 @@ export async function getUserFollowing(userId: string, page: number = 1, limit: 
   }
 }
 
-export async function getUserActivity(userId: string, limit: number = 20) {
-  const [recentLikes, recentFollows] = await Promise.all([
-    prisma.like.findMany({
-      where: { userId },
-      take: Math.floor(limit / 2),
-      orderBy: { createdAt: 'desc' },
-      include: {
-        post: {
-          select: {
-            id: true,
-            title: true,
-            imageUrl: true,
-            user: {
-              select: {
-                id: true,
-                username: true,
-                displayName: true,
-              },
-            },
-          },
-        },
-      },
-    }),
-    prisma.follow.findMany({
-      where: { followerId: userId },
-      take: Math.floor(limit / 2),
-      orderBy: { createdAt: 'desc' },
-      include: {
-        following: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            avatarUrl: true,
-          },
-        },
-      },
-    }),
-  ])
-
-  const activities = [
-    ...recentLikes.map(like => ({
-      type: 'like' as const,
-      createdAt: like.createdAt,
-      post: like.post,
-    })),
-    ...recentFollows.map(follow => ({
-      type: 'follow' as const,
-      createdAt: follow.createdAt,
-      user: follow.following,
-    })),
-  ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-
-  return activities.slice(0, limit)
-}
 
 export async function updateUserProfile(userId: string, data: UpdateProfileData) {
   const user = await prisma.user.update({
@@ -351,3 +296,131 @@ export async function getSavedPosts(userId: string, page: number, limit: number)
     },
   }
 }
+
+export async function getLikedPosts(userId: string, page: number = 1, limit: number = 20) {
+  const skip = (page - 1) * limit
+
+  const [likes, total] = await Promise.all([
+    prisma.like.findMany({
+      where: { userId },
+      include: {
+        post: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.like.count({ where: { userId } }),
+  ])
+
+  const posts = likes.map(like => ({
+    ...transformPost(like.post),
+    isLiked: true,
+    isSaved: false, // We could also check if it's saved by the user
+    likedAt: like.createdAt,
+  }))
+
+  return {
+    posts,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  }
+}
+
+export async function getUserPreferences(userId: string) {
+  let preferences = await prisma.userPreference.findUnique({
+    where: { userId },
+  })
+
+  if (!preferences) {
+    // Create default
+    preferences = await prisma.userPreference.create({
+      data: { userId },
+    })
+  }
+
+  return {
+    cuisines: JSON.parse(preferences.cuisines),
+    allergies: JSON.parse(preferences.allergies),
+    dietary: JSON.parse(preferences.dietary),
+  }
+}
+
+export async function updateUserPreferences(
+  userId: string,
+  data: { cuisines?: string[]; allergies?: string[]; dietary?: string[] }
+) {
+  const updateData: any = {}
+  if (data.cuisines) updateData.cuisines = JSON.stringify(data.cuisines)
+  if (data.allergies) updateData.allergies = JSON.stringify(data.allergies)
+  if (data.dietary) updateData.dietary = JSON.stringify(data.dietary)
+
+  const preferences = await prisma.userPreference.upsert({
+    where: { userId },
+    update: updateData,
+    create: {
+      userId,
+      ...updateData,
+    },
+  })
+
+  return {
+    cuisines: JSON.parse(preferences.cuisines),
+    allergies: JSON.parse(preferences.allergies),
+    dietary: JSON.parse(preferences.dietary),
+  }
+}
+
+export async function getUserActivity(userId: string, limit: number = 20) {
+  const [comments, likes, follows, ratings] = await Promise.all([
+    prisma.comment.findMany({
+      where: { userId },
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: { post: { select: { title: true } } }
+    }),
+    prisma.like.findMany({
+      where: { userId },
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: { post: { select: { title: true } } }
+    }),
+    prisma.follow.findMany({
+      where: { followerId: userId },
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: { following: { select: { username: true, displayName: true } } }
+    }),
+    prisma.rating.findMany({
+      where: { userId },
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: { post: { select: { title: true } } }
+    }),
+  ])
+
+  const activities = [
+    ...comments.map(c => ({ id: c.id, type: 'comment', date: c.createdAt, data: { content: c.content, postTitle: c.post.title, postId: c.postId } })),
+    ...likes.map(l => ({ id: l.id, type: 'like', date: l.createdAt, data: { postTitle: l.post.title, postId: l.postId } })),
+    ...follows.map(f => ({ id: f.id, type: 'follow', date: f.createdAt, data: { username: f.following.username, displayName: f.following.displayName, userId: f.followingId } })),
+    ...ratings.map(r => ({ id: r.id, type: 'rating', date: r.createdAt, data: { score: r.rating, postTitle: r.post.title, postId: r.postId } })),
+  ]
+
+  return activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, limit)
+}
+

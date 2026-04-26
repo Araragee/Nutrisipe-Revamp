@@ -11,7 +11,11 @@
       </div>
     </div>
 
-    <div v-if="ratings.length > 0" class="ratings-container">
+    <div v-if="isLoading" class="text-center py-10">
+      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-orange mx-auto"></div>
+    </div>
+
+    <div v-else-if="ratings.length > 0" class="ratings-container">
       <div
         v-for="rating in ratings"
         :key="rating.id"
@@ -40,7 +44,7 @@
 
           <button
             v-if="canDelete(rating)"
-            @click="$emit('delete', rating.id)"
+            @click="handleDeleteRating(rating.id)"
             class="delete-button"
             title="Delete rating"
           >
@@ -63,30 +67,56 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import StarRating from '@/components/common/StarRating.vue'
 import { useAuthStore } from '@/stores/auth'
-import type { Rating } from '@/http/endpoints/ratings'
+import { ratingsApi, type Rating } from '@/http/endpoints/ratings'
 
 interface Props {
-  ratings: Rating[]
-  averageRating: number
-  totalRatings: number
+  postId: string
+  // Optional initial data
+  initialRatings?: Rating[]
+  initialAverage?: number
+  initialTotal?: number
 }
 
-interface Emits {
-  (e: 'delete', ratingId: string): void
-}
-
-defineProps<Props>()
-defineEmits<Emits>()
+const props = defineProps<Props>()
 
 const authStore = useAuthStore()
 
+const ratings = ref<Rating[]>(props.initialRatings || [])
+const averageRating = ref(props.initialAverage || 0)
+const totalRatings = ref(props.initialTotal || 0)
+const isLoading = ref(false)
+
 const currentUserId = computed(() => authStore.user?.id)
+
+async function fetchRatings() {
+  isLoading.value = true
+  try {
+    const data = await ratingsApi.getPostRatings(props.postId)
+    ratings.value = data.ratings
+    averageRating.value = data.averageRating
+    totalRatings.value = data.totalRatings
+  } catch (error) {
+    console.error('Failed to fetch ratings:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
 
 function canDelete(rating: Rating): boolean {
   return rating.userId === currentUserId.value
+}
+
+async function handleDeleteRating(ratingId: string) {
+  if (!confirm('Are you sure you want to delete your review?')) return
+  try {
+    await ratingsApi.deleteRating(ratingId)
+    await fetchRatings() // Refresh
+  } catch (error) {
+    console.error('Failed to delete rating:', error)
+  }
 }
 
 function formatDate(dateString: string): string {
@@ -102,6 +132,11 @@ function formatDate(dateString: string): string {
   if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`
   return `${Math.floor(diffDays / 365)} years ago`
 }
+
+onMounted(fetchRatings)
+watch(() => props.postId, fetchRatings)
+
+defineExpose({ refresh: fetchRatings })
 </script>
 
 <style scoped>

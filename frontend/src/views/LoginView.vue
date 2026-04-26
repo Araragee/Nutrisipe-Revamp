@@ -38,10 +38,43 @@ async function handleLogin() {
   }
 }
 
-function loginWithDemo(demoEmail: string) {
-  email.value = demoEmail
-  password.value = 'password123'
-  handleLogin()
+async function loginWithDemo(demoEmail: string) {
+  isLoading.value = true
+  error.value = null
+  try {
+    const success = await authStore.loginWithDev(demoEmail)
+    if (success) {
+      const redirect = route.query.redirect as string || '/'
+      router.push(redirect)
+    }
+  } catch (err: any) {
+    error.value = 'Demo login failed'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function handleGoogleLogin() {
+  // Simplified Google login simulation since vue3-google-login integration 
+  // normally happens via a specialized button component or useGoogleLogin hook.
+  // For now, we'll simulate the call to the backend.
+  isLoading.value = true
+  error.value = null
+  try {
+    const success = await authStore.loginWithGoogle({
+      email: 'google-user@example.com',
+      name: 'Google User',
+      google_id: '123456789'
+    })
+    if (success) {
+      const redirect = route.query.redirect as string || '/'
+      router.push(redirect)
+    }
+  } catch (err: any) {
+    error.value = 'Google login failed'
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
@@ -56,11 +89,16 @@ function loginWithDemo(demoEmail: string) {
       <h2 class="auth-title font-montserrat font-extrabold text-[28px] tracking-tight mb-1.5">Welcome back</h2>
       <p class="auth-sub text-sm text-text-muted mb-8">Sign in to your Nutrisipe account.</p>
 
+      <!-- Error Message -->
+      <div v-if="error" class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold animate-shake">
+        {{ error }}
+      </div>
+
       <div class="social-btns flex gap-3 mb-6">
-        <button class="social-btn flex-1 flex items-center justify-center gap-2.5 bg-surface border-1.5 border-[var(--glass-border)] rounded-[14px] p-3.5 cursor-pointer text-sm font-medium transition-all hover:border-orange hover:shadow-[0_4px_16px_var(--orange-glow)] dark:bg-[rgb(30,28,38)]">
+        <button @click="handleGoogleLogin" class="social-btn flex-1 flex items-center justify-center gap-2.5 bg-surface border-1.5 border-[var(--glass-border)] rounded-[14px] p-3.5 cursor-pointer text-sm font-medium transition-all hover:border-orange hover:shadow-[0_4px_16px_var(--orange-glow)] dark:bg-[rgb(30,28,38)]">
           <span class="font-serif font-bold text-base text-[#4285F4]">G</span> Google
         </button>
-        <button class="social-btn flex-1 flex items-center justify-center gap-2.5 bg-surface border-1.5 border-[var(--glass-border)] rounded-[14px] p-3.5 cursor-pointer text-sm font-medium transition-all hover:border-orange hover:shadow-[0_4px_16px_var(--orange-glow)] dark:bg-[rgb(30,28,38)]">
+        <button class="social-btn flex-1 flex items-center justify-center gap-2.5 bg-surface border-1.5 border-[var(--glass-border)] rounded-[14px] p-3.5 cursor-pointer text-sm font-medium transition-all opacity-50 cursor-not-allowed dark:bg-[rgb(30,28,38)]">
           <span class="text-base">🍎</span> Apple
         </button>
       </div>
@@ -87,7 +125,7 @@ function loginWithDemo(demoEmail: string) {
       </form>
 
       <div class="mt-8">
-        <p class="text-xs text-text-dim text-center mb-3">Quick demo login (password: password123)</p>
+        <p class="text-xs text-text-dim text-center mb-3">Quick demo login (no password needed)</p>
         <div class="flex gap-2">
           <button v-for="demo in demoAccounts" :key="demo.email" @click="loginWithDemo(demo.email)" class="flex-1 py-2 rounded-lg border border-orange/30 text-[10px] font-bold text-orange hover:bg-orange-soft transition-all">
             {{ demo.label }}
@@ -96,7 +134,7 @@ function loginWithDemo(demoEmail: string) {
       </div>
 
       <p class="auth-footer text-center mt-5 text-[13px] text-text-dim">
-        Don't have an account? <a class="text-orange font-bold cursor-pointer hover:underline">Sign up</a>
+        Don't have an account? <router-link to="/register" class="text-orange font-bold cursor-pointer hover:underline">Sign up</router-link>
       </p>
     </div>
   </div>

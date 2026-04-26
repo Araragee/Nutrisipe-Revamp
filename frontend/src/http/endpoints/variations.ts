@@ -1,72 +1,32 @@
 import { httpClient } from '../client'
+import type { ApiResponse, PaginatedResponse } from '@/typescript/interface/ApiResponse'
+import type { Post } from '@/typescript/interface/Post'
 
-export interface ForkRecipeData {
-  title: string
-  description?: string
-  variationDescription?: string
-  recipeData?: {
-    servings?: number
-    prepTime?: number
-    cookTime?: number
-    totalTime?: number
-    difficulty?: string
-    ingredients?: any[]
-    instructions?: any[]
-    nutrition?: any
-  }
-}
-
-export interface RecipeVariation {
+export interface Variation {
   id: string
   originalPostId: string
   variationPostId: string
   userId: string
   description?: string
   createdAt: string
-  variationPost: any
-  user: {
-    id: string
-    username: string
-    displayName: string
-    avatarUrl?: string
-  }
+  variationPost: Post
 }
 
 export interface VariationChainItem {
-  post: any
-  variation?: RecipeVariation
+  post: Post
+  variation?: any
 }
 
-export const variationsEndpoints = {
-  // Fork a recipe
-  forkRecipe: async (postId: string, data: ForkRecipeData) => {
-    const response = await httpClient.post(`/variations/${postId}/fork`, data)
-    return response.data
-  },
-
-  // Get all variations of a recipe
-  getVariations: async (postId: string, page = 1, limit = 20) => {
-    const response = await httpClient.get(`/variations/${postId}/variations`, {
-      params: { page, limit }
-    })
-    return response.data
-  },
-
-  // Get original recipe if this is a variation
-  getOriginalRecipe: async (postId: string) => {
-    const response = await httpClient.get(`/variations/${postId}/original`)
-    return response.data
-  },
-
-  // Get variation chain (full lineage)
-  getVariationChain: async (postId: string) => {
-    const response = await httpClient.get(`/variations/${postId}/chain`)
-    return response.data
-  },
-
-  // Delete variation relationship
-  deleteVariation: async (variationId: string) => {
-    const response = await httpClient.delete(`/variations/${variationId}`)
-    return response.data
-  }
+export const variationsApi = {
+  fork: (postId: string, data: any) =>
+    httpClient.post<ApiResponse<any>>(`/variations/${postId}/fork`, data),
+    
+  getVariations: (postId: string, params?: any) =>
+    httpClient.get<PaginatedResponse<Variation>>(`/variations/${postId}/variations`, { params }),
+    
+  getOriginal: (postId: string) =>
+    httpClient.get<ApiResponse<{ originalPost: Post; variation: any }>>(`/variations/${postId}/original`),
+    
+  getChain: (postId: string) =>
+    httpClient.get<ApiResponse<{ chain: any[]; depth: number }>>(`/variations/${postId}/chain`),
 }

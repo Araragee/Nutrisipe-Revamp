@@ -5,6 +5,15 @@ import { postsApi } from "@/http/endpoints/posts";
 import { useAuthStore } from "@/stores/auth";
 import { useUiStore } from "@/stores/ui";
 import UserAvatar from "@/components/user/UserAvatar.vue";
+import FollowButton from "@/components/user/FollowButton.vue";
+import CommentSection from "@/components/post/CommentSection.vue";
+import RatingInput from "@/components/ratings/RatingInput.vue";
+import RatingList from "@/components/ratings/RatingList.vue";
+import VariationList from "@/components/recipe/VariationList.vue";
+import CollectionModal from "@/components/profile/CollectionModal.vue";
+import { variationsApi } from "@/http/endpoints/variations";
+import { ratingsApi } from "@/http/endpoints/ratings";
+import { useRouter } from "vue-router";
 import type { Post } from "@/typescript/interface/Post";
 
 const props = defineProps<{
@@ -16,11 +25,17 @@ const emit = defineEmits<{
   close: [];
 }>();
 
+const router = useRouter();
 const authStore = useAuthStore();
 const uiStore = useUiStore();
 const post = ref<Post | null>(null);
 const isLoading = ref(false);
 const activeTab = ref("ingredients");
+const ratingListRef = ref<any>(null);
+const showCollectionModal = ref(false);
+const isForking = ref(false);
+
+const isOwner = computed(() => authStore.user?.id === post.value?.userId);
 
 const nutritionFacts = computed(() => {
   const n = post.value?.recipe?.nutrition;
@@ -31,6 +46,33 @@ const nutritionFacts = computed(() => {
     { label: "Fat", val: n?.fat || "0", unit: "g", icon: "🥑" },
   ];
 });
+
+async function forkRecipe() {
+  if (!authStore.isAuthenticated) {
+    uiStore.showToast("Please login to fork recipes", "info");
+    return;
+  }
+  if (!post.value) return;
+
+  isForking.value = true;
+  try {
+    const forkData = {
+      title: `${post.value.title} (My version)`,
+      description: post.value.description,
+      variationDescription: "Inspired by the original",
+      ...post.value.recipe,
+    };
+    const response = await variationsApi.fork(post.value.id, forkData);
+    uiStore.showToast("Recipe forked! Redirecting to edit...", "success");
+    emit("close");
+    router.push(`/recipes/${response.data.data.variationPost.id}/edit`);
+  } catch (error) {
+    console.error("Failed to fork recipe:", error);
+    uiStore.showToast("Failed to fork recipe", "error");
+  } finally {
+    isForking.value = false;
+  }
+}
 
 async function fetchPost() {
   if (!props.postId) return;
@@ -44,6 +86,56 @@ async function fetchPost() {
     emit("close");
   } finally {
     isLoading.value = false;
+  }
+}
+
+async function handleRatingSubmit(data: { rating: number; review?: string }) {
+  if (!post.value) return;
+  try {
+    await ratingsApi.createOrUpdateRating(post.value.id, data.rating, data.review);
+    uiStore.showToast("Rating submitted!", "success");
+
+    // Refresh post and rating list
+    const response = await postsApi.getById(post.value.id);
+    post.value = response.data.data;
+    ratingListRef.value?.refresh();
+  } catch (error) {
+    console.error("Failed to submit rating:", error);
+    uiStore.showToast("Failed to submit rating", "error");
+  }
+}
+
+async function toggleLike() {
+  if (!post.value || !authStore.isAuthenticated) {
+    uiStore.showToast("Please sign in to like", "info");
+    return;
+  }
+  const wasLiked = post.value.isLiked;
+  post.value.isLiked = !wasLiked;
+  post.value.likeCount += wasLiked ? -1 : 1;
+  try {
+    if (wasLiked) await socialApi.unlikePost(post.value.id);
+    else await socialApi.likePost(post.value.id);
+  } catch {
+    post.value.isLiked = wasLiked;
+    post.value.likeCount += wasLiked ? 1 : -1;
+  }
+}
+
+async function toggleSave() {
+  if (!post.value || !authStore.isAuthenticated) {
+    uiStore.showToast("Please sign in to save", "info");
+    return;
+  }
+  const wasSaved = post.value.isSaved;
+  post.value.isSaved = !wasSaved;
+  post.value.saveCount += wasSaved ? -1 : 1;
+  try {
+    if (wasSaved) await socialApi.unsavePost(post.value.id);
+    else await socialApi.savePost(post.value.id);
+  } catch {
+    post.value.isSaved = wasSaved;
+    post.value.saveCount += wasSaved ? 1 : -1;
   }
 }
 
@@ -66,10 +158,7 @@ watch(
 );
 
 const recipeImage = computed(() => {
-  if (!post.value?.imageUrl)
-    return `https://picsum.photos/800/1000?random=${post.value?.id || Math.random()}`;
-  if (post.value.imageUrl.startsWith("http")) return post.value.imageUrl;
-  return `http://localhost:3001/${post.value.imageUrl}`;
+  return post.value?.imageUrl || `https://picsum.photos/800/1000?random=${post.value?.id || Math.random()}`;
 });
 </script>
 
@@ -135,6 +224,13 @@ const recipeImage = computed(() => {
                   post.ratingCount
                 }})
               </div>
+              <button
+                @click="toggleLike"
+                class="ml-auto w-10 h-10 rounded-full bg-background-secondary border border-glass-border flex items-center justify-center transition-all"
+                :class="post.isLiked ? 'text-orange' : 'text-text-dim'"
+              >
+                {{ post.isLiked ? '❤️' : '🤍' }}
+              </button>
             </div>
 
             <h2
@@ -155,11 +251,9 @@ const recipeImage = computed(() => {
                 <p class="font-bold text-sm">{{ post.user.displayName }}</p>
                 <p class="text-xs text-text-dim">@{{ post.user.username }}</p>
               </div>
-              <button
-                class="px-5 py-2.5 rounded-xl bg-orange-soft text-orange font-bold text-xs hover:bg-orange hover:text-white transition-all"
-              >
-                Follow
-              </button>
+              <div v-if="!isOwner">
+                <FollowButton :user-id="post.user.id" :is-following="post.user.isFollowing" />
+              </div>
             </div>
           </div>
 
@@ -186,7 +280,7 @@ const recipeImage = computed(() => {
             <!-- Tabs -->
             <div class="flex gap-8 border-b border-glass-border mb-6">
               <button
-                v-for="t in ['ingredients', 'instructions']"
+                v-for="t in ['ingredients', 'instructions', 'reviews']"
                 :key="t"
                 @click="activeTab = t"
                 :class="[
@@ -214,7 +308,7 @@ const recipeImage = computed(() => {
                   <div class="w-2 h-2 rounded-full bg-orange"></div>
                   <span class="text-sm font-medium">{{ ing.name }}</span>
                   <span class="ml-auto text-xs font-bold text-orange">{{
-                    ing.qty
+                    ing.quantity
                   }}</span>
                 </div>
               </div>
@@ -257,26 +351,46 @@ const recipeImage = computed(() => {
                 No instructions listed.
               </div>
             </div>
+
+            <div v-if="activeTab === 'reviews'" class="space-y-6">
+               <div v-if="authStore.isAuthenticated && !isOwner">
+                  <RatingInput @submit="handleRatingSubmit" />
+                  <div class="my-6 border-b border-glass-border"></div>
+               </div>
+               <RatingList ref="ratingListRef" :post-id="post.id" />
+               <div class="my-8"></div>
+               <CommentSection :post-id="post.id" />
+            </div>
+          </div>
+
+          <!-- Variations -->
+          <div class="px-8 pb-10 border-t border-glass-border pt-8">
+             <VariationList :post-id="post.id" />
           </div>
 
           <!-- Footer -->
           <div
-            class="p-6 px-8 border-top border-glass-border bg-background flex gap-4"
+            class="p-6 px-8 border-t border-glass-border bg-background flex gap-4"
           >
             <button
-              class="flex-1 btn-primary py-3.5 !text-sm flex items-center justify-center gap-2"
-            >
-              <span>🔖</span> Save Recipe
-            </button>
-            <button
+              @click="showCollectionModal = true"
               class="flex-1 btn-secondary py-3.5 !text-sm flex items-center justify-center gap-2"
             >
-              <span>📤</span> Share
+              <span>📁</span> Save
+            </button>
+            <button
+              @click="forkRecipe"
+              :disabled="isForking"
+              class="flex-1 btn-primary py-3.5 !text-sm flex items-center justify-center gap-2"
+            >
+              <span>{{ isForking ? '⏳' : '🍴' }}</span> Fork
             </button>
           </div>
         </div>
       </template>
     </div>
+
+    <CollectionModal v-if="post && showCollectionModal" :show="showCollectionModal" :post-id="post.id" @close="showCollectionModal = false" />
   </div>
 </template>
 

@@ -61,6 +61,24 @@ const recipeImage = computed(() => {
 const tags = computed(() => {
   return props.post.tags || ["Healthy", "Nutrisipe"];
 });
+
+const nutriScoreClass = computed(() => {
+  const score = props.post.recipe?.nutriScore;
+  switch (score) {
+    case "A":
+      return "bg-[#008b4c]";
+    case "B":
+      return "bg-[#85bb2f]";
+    case "C":
+      return "bg-[#fecb02]";
+    case "D":
+      return "bg-[#ee8100]";
+    case "E":
+      return "bg-[#e63e11]";
+    default:
+      return "bg-gray-500";
+  }
+});
 </script>
 
 <template>
@@ -92,6 +110,15 @@ const tags = computed(() => {
       :class="{ '!opacity-100 !translate-y-0 !scale-100': post.isLiked }"
     >
       {{ formatNumber(post.likeCount) }}
+    </div>
+
+    <!-- Nutri-Score -->
+    <div
+      v-if="post.recipe?.nutriScore"
+      class="absolute top-3 left-3 z-10 px-2 py-1 rounded-md font-montserrat font-extrabold text-[10px] text-white shadow-lg backdrop-blur-md border border-white/20"
+      :class="nutriScoreClass"
+    >
+      Nutri-Score {{ post.recipe.nutriScore }}
     </div>
 
     <!-- Bottom Overlay -->

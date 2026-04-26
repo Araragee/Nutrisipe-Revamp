@@ -19,5 +19,9 @@ export interface Post {
   user: UserBasic
   isLiked?: boolean
   isSaved?: boolean
+  averageRating: number
+  ratingCount: number
+  variationCount: number
+  isVariation: boolean
   recipe?: Recipe
 }

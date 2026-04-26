@@ -38,4 +38,9 @@ export const usersApi = {
     httpClient.get<PaginatedResponse<any>>(`/users/${id}/saved`, {
       params: { page, limit },
     }),
+
+  getLikedPosts: (id: string, page = 1, limit = 20) =>
+    httpClient.get<PaginatedResponse<any>>(`/users/${id}/liked`, {
+      params: { page, limit },
+    }),
 }

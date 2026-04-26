@@ -15,6 +15,9 @@ export const authApi = {
   me: () => httpClient.get<ApiResponse<User>>('/auth/me'),
 
   logout: () => httpClient.post<ApiResponse<void>>('/auth/logout'),
-
+  
   logoutAll: () => httpClient.post<ApiResponse<void>>('/auth/logout-all'),
+
+  devLogin: (data: { email: string }) =>
+    httpClient.post<ApiResponse<AuthResponse>>('/auth/dev-login', data),
 }

@@ -47,7 +47,8 @@ export async function getVariationsHandler(
 
     res.json({
       success: true,
-      data: result
+      data: result.variations,
+      pagination: result.pagination
     })
   } catch (error) {
     next(error)

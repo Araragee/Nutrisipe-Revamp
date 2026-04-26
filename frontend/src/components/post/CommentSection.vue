@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { createComment, getCommentsByPost, deleteComment, updateComment } from '@/http/comments'
+import { commentsApi } from '@/http/endpoints/comments'
 import UserAvatar from '@/components/user/UserAvatar.vue'
+import CommentItem from './CommentItem.vue'
 import type { Comment } from '@/typescript/interface/Comment'
 
 const props = defineProps<{
@@ -15,16 +16,15 @@ const comments = ref<Comment[]>([])
 const isLoading = ref(false)
 const newCommentText = ref('')
 const isSubmitting = ref(false)
-const editingCommentId = ref<string | null>(null)
-const editingCommentText = ref('')
 
 const canComment = computed(() => newCommentText.value.trim().length > 0)
 
 async function loadComments() {
+  if (isLoading.value) return
   isLoading.value = true
   try {
-    const response = await getCommentsByPost(props.postId, 1, 50)
-    comments.value = response.data
+    const response = await commentsApi.getByPost(props.postId, 1, 20)
+    comments.value = response.data.data
   } catch (error) {
     console.error('Failed to load comments:', error)
   } finally {
@@ -37,11 +37,11 @@ async function handleSubmitComment() {
 
   isSubmitting.value = true
   try {
-    const newComment = await createComment({
+    const response = await commentsApi.create({
       postId: props.postId,
       content: newCommentText.value.trim(),
     })
-    comments.value.unshift(newComment)
+    comments.value.unshift(response.data.data)
     newCommentText.value = ''
   } catch (error) {
     console.error('Failed to create comment:', error)
@@ -54,49 +54,18 @@ async function handleDeleteComment(commentId: string) {
   if (!confirm('Delete this comment?')) return
 
   try {
-    await deleteComment(commentId)
+    await commentsApi.delete(commentId)
     comments.value = comments.value.filter((c) => c.id !== commentId)
   } catch (error) {
     console.error('Failed to delete comment:', error)
   }
 }
 
-function startEditComment(comment: Comment) {
-  editingCommentId.value = comment.id
-  editingCommentText.value = comment.content
-}
-
-function cancelEdit() {
-  editingCommentId.value = null
-  editingCommentText.value = ''
-}
-
-async function handleUpdateComment(commentId: string) {
-  if (editingCommentText.value.trim().length === 0) return
-
-  try {
-    const updatedComment = await updateComment(commentId, editingCommentText.value.trim())
-    const index = comments.value.findIndex((c) => c.id === commentId)
-    if (index !== -1) {
-      comments.value[index] = updatedComment
-    }
-    cancelEdit()
-  } catch (error) {
-    console.error('Failed to update comment:', error)
+function handleUpdateComment(updatedComment: Comment) {
+  const index = comments.value.findIndex(c => c.id === updatedComment.id)
+  if (index !== -1) {
+    comments.value[index] = updatedComment
   }
-}
-
-function formatDate(dateString: string) {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-  if (diffInSeconds < 60) return 'just now'
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
-  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`
-
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 onMounted(() => {
@@ -105,111 +74,76 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col h-full">
-    <!-- Comment Input -->
-    <div class="p-4 border-b border-gray-200">
-      <div class="flex gap-3">
-        <UserAvatar v-if="authStore.user" :user="authStore.user" size="sm" />
-        <div class="flex-1">
-          <textarea
-            v-model="newCommentText"
-            placeholder="Add a comment..."
-            rows="2"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
-            @keydown.enter.ctrl="handleSubmitComment"
-          />
-          <div class="flex justify-end mt-2">
-            <button
-              @click="handleSubmitComment"
-              :disabled="!canComment || isSubmitting"
-              :class="[
-                'px-4 py-2 rounded-lg font-medium transition-all',
-                canComment && !isSubmitting
-                  ? 'bg-orange-500 text-white hover:bg-orange-600'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed',
-              ]"
-            >
-              {{ isSubmitting ? 'Posting...' : 'Post' }}
-            </button>
-          </div>
+  <div class="comment-section">
+    <div class="section-header flex items-center justify-between mb-8">
+      <h3 class="font-montserrat font-extrabold text-xl tracking-tight">
+        Comments <span class="ml-2 text-orange text-sm">{{ comments.length }}</span>
+      </h3>
+    </div>
+
+    <!-- Input Area -->
+    <div v-if="authStore.isAuthenticated" class="mb-10 flex gap-4">
+      <UserAvatar v-if="authStore.user" :user="authStore.user" size="md" class="shrink-0" />
+      <div class="flex-1 relative group">
+        <textarea
+          v-model="newCommentText"
+          placeholder="Add a comment..."
+          class="w-full bg-background-secondary border-1.5 border-glass-border rounded-2xl p-5 text-sm focus:border-orange outline-none resize-none transition-all duration-300 min-h-[100px] group-hover:border-white/20"
+          @keyup.enter.ctrl="handleSubmitComment"
+        ></textarea>
+        <div class="flex items-center justify-between mt-3 px-1">
+          <p class="text-[10px] text-text-dim italic">Press Ctrl+Enter to post</p>
+          <button
+            @click="handleSubmitComment"
+            :disabled="!canComment || isSubmitting"
+            class="px-8 py-2.5 bg-orange hover:bg-orange-light text-white text-xs font-bold rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:scale-100"
+          >
+            {{ isSubmitting ? 'Posting...' : 'Post Comment' }}
+          </button>
         </div>
       </div>
+    </div>
+    <div v-else class="mb-10 p-6 bg-orange-soft/30 rounded-2xl border border-orange/10 text-center">
+      <p class="text-sm text-text-dim mb-3">Please sign in to join the conversation.</p>
+      <button @click="$router.push('/login')" class="text-xs font-bold text-orange hover:underline">Sign In</button>
     </div>
 
     <!-- Comments List -->
-    <div class="flex-1 overflow-y-auto p-4 space-y-4">
-      <div v-if="isLoading" class="text-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
-      </div>
-
-      <div v-else-if="comments.length === 0" class="text-center py-8">
-        <p class="text-gray-500">No comments yet. Be the first to comment!</p>
-      </div>
-
-      <div v-else v-for="comment in comments" :key="comment.id" class="flex gap-3">
-        <RouterLink :to="`/profile/${comment.user.id}`">
-          <UserAvatar :user="comment.user" size="sm" />
-        </RouterLink>
-
-        <div class="flex-1">
-          <div class="bg-gray-50 rounded-lg p-3">
-            <div class="flex items-center justify-between mb-1">
-              <RouterLink
-                :to="`/profile/${comment.user.id}`"
-                class="font-semibold text-sm text-gray-900 hover:text-orange-500 transition-colors"
-              >
-                {{ comment.user.displayName }}
-              </RouterLink>
-              <span class="text-xs text-gray-500">{{ formatDate(comment.createdAt) }}</span>
-            </div>
-
-            <!-- Editing Mode -->
-            <div v-if="editingCommentId === comment.id" class="space-y-2">
-              <textarea
-                v-model="editingCommentText"
-                rows="2"
-                class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
-              />
-              <div class="flex gap-2">
-                <button
-                  @click="handleUpdateComment(comment.id)"
-                  class="px-3 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600 transition-all"
-                >
-                  Save
-                </button>
-                <button
-                  @click="cancelEdit"
-                  class="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-all"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-
-            <!-- Display Mode -->
-            <p v-else class="text-gray-700 text-sm whitespace-pre-wrap">{{ comment.content }}</p>
-          </div>
-
-          <!-- Action Buttons -->
-          <div
-            v-if="authStore.user?.id === comment.userId && editingCommentId !== comment.id"
-            class="flex gap-3 mt-1 ml-3"
-          >
-            <button
-              @click="startEditComment(comment)"
-              class="text-xs text-gray-500 hover:text-orange-500 transition-colors"
-            >
-              Edit
-            </button>
-            <button
-              @click="handleDeleteComment(comment.id)"
-              class="text-xs text-gray-500 hover:text-red-500 transition-colors"
-            >
-              Delete
-            </button>
-          </div>
+    <div v-if="isLoading" class="space-y-6">
+      <div v-for="i in 3" :key="i" class="flex gap-4 animate-pulse">
+        <div class="w-10 h-10 rounded-full bg-background-secondary"></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-4 w-24 bg-background-secondary rounded"></div>
+          <div class="h-12 w-full bg-background-secondary rounded-xl"></div>
         </div>
       </div>
     </div>
+    
+    <div v-else-if="comments.length > 0" class="space-y-8">
+      <CommentItem
+        v-for="comment in comments"
+        :key="comment.id"
+        :comment="comment"
+        :post-id="postId"
+        @delete="handleDeleteComment"
+        @update="handleUpdateComment"
+      />
+    </div>
+
+    <div v-else class="py-12 text-center">
+      <span class="text-4xl mb-4 block">💬</span>
+      <p class="text-text-dim text-sm italic">No comments yet. Be the first to start the discussion!</p>
+    </div>
   </div>
 </template>
+
+<style scoped>
+.comment-section :deep(.comment-item) {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>

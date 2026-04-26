@@ -2,8 +2,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { postsApi } from '@/http/endpoints/posts'
-import { PostCategory } from '@/typescript/types/enums'
 import { useUiStore } from '@/stores/ui'
+import ImageUpload from '@/components/ui/ImageUpload.vue'
+import IngredientAutocomplete from '@/components/recipe/IngredientAutocomplete.vue'
 import type { Post } from '@/typescript/interface/Post'
 
 const route = useRoute()
@@ -18,19 +19,49 @@ const formData = ref({
   title: '',
   description: '',
   category: '',
-  imageUrl: ''
+  imageUrl: '',
+  recipe: {
+    servings: 0,
+    prepTime: 0,
+    cookTime: 0,
+    ingredients: [] as { name: string; quantity: string }[],
+    instructions: [] as { step: number; text: string }[],
+    nutrition: {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      fiber: 0
+    }
+  }
 })
 
 async function loadPost() {
   const id = route.params.id as string
   try {
     const response = await postsApi.getById(id)
-    post.value = response.data.data
+    const p = response.data.data
+    post.value = p
+    
     formData.value = {
-      title: post.value.title,
-      description: post.value.description || '',
-      category: post.value.category,
-      imageUrl: post.value.imageUrl || ''
+      title: p.title,
+      description: p.description || '',
+      category: p.category,
+      imageUrl: p.imageUrl || '',
+      recipe: {
+        servings: p.recipe?.servings || 0,
+        prepTime: p.recipe?.prepTime || 0,
+        cookTime: p.recipe?.cookTime || 0,
+        ingredients: p.recipe?.ingredients ? [...p.recipe.ingredients] : [{ name: '', quantity: '' }],
+        instructions: p.recipe?.instructions ? [...p.recipe.instructions] : [{ step: 1, text: '' }],
+        nutrition: {
+          calories: p.recipe?.nutrition?.calories || 0,
+          protein: p.recipe?.nutrition?.protein || 0,
+          carbs: p.recipe?.nutrition?.carbs || 0,
+          fat: p.recipe?.nutrition?.fat || 0,
+          fiber: p.recipe?.nutrition?.fiber || 0
+        }
+      }
     }
   } catch (error) {
     uiStore.showToast('Failed to load recipe', 'error')
@@ -40,13 +71,30 @@ async function loadPost() {
   }
 }
 
+const addIngredient = () => formData.value.recipe.ingredients.push({ name: '', quantity: '' })
+const removeIngredient = (i: number) => formData.value.recipe.ingredients.splice(i, 1)
+
+const addStep = () => {
+  const nextStep = formData.value.recipe.instructions.length + 1
+  formData.value.recipe.instructions.push({ step: nextStep, text: '' })
+}
+const removeStep = (i: number) => {
+  formData.value.recipe.instructions.splice(i, 1)
+  // Re-index steps
+  formData.value.recipe.instructions.forEach((s, idx) => s.step = idx + 1)
+}
+
 async function handleUpdate() {
   if (!post.value) return
   isSaving.value = true
   try {
     const updateData = {
       ...formData.value,
-      category: PostCategory.Recipe
+      recipe: {
+        ...formData.value.recipe,
+        ingredients: formData.value.recipe.ingredients.filter(i => i.name && i.quantity),
+        instructions: formData.value.recipe.instructions.filter(s => s.text)
+      }
     }
     await postsApi.update(post.value.id, updateData as any)
     uiStore.showToast('Recipe updated successfully', 'success')
@@ -109,13 +157,49 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
             </div>
 
             <div class="space-y-2">
-               <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Cover Image URL</label>
-               <input
-                 v-model="formData.imageUrl"
-                 type="text"
-                 class="w-full bg-background border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all"
-                 placeholder="https://..."
-               />
+               <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Cover Image</label>
+               <ImageUpload v-model="formData.imageUrl" :max-size="10" />
+            </div>
+
+            <!-- Ingredients -->
+            <div class="space-y-4 pt-4">
+               <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Ingredients</label>
+               <div v-for="(ing, i) in formData.recipe.ingredients" :key="i" class="flex gap-3">
+                  <IngredientAutocomplete v-model="ing.name" :placeholder="`Ingredient ${i+1}`" class="flex-1" />
+                  <input v-model="ing.quantity" class="w-24 bg-background border border-glass-border rounded-xl p-3.5 text-sm outline-none focus:border-orange transition-all font-medium" placeholder="Amount" />
+                  <button type="button" @click="removeIngredient(i)" class="w-10 h-10 shrink-0 border border-glass-border rounded-full flex items-center justify-center text-text-dim hover:border-red-500 hover:text-red-500 transition-all">✕</button>
+               </div>
+               <button type="button" @click="addIngredient" class="w-full py-3.5 border border-dashed border-glass-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add ingredient</button>
+            </div>
+
+            <!-- Instructions -->
+            <div class="space-y-4 pt-4">
+               <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Method</label>
+               <div v-for="(s, i) in formData.recipe.instructions" :key="i" class="flex gap-4">
+                  <div class="w-9 h-9 rounded-full bg-orange text-white font-montserrat font-extrabold text-sm flex items-center justify-center shrink-0 mt-1">{{ i + 1 }}</div>
+                  <textarea v-model="s.text" rows="2" class="flex-1 bg-background border border-glass-border rounded-xl p-3.5 text-sm outline-none focus:border-orange transition-all leading-relaxed" :placeholder="`Describe step ${i+1}...`"></textarea>
+                  <button type="button" @click="removeStep(i)" class="w-10 h-10 shrink-0 border border-glass-border rounded-full flex items-center justify-center text-text-dim hover:border-red-500 hover:text-red-500 transition-all">✕</button>
+               </div>
+               <button type="button" @click="addStep" class="w-full py-3.5 border border-dashed border-glass-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add step</button>
+            </div>
+
+            <!-- Nutrition -->
+            <div class="space-y-4 pt-4">
+               <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Nutrition (per serving)</label>
+               <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div v-for="n in [
+                    {k:'calories', l:'Calories', u:'kcal'},
+                    {k:'protein', l:'Protein', u:'g'},
+                    {k:'carbs', l:'Carbs', u:'g'},
+                    {k:'fat', l:'Fat', u:'g'}
+                  ]" :key="n.k" class="p-4 bg-background border border-glass-border rounded-2xl focus-within:border-orange transition-all">
+                    <label class="text-[9px] font-bold text-text-dim uppercase tracking-widest mb-1 block">{{ n.l }}</label>
+                    <div class="flex items-baseline gap-1">
+                      <input v-model="formData.recipe.nutrition[n.k as 'calories'|'protein'|'carbs'|'fat']" type="number" class="w-full bg-transparent border-none outline-none font-montserrat font-extrabold text-xl text-text" placeholder="0" />
+                      <span class="text-[10px] text-text-dim font-bold">{{ n.u }}</span>
+                    </div>
+                  </div>
+               </div>
             </div>
 
             <div class="pt-6 flex gap-4">

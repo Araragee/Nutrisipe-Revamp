@@ -77,6 +77,8 @@ export async function getCurrentUser(userId: string) {
       followerCount: true,
       followingCount: true,
       createdAt: true,
+      role: true,
+      preferences: true,
     },
   })
 
@@ -85,4 +87,44 @@ export async function getCurrentUser(userId: string) {
   }
 
   return user
+}
+
+export async function googleLogin(email: string, displayName: string, avatarUrl?: string, _googleId?: string) {
+  let user = await prisma.user.findUnique({
+    where: { email },
+  })
+
+  if (!user) {
+    // Create new user if doesn't exist
+    const username = email.split('@')[0] + Math.floor(Math.random() * 1000)
+    user = await prisma.user.create({
+      data: {
+        username,
+        email,
+        displayName,
+        avatarUrl: avatarUrl || `https://i.pravatar.cc/150?u=${username}`,
+        passwordHash: 'GOOGLE_AUTH_NO_PASSWORD',
+      },
+    })
+  }
+
+  const token = generateToken(user.id)
+  const { passwordHash, ...userWithoutPassword } = user
+
+  return { user: userWithoutPassword, token }
+}
+
+export async function devLogin(email: string) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+  })
+
+  if (!user) {
+    throw new AppError(404, `Dev user with email ${email} not found. Please seed the database first.`)
+  }
+
+  const token = generateToken(user.id)
+  const { passwordHash, ...userWithoutPassword } = user
+
+  return { user: userWithoutPassword, token }
 }

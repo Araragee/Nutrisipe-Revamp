@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUsersStore } from '@/stores/users'
 import { postsApi } from '@/http/endpoints/posts'
+import { usersApi } from '@/http/endpoints/users'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import FollowButton from '@/components/user/FollowButton.vue'
 import PinGrid from '@/components/feed/PinGrid.vue'
@@ -20,11 +21,14 @@ const usersStore = useUsersStore()
 
 const user = ref<User | null>(null)
 const posts = ref<Post[]>([])
+const savedPosts = ref<Post[]>([])
+const likedPosts = ref<Post[]>([])
 const isLoading = ref(true)
 const showEditModal = ref(false)
 const selectedPostId = ref<string | null>(null)
 const showPostModal = ref(false)
 const activeTab = ref('posts')
+const activities = ref<any[]>([])
 
 const isCurrentUser = computed(() => user.value?.id === authStore.user?.id)
 
@@ -46,8 +50,25 @@ async function loadProfile() {
   isLoading.value = true
   try {
     user.value = await usersStore.getUserById(userId)
-    const response = await postsApi.getByUser(userId, 1, 50)
-    posts.value = response.data.data
+    const [postsRes, activityRes] = await Promise.all([
+      postsApi.getByUser(userId, 1, 50),
+      usersApi.getActivity(userId, 20)
+    ])
+    posts.value = postsRes.data.data
+    activities.value = activityRes.data.data
+
+    if (isCurrentUser.value) {
+      const [savedRes, likedRes] = await Promise.all([
+        usersApi.getSavedPosts(userId, 1, 50),
+        usersApi.getLikedPosts(userId, 1, 50)
+      ])
+      savedPosts.value = savedRes.data.data
+      likedPosts.value = likedRes.data.data
+    } else {
+      // For other users, we can only see their liked posts (saved are private)
+      const likedRes = await usersApi.getLikedPosts(userId, 1, 50)
+      likedPosts.value = likedRes.data.data
+    }
   } catch (error) {
     console.error('Failed to load profile:', error)
   } finally {
@@ -60,7 +81,8 @@ watch(() => route.params.userId, loadProfile)
 
 const displayPosts = computed(() => {
   if (activeTab.value === 'posts') return posts.value
-  // TODO: Add support for 'saved' and 'liked' tabs if API allows
+  if (activeTab.value === 'saved') return savedPosts.value
+  if (activeTab.value === 'liked') return likedPosts.value
   return []
 })
 </script>
@@ -126,27 +148,65 @@ const displayPosts = computed(() => {
 
             <!-- Right: Content Tabs -->
             <div class="flex-1">
-               <div class="flex gap-10 border-b border-glass-border mb-8">
+               <div class="flex gap-10 border-b border-glass-border mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
                   <button
-                    v-for="t in ['posts', 'saved', 'liked']"
+                    v-for="t in ['posts', 'saved', 'liked', 'activity'].filter(tab => tab !== 'saved' || isCurrentUser)"
                     :key="t"
                     @click="activeTab = t"
-                    :class="[
-                      'pb-4 text-sm font-bold uppercase tracking-widest transition-all border-b-2',
-                      activeTab === t ? 'text-orange border-orange' : 'text-text-muted border-transparent hover:text-text'
-                    ]"
+                    class="pb-4 text-sm font-bold uppercase tracking-widest transition-all border-b-2"
+                    :class="activeTab === t ? 'text-orange border-orange' : 'text-text-dim border-transparent'"
                   >
                     {{ t }}
                   </button>
                </div>
 
-               <div v-if="displayPosts.length > 0">
-                  <PinGrid :posts="displayPosts" @post-click="handlePostClick" />
+               <!-- Posts Grid -->
+               <div v-if="activeTab !== 'activity'">
+                  <div v-if="displayPosts.length > 0">
+                    <PinGrid :posts="displayPosts" @post-click="handlePostClick" />
+                  </div>
+                  <div v-else class="py-20 text-center bg-background-secondary rounded-[32px] border-2 border-dashed border-glass-border">
+                    <span class="text-4xl mb-4 block">🍳</span>
+                    <h3 class="font-bold text-lg mb-1">Nothing to show here</h3>
+                    <p class="text-text-dim text-sm">Explore and start building your collection!</p>
+                  </div>
                </div>
-               <div v-else class="py-20 text-center bg-background-secondary rounded-[32px] border-2 border-dashed border-glass-border">
-                  <span class="text-4xl mb-4 block">🍳</span>
-                  <h3 class="font-bold text-lg mb-1">Nothing to show here</h3>
-                  <p class="text-text-dim text-sm">Explore and start building your collection!</p>
+
+               <!-- Activity Tab -->
+               <div v-else class="space-y-4 max-w-2xl">
+                  <div v-if="activities.length > 0" v-for="item in activities" :key="item.id" class="p-6 bg-background-secondary rounded-2xl border border-glass-border group hover:border-orange/20 transition-all">
+                     <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-orange-soft flex items-center justify-center text-xl shrink-0">
+                           <span v-if="item.type === 'like'">❤️</span>
+                           <span v-else-if="item.type === 'comment'">💬</span>
+                           <span v-else-if="item.type === 'follow'">👤</span>
+                           <span v-else-if="item.type === 'rating'">⭐</span>
+                        </div>
+                        <div class="flex-1">
+                           <div class="flex items-center justify-between mb-1">
+                              <p class="text-sm font-medium">
+                                 <template v-if="item.type === 'like'">
+                                    Liked <RouterLink :to="`/recipe/${item.data.postId}`" class="font-bold hover:text-orange">{{ item.data.postTitle }}</RouterLink>
+                                 </template>
+                                 <template v-else-if="item.type === 'comment'">
+                                    Commented on <RouterLink :to="`/recipe/${item.data.postId}`" class="font-bold hover:text-orange">{{ item.data.postTitle }}</RouterLink>
+                                 </template>
+                                 <template v-else-if="item.type === 'follow'">
+                                    Started following <RouterLink :to="`/profile/${item.data.userId}`" class="font-bold hover:text-orange">{{ item.data.displayName }}</RouterLink>
+                                 </template>
+                                 <template v-else-if="item.type === 'rating'">
+                                    Rated <RouterLink :to="`/recipe/${item.data.postId}`" class="font-bold hover:text-orange">{{ item.data.postTitle }}</RouterLink> with {{ item.data.score }} stars
+                                 </template>
+                              </p>
+                              <span class="text-[10px] text-text-dim uppercase font-bold tracking-widest">{{ new Date(item.date).toLocaleDateString() }}</span>
+                           </div>
+                           <p v-if="item.data.content" class="text-sm text-text-muted mt-2 pl-4 border-l-2 border-orange/20 italic line-clamp-2">"{{ item.data.content }}"</p>
+                        </div>
+                     </div>
+                  </div>
+                  <div v-else class="py-20 text-center">
+                    <p class="text-text-dim italic text-sm">No recent activity to show.</p>
+                  </div>
                </div>
             </div>
          </div>

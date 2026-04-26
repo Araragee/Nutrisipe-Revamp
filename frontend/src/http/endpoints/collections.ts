@@ -1,34 +1,33 @@
 import { httpClient } from '../client'
-import type { ApiResponse } from '@/types'
+import type { ApiResponse } from '@/typescript/interface/ApiResponse'
 
-interface CreateCollectionData {
+export interface Collection {
+  id: string
+  userId: string
   name: string
   description?: string
-  isPublic?: boolean
+  isPublic: boolean
+  createdAt: string
+  thumbnailUrl?: string
+  postCount?: number
 }
 
 export const collectionsApi = {
-  getMyCollections: () =>
-    httpClient.get<ApiResponse<any[]>>('/collections/my-collections'),
-
-  getUserCollections: (userId: string) =>
-    httpClient.get<ApiResponse<any[]>>(`/collections/user/${userId}`),
-
-  getCollection: (id: string, params?: { page?: number; limit?: number }) =>
-    httpClient.get<ApiResponse<any>>(`/collections/${id}`, { params }),
-
-  createCollection: (data: CreateCollectionData) =>
-    httpClient.post<ApiResponse<any>>('/collections', data),
-
-  updateCollection: (id: string, data: Partial<CreateCollectionData>) =>
-    httpClient.put<ApiResponse<any>>(`/collections/${id}`, data),
-
-  deleteCollection: (id: string) =>
-    httpClient.delete(`/collections/${id}`),
-
-  addPostToCollection: (collectionId: string, postId: string) =>
-    httpClient.post(`/collections/${collectionId}/posts/${postId}`),
-
-  removePostFromCollection: (collectionId: string, postId: string) =>
-    httpClient.delete(`/collections/${collectionId}/posts/${postId}`),
+  getUserCollections: (userId: string) => 
+    httpClient.get<ApiResponse<Collection[]>>(`/collections/user/${userId}`),
+  
+  create: (data: { name: string; description?: string; isPublic?: boolean }) =>
+    httpClient.post<ApiResponse<Collection>>('/collections', data),
+    
+  getById: (id: string) =>
+    httpClient.get<ApiResponse<Collection & { posts: any[] }>>(`/collections/${id}`),
+    
+  delete: (id: string) =>
+    httpClient.delete<ApiResponse<void>>(`/collections/${id}`),
+    
+  addPost: (collectionId: string, postId: string) =>
+    httpClient.post<ApiResponse<any>>(`/collections/${collectionId}/posts/${postId}`),
+    
+  removePost: (collectionId: string, postId: string) =>
+    httpClient.delete<ApiResponse<any>>(`/collections/${collectionId}/posts/${postId}`),
 }

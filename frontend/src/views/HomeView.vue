@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useFeedStore } from '@/stores/feed'
 import { useAuthStore } from '@/stores/auth'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
-import { searchPosts } from '@/http/posts'
+import { postsApi } from '@/http/endpoints/posts'
 import PinGrid from '@/components/feed/PinGrid.vue'
 import PinSkeleton from '@/components/feed/PinSkeleton.vue'
 import FeedHeader from '@/components/feed/FeedHeader.vue'
@@ -15,6 +15,7 @@ const router = useRouter()
 const feedStore = useFeedStore()
 const authStore = useAuthStore()
 const { isNearBottom } = useInfiniteScroll()
+const route = useRoute()
 
 const searchQuery = ref('')
 const selectedCategory = ref<string>('All')
@@ -22,6 +23,13 @@ const isSearching = ref(false)
 const searchResults = ref<Post[]>([])
 const selectedPostId = ref<string | null>(null)
 const showPostModal = ref(false)
+
+const feedScope = computed(() => {
+  const scope = route.query.scope as string
+  if (scope === 'following') return 'following'
+  if (scope === 'for-you') return 'recommendations'
+  return 'all'
+})
 
 function handlePostClick(postId: string) {
   selectedPostId.value = postId
@@ -50,11 +58,13 @@ async function handleSearch(query?: string) {
   isSearching.value = true
 
   try {
-    const response = await searchPosts(
-      searchQuery.value.trim() || '*',
-      selectedCategory.value === 'All' ? undefined : selectedCategory.value
-    )
-    searchResults.value = response.data
+    let response
+    if (selectedCategory.value !== 'All' && !searchQuery.value.trim()) {
+      response = await postsApi.getByTag(selectedCategory.value)
+    } else {
+      response = await postsApi.search(searchQuery.value.trim())
+    }
+    searchResults.value = response.data.data
   } catch (error) {
     console.error('Search failed:', error)
     searchResults.value = []
@@ -82,23 +92,36 @@ watch(searchQuery, () => {
   debouncedSearch()
 })
 
+watch([feedScope, () => route.query.tag], () => {
+  if (route.query.tag) {
+    selectedCategory.value = route.query.tag as string
+    handleSearch()
+  } else {
+    feedStore.fetchFeed(true, feedScope.value)
+  }
+})
+
 onMounted(async () => {
   if (!authStore.isAuthenticated) {
     router.push('/login')
     return
   }
 
-  // TODO: Implement skeleton loading state during initial user/feed fetch
   if (!authStore.user) {
     await authStore.fetchUser()
   }
 
-  await feedStore.fetchFeed(true)
+  if (route.query.tag) {
+    selectedCategory.value = route.query.tag as string
+    handleSearch()
+  } else {
+    feedStore.fetchFeed(true, feedScope.value)
+  }
 })
 
 watch(isNearBottom, (near) => {
   if (near && !feedStore.isLoading && feedStore.hasMore && !isSearchMode.value) {
-    feedStore.fetchFeed()
+    feedStore.fetchFeed(false, feedScope.value)
   }
 })
 </script>

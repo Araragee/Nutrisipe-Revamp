@@ -133,6 +133,10 @@ class SocketService {
     this.socket?.on("notification:updated", callback);
   }
 
+  onNotificationNew(callback: (data: any) => void) {
+    this.socket?.on("notification:new", callback);
+  }
+
   onPresenceStatus(callback: (presences: any[]) => void) {
     this.socket?.on("presence:status", callback);
   }
@@ -216,6 +220,10 @@ class SocketService {
 
   offNotificationUpdate(callback: (data: any) => void) {
     this.socket?.off("notification:updated", callback);
+  }
+
+  offNotificationNew(callback: (data: any) => void) {
+    this.socket?.off("notification:new", callback);
   }
 
   offPresenceStatus(callback: (presences: any[]) => void) {
