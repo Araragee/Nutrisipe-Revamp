@@ -206,7 +206,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Categories Section -->
-      <div class="ls-card rounded-[32px] p-7 flex flex-col gap-5">
+      <div class="ls-card rounded-[32px] p-3 flex flex-col gap-3">
         <h3 class="font-montserrat font-extrabold text-xl text-text">Categories</h3>
         <div class="flex flex-col gap-1.5">
           <button
@@ -214,7 +214,7 @@ onUnmounted(() => {
             :key="cat.name"
             @click="handleCategoryClick(cat.name)"
             :class="[
-              'flex items-center gap-3.5 p-3.5 rounded-[22px] transition-all border-1.5',
+              'flex items-center gap-3.5 p-3.5 rounded-3xl transition-all border-1.5',
               selectedCategory === cat.name
                 ? 'bg-orange/5 border-orange shadow-[0_4px_12px_rgba(255,107,53,0.12)]'
                 : 'bg-transparent border-transparent hover:bg-background-secondary'
@@ -225,7 +225,7 @@ onUnmounted(() => {
             </div>
             <div class="flex-1 text-left min-w-0">
               <div class="text-[14px] font-bold text-text truncate tracking-tight">{{ cat.name }}</div>
-              <div class="text-[11px] text-text-dim truncate mt-0.5">{{ cat.desc }}</div>
+              <div class="text-[11px] text-text-dim mt-0.5">{{ cat.desc }}</div>
             </div>
             <div :class="[
               'px-2.5 py-1 rounded-full text-[10px] font-extrabold tabular-nums',

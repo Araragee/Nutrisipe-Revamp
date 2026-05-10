@@ -6,7 +6,6 @@ import { useAuthStore } from '@/stores/auth'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import PinGrid from '@/components/feed/PinGrid.vue'
 import PinSkeleton from '@/components/feed/PinSkeleton.vue'
-import FeedHeader from '@/components/feed/FeedHeader.vue'
 import RecipeModal from '@/components/feed/RecipeModal.vue'
 import type { Post } from '@/typescript/interface/Post'
 
@@ -74,8 +73,7 @@ watch(isNearBottom, (near) => {
 </script>
 
 <template>
-  <div class="saved-recipes-view min-h-screen">
-    <FeedHeader />
+  <div class="saved-recipes-view min-h-screen pt-8">
 
     <div class="px-8 py-6">
       <div class="mb-8">

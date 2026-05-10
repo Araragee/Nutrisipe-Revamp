@@ -7,7 +7,6 @@ import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { postsApi } from '@/http/endpoints/posts'
 import PinGrid from '@/components/feed/PinGrid.vue'
 import PinSkeleton from '@/components/feed/PinSkeleton.vue'
-import FeedHeader from '@/components/feed/FeedHeader.vue'
 import RecipeModal from '@/components/feed/RecipeModal.vue'
 import type { Post } from '@/typescript/interface/Post'
 
@@ -73,10 +72,7 @@ async function handleSearch(query?: string) {
   }
 }
 
-function handleFilter(category: string) {
-  selectedCategory.value = category
-  handleSearch()
-}
+
 
 function debouncedSearch() {
   if (searchTimeout) {
@@ -127,12 +123,7 @@ watch(isNearBottom, (near) => {
 </script>
 
 <template>
-  <div class="home-view min-h-screen">
-    <FeedHeader
-      @search="handleSearch"
-      @filter="handleFilter"
-      :initial-query="searchQuery"
-    />
+  <div class="home-view min-h-screen pt-8">
 
     <div class="px-8 py-6">
       <div v-if="!isSearchMode" class="mb-8">

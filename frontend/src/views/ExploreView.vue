@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { postsApi } from '@/http/endpoints/posts'
 import { searchApi } from '@/http/endpoints/search'
-import FeedHeader from '@/components/feed/FeedHeader.vue'
 import PinCard from '@/components/feed/PinCard.vue'
 import RecipeModal from '@/components/feed/RecipeModal.vue'
 
@@ -58,11 +57,7 @@ async function handleSearch(query?: string) {
   }
 }
 
-function handleFilter(category: string) {
-  selectedCategory.value = category
-  pagination.value.page = 1
-  handleSearch()
-}
+
 
 onMounted(() => {
   loadTrending()
@@ -76,18 +71,35 @@ const collections = [
 </script>
 
 <template>
-  <div class="explore-view min-h-screen">
-    <FeedHeader @search="handleSearch" @filter="handleFilter" />
-
-    <div class="explore-hero relative h-[300px] flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+    <div class="explore-hero relative h-[380px] flex flex-col items-center justify-center text-center px-6 overflow-hidden">
       <div class="absolute inset-0 z-0">
-        <img src="https://picsum.photos/1200/400?random=88" class="w-full h-full object-cover opacity-20 dark:opacity-10 blur-sm" />
-        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-background"></div>
+        <img src="https://picsum.photos/1200/600?random=88" class="w-full h-full object-cover opacity-20 dark:opacity-10 blur-sm" />
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background"></div>
       </div>
-
-      <div class="relative z-10 animate-revamp">
-        <h1 class="font-montserrat font-extrabold text-4xl tracking-tight mb-3">Explore Nutrisipe</h1>
-        <p class="text-text-muted text-lg max-w-lg mx-auto">Discover trending recipes, top creators & curated collections for your healthy journey.</p>
+      
+      <div class="relative z-10 w-full max-w-2xl animate-revamp">
+        <h1 class="font-montserrat font-extrabold text-5xl tracking-tight mb-4 drop-shadow-sm">Explore Nutrisipe</h1>
+        <p class="text-text-muted text-lg mb-10 max-w-lg mx-auto leading-relaxed">Discover trending recipes, top creators & curated collections for your healthy journey.</p>
+        
+        <!-- Integrated Search Bar -->
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-5 flex items-center pointer-events-none text-xl group-focus-within:text-orange transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <input
+            v-model="searchQuery"
+            @keyup.enter="handleSearch()"
+            type="text"
+            placeholder="Search recipes, creators, cuisines..."
+            class="w-full h-16 pl-14 pr-32 bg-surface/80 backdrop-blur-xl border-1.5 border-glass-border rounded-2xl text-[15px] font-medium outline-none focus:border-orange focus:ring-4 focus:ring-orange/10 shadow-lg transition-all"
+          />
+          <button 
+            @click="handleSearch()"
+            class="absolute right-2.5 top-2.5 bottom-2.5 px-6 bg-orange text-white rounded-xl font-bold text-sm shadow-md hover:opacity-90 active:scale-95 transition-all"
+          >
+            Search
+          </button>
+        </div>
       </div>
     </div>
 
@@ -145,7 +157,7 @@ const collections = [
 
     <!-- Recipe Modal -->
     <RecipeModal :post-id="selectedPostId" :show="showPostModal" @close="showPostModal = false" />
-  </div>
+
 </template>
 
 <style scoped>
