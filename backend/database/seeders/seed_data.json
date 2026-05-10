@@ -1,0 +1,2023 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Admin User",
+      "email": "admin@nutrisipe.ph",
+      "password": "password",
+      "image": "https://ui-avatars.com/api/?name=Admin+User",
+      "is_admin": true,
+      "google_id": null
+    },
+    {
+      "id": 2,
+      "name": "Maria Clara",
+      "email": "maria.clara@example.com",
+      "password": "password",
+      "image": "https://ui-avatars.com/api/?name=Maria+Clara",
+      "is_admin": false,
+      "google_id": null
+    },
+    {
+      "id": 3,
+      "name": "Jose Rizal",
+      "email": "jose.rizal@example.com",
+      "password": "password",
+      "image": "https://ui-avatars.com/api/?name=Jose+Rizal",
+      "is_admin": false,
+      "google_id": null
+    },
+    {
+      "id": 4,
+      "name": "Andres Bonifacio",
+      "email": "andres.bonifacio@example.com",
+      "password": "password",
+      "image": "https://ui-avatars.com/api/?name=Andres+Bonifacio",
+      "is_admin": false,
+      "google_id": null
+    },
+    {
+      "id": 5,
+      "name": "Gabriela Silang",
+      "email": "gabriela.silang@example.com",
+      "password": "password",
+      "image": "https://ui-avatars.com/api/?name=Gabriela+Silang",
+      "is_admin": false,
+      "google_id": null
+    },
+    {
+      "id": 6,
+      "name": "Juan Luna",
+      "email": "juan.luna@example.com",
+      "password": "password",
+      "image": "https://ui-avatars.com/api/?name=Juan+Luna",
+      "is_admin": false,
+      "google_id": null
+    },
+    {
+      "id": 7,
+      "name": "Melchora Aquino",
+      "email": "melchora.aquino@example.com",
+      "password": "password",
+      "image": "https://ui-avatars.com/api/?name=Melchora+Aquino",
+      "is_admin": false,
+      "google_id": null
+    },
+    {
+      "id": 8,
+      "name": "Apolinario Mabini",
+      "email": "apolinario.mabini@example.com",
+      "password": "password",
+      "image": "https://ui-avatars.com/api/?name=Apolinario+Mabini",
+      "is_admin": false,
+      "google_id": null
+    }
+  ],
+  "ingredients": [
+    {
+      "id": 1,
+      "food_item": "White Rice",
+      "alt_name": "Bigas",
+      "edible_portion": 100,
+      "energy": 365,
+      "protein": 7.1,
+      "fat": 0.6,
+      "carb": 79.0,
+      "calcium": 28,
+      "phos": 120,
+      "iron": 0.8,
+      "vit_a": 0,
+      "thia": 0.07,
+      "ribo": 0.03,
+      "nia": 1.6,
+      "vit_c": 0
+    },
+    {
+      "id": 2,
+      "food_item": "Pork Belly",
+      "alt_name": "Liempo",
+      "edible_portion": 100,
+      "energy": 518,
+      "protein": 9.3,
+      "fat": 53.0,
+      "carb": 0.0,
+      "calcium": 10,
+      "phos": 150,
+      "iron": 0.9,
+      "vit_a": 0,
+      "thia": 0.12,
+      "ribo": 0.15,
+      "nia": 2.5,
+      "vit_c": 0
+    },
+    {
+      "id": 3,
+      "food_item": "Chicken Breast",
+      "alt_name": "Petso ng Manok",
+      "edible_portion": 100,
+      "energy": 165,
+      "protein": 31.0,
+      "fat": 3.6,
+      "carb": 0.0,
+      "calcium": 15,
+      "phos": 210,
+      "iron": 1.0,
+      "vit_a": 0,
+      "thia": 0.08,
+      "ribo": 0.1,
+      "nia": 10.0,
+      "vit_c": 0
+    },
+    {
+      "id": 4,
+      "food_item": "Milkfish",
+      "alt_name": "Bangus",
+      "edible_portion": 65,
+      "energy": 148,
+      "protein": 20.0,
+      "fat": 6.7,
+      "carb": 0.0,
+      "calcium": 20,
+      "phos": 200,
+      "iron": 2.0,
+      "vit_a": 150,
+      "thia": 0.05,
+      "ribo": 0.12,
+      "nia": 7.0,
+      "vit_c": 0
+    },
+    {
+      "id": 5,
+      "food_item": "Eggplant",
+      "alt_name": "Talong",
+      "edible_portion": 95,
+      "energy": 25,
+      "protein": 1.0,
+      "fat": 0.2,
+      "carb": 5.8,
+      "calcium": 9,
+      "phos": 24,
+      "iron": 0.2,
+      "vit_a": 1,
+      "thia": 0.04,
+      "ribo": 0.03,
+      "nia": 0.6,
+      "vit_c": 2
+    },
+    {
+      "id": 6,
+      "food_item": "Bitter Gourd",
+      "alt_name": "Ampalaya",
+      "edible_portion": 85,
+      "energy": 17,
+      "protein": 1.0,
+      "fat": 0.2,
+      "carb": 3.7,
+      "calcium": 19,
+      "phos": 31,
+      "iron": 0.4,
+      "vit_a": 6,
+      "thia": 0.04,
+      "ribo": 0.04,
+      "nia": 0.4,
+      "vit_c": 84
+    },
+    {
+      "id": 7,
+      "food_item": "Tomato",
+      "alt_name": "Kamatis",
+      "edible_portion": 95,
+      "energy": 18,
+      "protein": 0.9,
+      "fat": 0.2,
+      "carb": 3.9,
+      "calcium": 10,
+      "phos": 24,
+      "iron": 0.3,
+      "vit_a": 42,
+      "thia": 0.04,
+      "ribo": 0.02,
+      "nia": 0.6,
+      "vit_c": 14
+    },
+    {
+      "id": 8,
+      "food_item": "Onion",
+      "alt_name": "Sibuyas",
+      "edible_portion": 90,
+      "energy": 40,
+      "protein": 1.1,
+      "fat": 0.1,
+      "carb": 9.3,
+      "calcium": 23,
+      "phos": 29,
+      "iron": 0.2,
+      "vit_a": 0,
+      "thia": 0.04,
+      "ribo": 0.02,
+      "nia": 0.1,
+      "vit_c": 7
+    },
+    {
+      "id": 9,
+      "food_item": "Garlic",
+      "alt_name": "Bawang",
+      "edible_portion": 85,
+      "energy": 149,
+      "protein": 6.4,
+      "fat": 0.5,
+      "carb": 33.1,
+      "calcium": 181,
+      "phos": 153,
+      "iron": 1.7,
+      "vit_a": 0,
+      "thia": 0.2,
+      "ribo": 0.11,
+      "nia": 0.7,
+      "vit_c": 31
+    },
+    {
+      "id": 10,
+      "food_item": "Ginger",
+      "alt_name": "Luya",
+      "edible_portion": 80,
+      "energy": 80,
+      "protein": 1.8,
+      "fat": 0.8,
+      "carb": 17.8,
+      "calcium": 16,
+      "phos": 34,
+      "iron": 0.6,
+      "vit_a": 0,
+      "thia": 0.03,
+      "ribo": 0.03,
+      "nia": 0.8,
+      "vit_c": 5
+    },
+    {
+      "id": 11,
+      "food_item": "Soy Sauce",
+      "alt_name": "Toyo",
+      "edible_portion": 100,
+      "energy": 53,
+      "protein": 8.0,
+      "fat": 0.6,
+      "carb": 4.9,
+      "calcium": 33,
+      "phos": 210,
+      "iron": 2.4,
+      "vit_a": 0,
+      "thia": 0.01,
+      "ribo": 0.01,
+      "nia": 0.4,
+      "vit_c": 0
+    },
+    {
+      "id": 12,
+      "food_item": "Vinegar",
+      "alt_name": "Suka",
+      "edible_portion": 100,
+      "energy": 18,
+      "protein": 0.0,
+      "fat": 0.0,
+      "carb": 0.0,
+      "calcium": 7,
+      "phos": 8,
+      "iron": 0.2,
+      "vit_a": 0,
+      "thia": 0.0,
+      "ribo": 0.0,
+      "nia": 0.0,
+      "vit_c": 0
+    },
+    {
+      "id": 13,
+      "food_item": "Coconut Milk",
+      "alt_name": "Gata",
+      "edible_portion": 100,
+      "energy": 230,
+      "protein": 2.3,
+      "fat": 24.0,
+      "carb": 6.0,
+      "calcium": 16,
+      "phos": 100,
+      "iron": 1.6,
+      "vit_a": 0,
+      "thia": 0.03,
+      "ribo": 0.02,
+      "nia": 0.8,
+      "vit_c": 2
+    },
+    {
+      "id": 14,
+      "food_item": "Mung Beans",
+      "alt_name": "Munggo",
+      "edible_portion": 100,
+      "energy": 347,
+      "protein": 24.0,
+      "fat": 1.2,
+      "carb": 63.0,
+      "calcium": 132,
+      "phos": 367,
+      "iron": 6.7,
+      "vit_a": 114,
+      "thia": 0.62,
+      "ribo": 0.23,
+      "nia": 2.3,
+      "vit_c": 5
+    },
+    {
+      "id": 15,
+      "food_item": "Water Spinach",
+      "alt_name": "Kangkong",
+      "edible_portion": 75,
+      "energy": 19,
+      "protein": 2.6,
+      "fat": 0.2,
+      "carb": 3.1,
+      "calcium": 77,
+      "phos": 39,
+      "iron": 1.5,
+      "vit_a": 630,
+      "thia": 0.03,
+      "ribo": 0.1,
+      "nia": 1.0,
+      "vit_c": 32
+    },
+    {
+      "id": 16,
+      "food_item": "Squash",
+      "alt_name": "Kalabasa",
+      "edible_portion": 80,
+      "energy": 26,
+      "protein": 1.0,
+      "fat": 0.1,
+      "carb": 6.5,
+      "calcium": 21,
+      "phos": 44,
+      "iron": 0.8,
+      "vit_a": 426,
+      "thia": 0.05,
+      "ribo": 0.06,
+      "nia": 0.6,
+      "vit_c": 9
+    },
+    {
+      "id": 17,
+      "food_item": "String Beans",
+      "alt_name": "Sitaw",
+      "edible_portion": 95,
+      "energy": 47,
+      "protein": 2.8,
+      "fat": 0.4,
+      "carb": 8.0,
+      "calcium": 50,
+      "phos": 54,
+      "iron": 0.7,
+      "vit_a": 45,
+      "thia": 0.07,
+      "ribo": 0.1,
+      "nia": 1.0,
+      "vit_c": 18
+    },
+    {
+      "id": 18,
+      "food_item": "Moringa",
+      "alt_name": "Malunggay",
+      "edible_portion": 45,
+      "energy": 64,
+      "protein": 9.4,
+      "fat": 1.4,
+      "carb": 8.3,
+      "calcium": 440,
+      "phos": 70,
+      "iron": 0.9,
+      "vit_a": 750,
+      "thia": 0.21,
+      "ribo": 0.05,
+      "nia": 0.8,
+      "vit_c": 51
+    },
+    {
+      "id": 19,
+      "food_item": "Sweet Potato",
+      "alt_name": "Kamote",
+      "edible_portion": 80,
+      "energy": 86,
+      "protein": 1.6,
+      "fat": 0.1,
+      "carb": 20.1,
+      "calcium": 30,
+      "phos": 47,
+      "iron": 0.6,
+      "vit_a": 700,
+      "thia": 0.08,
+      "ribo": 0.06,
+      "nia": 0.6,
+      "vit_c": 24
+    },
+    {
+      "id": 20,
+      "food_item": "Taro",
+      "alt_name": "Gabi",
+      "edible_portion": 80,
+      "energy": 112,
+      "protein": 1.5,
+      "fat": 0.2,
+      "carb": 26.5,
+      "calcium": 43,
+      "phos": 84,
+      "iron": 0.5,
+      "vit_a": 0,
+      "thia": 0.09,
+      "ribo": 0.04,
+      "nia": 0.6,
+      "vit_c": 4
+    },
+    {
+      "id": 21,
+      "food_item": "Fish Sauce",
+      "alt_name": "Patis",
+      "edible_portion": 100,
+      "energy": 35,
+      "protein": 5.0,
+      "fat": 0.0,
+      "carb": 4.0,
+      "calcium": 43,
+      "phos": 53,
+      "iron": 0.5,
+      "vit_a": 0,
+      "thia": 0.01,
+      "ribo": 0.01,
+      "nia": 0.3,
+      "vit_c": 0
+    },
+    {
+      "id": 22,
+      "food_item": "Calamansi",
+      "alt_name": "Calamansi",
+      "edible_portion": 40,
+      "energy": 30,
+      "protein": 0.5,
+      "fat": 0.1,
+      "carb": 7.0,
+      "calcium": 40,
+      "phos": 20,
+      "iron": 0.1,
+      "vit_a": 10,
+      "thia": 0.04,
+      "ribo": 0.02,
+      "nia": 0.1,
+      "vit_c": 45
+    },
+    {
+      "id": 23,
+      "food_item": "Shrimp",
+      "alt_name": "Hipon",
+      "edible_portion": 60,
+      "energy": 99,
+      "protein": 24.0,
+      "fat": 0.3,
+      "carb": 0.2,
+      "calcium": 70,
+      "phos": 220,
+      "iron": 2.4,
+      "vit_a": 54,
+      "thia": 0.03,
+      "ribo": 0.04,
+      "nia": 2.6,
+      "vit_c": 2
+    },
+    {
+      "id": 24,
+      "food_item": "Beef Chuck",
+      "alt_name": "Baka",
+      "edible_portion": 100,
+      "energy": 250,
+      "protein": 26.0,
+      "fat": 15.0,
+      "carb": 0.0,
+      "calcium": 18,
+      "phos": 190,
+      "iron": 2.6,
+      "vit_a": 0,
+      "thia": 0.08,
+      "ribo": 0.12,
+      "nia": 4.5,
+      "vit_c": 0
+    },
+    {
+      "id": 25,
+      "food_item": "Cabbage",
+      "alt_name": "Repolyo",
+      "edible_portion": 85,
+      "energy": 25,
+      "protein": 1.3,
+      "fat": 0.1,
+      "carb": 5.8,
+      "calcium": 40,
+      "phos": 26,
+      "iron": 0.5,
+      "vit_a": 1,
+      "thia": 0.06,
+      "ribo": 0.03,
+      "nia": 0.3,
+      "vit_c": 36
+    },
+    {
+      "id": 26,
+      "food_item": "Chayote",
+      "alt_name": "Sayote",
+      "edible_portion": 85,
+      "energy": 19,
+      "protein": 0.8,
+      "fat": 0.1,
+      "carb": 4.5,
+      "calcium": 17,
+      "phos": 18,
+      "iron": 0.3,
+      "vit_a": 0,
+      "thia": 0.03,
+      "ribo": 0.03,
+      "nia": 0.5,
+      "vit_c": 8
+    },
+    {
+      "id": 27,
+      "food_item": "Peanuts",
+      "alt_name": "Mani",
+      "edible_portion": 70,
+      "energy": 567,
+      "protein": 25.8,
+      "fat": 49.2,
+      "carb": 16.1,
+      "calcium": 92,
+      "phos": 376,
+      "iron": 4.6,
+      "vit_a": 0,
+      "thia": 0.64,
+      "ribo": 0.14,
+      "nia": 12.1,
+      "vit_c": 0
+    },
+    {
+      "id": 28,
+      "food_item": "Shrimp Paste",
+      "alt_name": "Bagoong",
+      "edible_portion": 100,
+      "energy": 100,
+      "protein": 12.0,
+      "fat": 2.0,
+      "carb": 8.0,
+      "calcium": 250,
+      "phos": 150,
+      "iron": 5.0,
+      "vit_a": 0,
+      "thia": 0.02,
+      "ribo": 0.05,
+      "nia": 1.0,
+      "vit_c": 0
+    },
+    {
+      "id": 29,
+      "food_item": "Chili Pepper",
+      "alt_name": "Siling Labuyo",
+      "edible_portion": 90,
+      "energy": 40,
+      "protein": 1.9,
+      "fat": 0.4,
+      "carb": 8.8,
+      "calcium": 14,
+      "phos": 43,
+      "iron": 1.0,
+      "vit_a": 95,
+      "thia": 0.07,
+      "ribo": 0.08,
+      "nia": 0.9,
+      "vit_c": 143
+    },
+    {
+      "id": 30,
+      "food_item": "Okra",
+      "alt_name": "Okra",
+      "edible_portion": 90,
+      "energy": 33,
+      "protein": 1.9,
+      "fat": 0.2,
+      "carb": 7.5,
+      "calcium": 82,
+      "phos": 61,
+      "iron": 0.6,
+      "vit_a": 37,
+      "thia": 0.2,
+      "ribo": 0.06,
+      "nia": 1.0,
+      "vit_c": 23
+    }
+  ],
+  "recipes": [
+    {
+      "id": 1,
+      "user_id": 5,
+      "title": "Chicken Adobo",
+      "description": "Classic Filipino adobo with soy sauce and vinegar.",
+      "category": "recipe",
+      "image": "recipes/seed_1.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 2,
+      "user_id": 6,
+      "title": "Sinigang na Bangus",
+      "description": "Sour tamarind soup with milkfish and vegetables.",
+      "category": "recipe",
+      "image": "recipes/seed_2.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 3,
+      "user_id": 2,
+      "title": "Pinakbet",
+      "description": "Mixed vegetable dish with shrimp paste.",
+      "category": "recipe",
+      "image": "recipes/seed_3.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 4,
+      "user_id": 4,
+      "title": "Ginataang Kalabasa at Sitaw",
+      "description": "Squash and string beans in coconut milk.",
+      "category": "recipe",
+      "image": "recipes/seed_4.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 5,
+      "user_id": 6,
+      "title": "Munggo Guisado",
+      "description": "Saut\u00e9ed mung beans with pork and spinach.",
+      "category": "recipe",
+      "image": "recipes/seed_5.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 6,
+      "user_id": 7,
+      "title": "Tinolang Manok",
+      "description": "Chicken soup with ginger and papaya.",
+      "category": "recipe",
+      "image": "recipes/seed_6.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 7,
+      "user_id": 3,
+      "title": "Beef Kare-Kare",
+      "description": "Beef stew in peanut sauce.",
+      "category": "recipe",
+      "image": "recipes/seed_7.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 8,
+      "user_id": 2,
+      "title": "Nilagang Baka",
+      "description": "Boiled beef with cabbage and potatoes.",
+      "category": "recipe",
+      "image": "recipes/seed_8.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 9,
+      "user_id": 5,
+      "title": "Gising-Gising",
+      "description": "Spicy green beans in coconut milk.",
+      "category": "recipe",
+      "image": "recipes/seed_9.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 10,
+      "user_id": 6,
+      "title": "Arroz Caldo",
+      "description": "Chicken rice porridge.",
+      "category": "recipe",
+      "image": "recipes/seed_10.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 11,
+      "user_id": 7,
+      "title": "Bicol Express",
+      "description": "Spicy pork with chili and coconut milk.",
+      "category": "recipe",
+      "image": "recipes/seed_11.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 12,
+      "user_id": 4,
+      "title": "Laing",
+      "description": "Taro leaves in spicy coconut milk.",
+      "category": "recipe",
+      "image": "recipes/seed_12.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 13,
+      "user_id": 2,
+      "title": "Tortang Talong",
+      "description": "Eggplant omelette.",
+      "category": "recipe",
+      "image": "recipes/seed_13.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 14,
+      "user_id": 7,
+      "title": "Garlic Sinangag",
+      "description": "Garlic fried rice.",
+      "category": "recipe",
+      "image": "recipes/seed_14.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    },
+    {
+      "id": 15,
+      "user_id": 2,
+      "title": "Bulalo",
+      "description": "Beef marrow bone soup.",
+      "category": "recipe",
+      "image": "recipes/seed_15.jpg",
+      "procedure": [
+        "Wash ingredients",
+        "Prepare pot",
+        "Cook until done"
+      ],
+      "is_hidden": false
+    }
+  ],
+  "recipe_ingredients": [
+    {
+      "id": 1,
+      "recipe_id": 1,
+      "ingredient_id": 24,
+      "name": "Beef Chuck",
+      "amount": 231,
+      "edible_weight": 231.0,
+      "is_custom": false
+    },
+    {
+      "id": 2,
+      "recipe_id": 1,
+      "ingredient_id": 3,
+      "name": "Chicken Breast",
+      "amount": 241,
+      "edible_weight": 241.0,
+      "is_custom": false
+    },
+    {
+      "id": 3,
+      "recipe_id": 1,
+      "ingredient_id": 15,
+      "name": "Water Spinach",
+      "amount": 283,
+      "edible_weight": 212.25,
+      "is_custom": false
+    },
+    {
+      "id": 4,
+      "recipe_id": 1,
+      "ingredient_id": 10,
+      "name": "Ginger",
+      "amount": 261,
+      "edible_weight": 208.8,
+      "is_custom": false
+    },
+    {
+      "id": 5,
+      "recipe_id": 2,
+      "ingredient_id": 23,
+      "name": "Shrimp",
+      "amount": 248,
+      "edible_weight": 148.8,
+      "is_custom": false
+    },
+    {
+      "id": 6,
+      "recipe_id": 2,
+      "ingredient_id": 20,
+      "name": "Taro",
+      "amount": 246,
+      "edible_weight": 196.8,
+      "is_custom": false
+    },
+    {
+      "id": 7,
+      "recipe_id": 2,
+      "ingredient_id": 15,
+      "name": "Water Spinach",
+      "amount": 96,
+      "edible_weight": 72.0,
+      "is_custom": false
+    },
+    {
+      "id": 8,
+      "recipe_id": 2,
+      "ingredient_id": 28,
+      "name": "Shrimp Paste",
+      "amount": 163,
+      "edible_weight": 163.0,
+      "is_custom": false
+    },
+    {
+      "id": 9,
+      "recipe_id": 2,
+      "ingredient_id": 24,
+      "name": "Beef Chuck",
+      "amount": 132,
+      "edible_weight": 132.0,
+      "is_custom": false
+    },
+    {
+      "id": 10,
+      "recipe_id": 3,
+      "ingredient_id": 14,
+      "name": "Mung Beans",
+      "amount": 113,
+      "edible_weight": 113.0,
+      "is_custom": false
+    },
+    {
+      "id": 11,
+      "recipe_id": 3,
+      "ingredient_id": 10,
+      "name": "Ginger",
+      "amount": 162,
+      "edible_weight": 129.6,
+      "is_custom": false
+    },
+    {
+      "id": 12,
+      "recipe_id": 3,
+      "ingredient_id": 23,
+      "name": "Shrimp",
+      "amount": 131,
+      "edible_weight": 78.6,
+      "is_custom": false
+    },
+    {
+      "id": 13,
+      "recipe_id": 3,
+      "ingredient_id": 28,
+      "name": "Shrimp Paste",
+      "amount": 156,
+      "edible_weight": 156.0,
+      "is_custom": false
+    },
+    {
+      "id": 14,
+      "recipe_id": 4,
+      "ingredient_id": 16,
+      "name": "Squash",
+      "amount": 147,
+      "edible_weight": 117.6,
+      "is_custom": false
+    },
+    {
+      "id": 15,
+      "recipe_id": 4,
+      "ingredient_id": 21,
+      "name": "Fish Sauce",
+      "amount": 207,
+      "edible_weight": 207.0,
+      "is_custom": false
+    },
+    {
+      "id": 16,
+      "recipe_id": 4,
+      "ingredient_id": 19,
+      "name": "Sweet Potato",
+      "amount": 254,
+      "edible_weight": 203.2,
+      "is_custom": false
+    },
+    {
+      "id": 17,
+      "recipe_id": 4,
+      "ingredient_id": 28,
+      "name": "Shrimp Paste",
+      "amount": 291,
+      "edible_weight": 291.0,
+      "is_custom": false
+    },
+    {
+      "id": 18,
+      "recipe_id": 4,
+      "ingredient_id": 1,
+      "name": "White Rice",
+      "amount": 156,
+      "edible_weight": 156.0,
+      "is_custom": false
+    },
+    {
+      "id": 19,
+      "recipe_id": 5,
+      "ingredient_id": 10,
+      "name": "Ginger",
+      "amount": 257,
+      "edible_weight": 205.6,
+      "is_custom": false
+    },
+    {
+      "id": 20,
+      "recipe_id": 5,
+      "ingredient_id": 1,
+      "name": "White Rice",
+      "amount": 115,
+      "edible_weight": 115.0,
+      "is_custom": false
+    },
+    {
+      "id": 21,
+      "recipe_id": 5,
+      "ingredient_id": 18,
+      "name": "Moringa",
+      "amount": 299,
+      "edible_weight": 134.55,
+      "is_custom": false
+    },
+    {
+      "id": 22,
+      "recipe_id": 5,
+      "ingredient_id": 27,
+      "name": "Peanuts",
+      "amount": 113,
+      "edible_weight": 79.1,
+      "is_custom": false
+    },
+    {
+      "id": 23,
+      "recipe_id": 5,
+      "ingredient_id": 30,
+      "name": "Okra",
+      "amount": 264,
+      "edible_weight": 237.6,
+      "is_custom": false
+    },
+    {
+      "id": 24,
+      "recipe_id": 6,
+      "ingredient_id": 23,
+      "name": "Shrimp",
+      "amount": 198,
+      "edible_weight": 118.8,
+      "is_custom": false
+    },
+    {
+      "id": 25,
+      "recipe_id": 6,
+      "ingredient_id": 14,
+      "name": "Mung Beans",
+      "amount": 76,
+      "edible_weight": 76.0,
+      "is_custom": false
+    },
+    {
+      "id": 26,
+      "recipe_id": 6,
+      "ingredient_id": 18,
+      "name": "Moringa",
+      "amount": 200,
+      "edible_weight": 90.0,
+      "is_custom": false
+    },
+    {
+      "id": 27,
+      "recipe_id": 7,
+      "ingredient_id": 10,
+      "name": "Ginger",
+      "amount": 100,
+      "edible_weight": 80.0,
+      "is_custom": false
+    },
+    {
+      "id": 28,
+      "recipe_id": 7,
+      "ingredient_id": 13,
+      "name": "Coconut Milk",
+      "amount": 163,
+      "edible_weight": 163.0,
+      "is_custom": false
+    },
+    {
+      "id": 29,
+      "recipe_id": 7,
+      "ingredient_id": 2,
+      "name": "Pork Belly",
+      "amount": 75,
+      "edible_weight": 75.0,
+      "is_custom": false
+    },
+    {
+      "id": 30,
+      "recipe_id": 7,
+      "ingredient_id": 14,
+      "name": "Mung Beans",
+      "amount": 156,
+      "edible_weight": 156.0,
+      "is_custom": false
+    },
+    {
+      "id": 31,
+      "recipe_id": 8,
+      "ingredient_id": 6,
+      "name": "Bitter Gourd",
+      "amount": 73,
+      "edible_weight": 62.05,
+      "is_custom": false
+    },
+    {
+      "id": 32,
+      "recipe_id": 8,
+      "ingredient_id": 23,
+      "name": "Shrimp",
+      "amount": 209,
+      "edible_weight": 125.4,
+      "is_custom": false
+    },
+    {
+      "id": 33,
+      "recipe_id": 8,
+      "ingredient_id": 14,
+      "name": "Mung Beans",
+      "amount": 112,
+      "edible_weight": 112.0,
+      "is_custom": false
+    },
+    {
+      "id": 34,
+      "recipe_id": 8,
+      "ingredient_id": 10,
+      "name": "Ginger",
+      "amount": 244,
+      "edible_weight": 195.2,
+      "is_custom": false
+    },
+    {
+      "id": 35,
+      "recipe_id": 8,
+      "ingredient_id": 1,
+      "name": "White Rice",
+      "amount": 265,
+      "edible_weight": 265.0,
+      "is_custom": false
+    },
+    {
+      "id": 36,
+      "recipe_id": 9,
+      "ingredient_id": 10,
+      "name": "Ginger",
+      "amount": 257,
+      "edible_weight": 205.6,
+      "is_custom": false
+    },
+    {
+      "id": 37,
+      "recipe_id": 9,
+      "ingredient_id": 6,
+      "name": "Bitter Gourd",
+      "amount": 56,
+      "edible_weight": 47.6,
+      "is_custom": false
+    },
+    {
+      "id": 38,
+      "recipe_id": 9,
+      "ingredient_id": 24,
+      "name": "Beef Chuck",
+      "amount": 64,
+      "edible_weight": 64.0,
+      "is_custom": false
+    },
+    {
+      "id": 39,
+      "recipe_id": 9,
+      "ingredient_id": 2,
+      "name": "Pork Belly",
+      "amount": 231,
+      "edible_weight": 231.0,
+      "is_custom": false
+    },
+    {
+      "id": 40,
+      "recipe_id": 10,
+      "ingredient_id": 27,
+      "name": "Peanuts",
+      "amount": 205,
+      "edible_weight": 143.5,
+      "is_custom": false
+    },
+    {
+      "id": 41,
+      "recipe_id": 10,
+      "ingredient_id": 19,
+      "name": "Sweet Potato",
+      "amount": 182,
+      "edible_weight": 145.6,
+      "is_custom": false
+    },
+    {
+      "id": 42,
+      "recipe_id": 10,
+      "ingredient_id": 10,
+      "name": "Ginger",
+      "amount": 265,
+      "edible_weight": 212.0,
+      "is_custom": false
+    },
+    {
+      "id": 43,
+      "recipe_id": 10,
+      "ingredient_id": 4,
+      "name": "Milkfish",
+      "amount": 184,
+      "edible_weight": 119.6,
+      "is_custom": false
+    },
+    {
+      "id": 44,
+      "recipe_id": 11,
+      "ingredient_id": 28,
+      "name": "Shrimp Paste",
+      "amount": 105,
+      "edible_weight": 105.0,
+      "is_custom": false
+    },
+    {
+      "id": 45,
+      "recipe_id": 11,
+      "ingredient_id": 25,
+      "name": "Cabbage",
+      "amount": 178,
+      "edible_weight": 151.3,
+      "is_custom": false
+    },
+    {
+      "id": 46,
+      "recipe_id": 11,
+      "ingredient_id": 14,
+      "name": "Mung Beans",
+      "amount": 235,
+      "edible_weight": 235.0,
+      "is_custom": false
+    },
+    {
+      "id": 47,
+      "recipe_id": 11,
+      "ingredient_id": 27,
+      "name": "Peanuts",
+      "amount": 55,
+      "edible_weight": 38.5,
+      "is_custom": false
+    },
+    {
+      "id": 48,
+      "recipe_id": 12,
+      "ingredient_id": 8,
+      "name": "Onion",
+      "amount": 235,
+      "edible_weight": 211.5,
+      "is_custom": false
+    },
+    {
+      "id": 49,
+      "recipe_id": 12,
+      "ingredient_id": 14,
+      "name": "Mung Beans",
+      "amount": 218,
+      "edible_weight": 218.0,
+      "is_custom": false
+    },
+    {
+      "id": 50,
+      "recipe_id": 12,
+      "ingredient_id": 15,
+      "name": "Water Spinach",
+      "amount": 97,
+      "edible_weight": 72.75,
+      "is_custom": false
+    },
+    {
+      "id": 51,
+      "recipe_id": 12,
+      "ingredient_id": 22,
+      "name": "Calamansi",
+      "amount": 220,
+      "edible_weight": 88.0,
+      "is_custom": false
+    },
+    {
+      "id": 52,
+      "recipe_id": 13,
+      "ingredient_id": 1,
+      "name": "White Rice",
+      "amount": 221,
+      "edible_weight": 221.0,
+      "is_custom": false
+    },
+    {
+      "id": 53,
+      "recipe_id": 13,
+      "ingredient_id": 13,
+      "name": "Coconut Milk",
+      "amount": 54,
+      "edible_weight": 54.0,
+      "is_custom": false
+    },
+    {
+      "id": 54,
+      "recipe_id": 13,
+      "ingredient_id": 2,
+      "name": "Pork Belly",
+      "amount": 107,
+      "edible_weight": 107.0,
+      "is_custom": false
+    },
+    {
+      "id": 55,
+      "recipe_id": 14,
+      "ingredient_id": 21,
+      "name": "Fish Sauce",
+      "amount": 211,
+      "edible_weight": 211.0,
+      "is_custom": false
+    },
+    {
+      "id": 56,
+      "recipe_id": 14,
+      "ingredient_id": 19,
+      "name": "Sweet Potato",
+      "amount": 97,
+      "edible_weight": 77.6,
+      "is_custom": false
+    },
+    {
+      "id": 57,
+      "recipe_id": 14,
+      "ingredient_id": 4,
+      "name": "Milkfish",
+      "amount": 190,
+      "edible_weight": 123.5,
+      "is_custom": false
+    },
+    {
+      "id": 58,
+      "recipe_id": 14,
+      "ingredient_id": 11,
+      "name": "Soy Sauce",
+      "amount": 289,
+      "edible_weight": 289.0,
+      "is_custom": false
+    },
+    {
+      "id": 59,
+      "recipe_id": 14,
+      "ingredient_id": 29,
+      "name": "Chili Pepper",
+      "amount": 291,
+      "edible_weight": 261.9,
+      "is_custom": false
+    },
+    {
+      "id": 60,
+      "recipe_id": 15,
+      "ingredient_id": 14,
+      "name": "Mung Beans",
+      "amount": 245,
+      "edible_weight": 245.0,
+      "is_custom": false
+    },
+    {
+      "id": 61,
+      "recipe_id": 15,
+      "ingredient_id": 16,
+      "name": "Squash",
+      "amount": 81,
+      "edible_weight": 64.8,
+      "is_custom": false
+    },
+    {
+      "id": 62,
+      "recipe_id": 15,
+      "ingredient_id": 28,
+      "name": "Shrimp Paste",
+      "amount": 131,
+      "edible_weight": 131.0,
+      "is_custom": false
+    }
+  ],
+  "nutrition_facts": [
+    {
+      "id": 1,
+      "recipe_id": 1,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 295.63,
+      "protein": 36.01,
+      "fat": 11.36,
+      "carb": 10.94,
+      "calcium": 68.64,
+      "phos": 274.69,
+      "iron": 3.21,
+      "vit_a": 334.29,
+      "thia": 0.13,
+      "ribo": 0.2,
+      "nia": 9.57,
+      "vit_c": 19.59
+    },
+    {
+      "id": 2,
+      "recipe_id": 2,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 218.6,
+      "protein": 23.6,
+      "fat": 6.01,
+      "carb": 16.93,
+      "calcium": 168.87,
+      "phos": 254.01,
+      "iron": 4.3,
+      "vit_a": 133.49,
+      "thia": 0.1,
+      "ribo": 0.11,
+      "nia": 3.33,
+      "vit_c": 8.47
+    },
+    {
+      "id": 3,
+      "recipe_id": 3,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 182.4,
+      "protein": 16.76,
+      "fat": 1.44,
+      "carb": 26.72,
+      "calcium": 153.73,
+      "phos": 216.42,
+      "iron": 4.51,
+      "vit_a": 42.82,
+      "thia": 0.2,
+      "ribo": 0.1,
+      "nia": 1.81,
+      "vit_c": 3.43
+    },
+    {
+      "id": 4,
+      "recipe_id": 4,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 284.54,
+      "protein": 15.19,
+      "fat": 1.77,
+      "carb": 50.82,
+      "calcium": 236.46,
+      "phos": 220.16,
+      "iron": 4.75,
+      "vit_a": 480.84,
+      "thia": 0.1,
+      "ribo": 0.1,
+      "nia": 1.99,
+      "vit_c": 14.84
+    },
+    {
+      "id": 5,
+      "recipe_id": 5,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 299.31,
+      "protein": 12.36,
+      "fat": 10.9,
+      "carb": 42.29,
+      "calcium": 231.18,
+      "phos": 186.11,
+      "iron": 2.11,
+      "vit_a": 274.26,
+      "thia": 0.35,
+      "ribo": 0.1,
+      "nia": 4.13,
+      "vit_c": 33.39
+    },
+    {
+      "id": 6,
+      "recipe_id": 6,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 109.73,
+      "protein": 13.8,
+      "fat": 0.63,
+      "carb": 13.9,
+      "calcium": 144.87,
+      "phos": 150.82,
+      "iron": 2.19,
+      "vit_a": 206.45,
+      "thia": 0.17,
+      "ribo": 0.07,
+      "nia": 1.39,
+      "vit_c": 13.02
+    },
+    {
+      "id": 7,
+      "recipe_id": 7,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 342.18,
+      "protein": 12.4,
+      "fat": 20.35,
+      "carb": 30.58,
+      "calcium": 63.08,
+      "phos": 218.81,
+      "iron": 3.55,
+      "vit_a": 44.46,
+      "thia": 0.28,
+      "ribo": 0.13,
+      "nia": 1.85,
+      "vit_c": 3.77
+    },
+    {
+      "id": 8,
+      "recipe_id": 8,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 411.69,
+      "protein": 19.98,
+      "fat": 1.25,
+      "carb": 79.3,
+      "calcium": 88.21,
+      "phos": 272.63,
+      "iron": 3.51,
+      "vit_a": 49.78,
+      "thia": 0.25,
+      "ribo": 0.12,
+      "nia": 2.97,
+      "vit_c": 17.5
+    },
+    {
+      "id": 9,
+      "recipe_id": 9,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 382.29,
+      "protein": 10.57,
+      "fat": 33.44,
+      "carb": 9.59,
+      "calcium": 19.14,
+      "phos": 138.19,
+      "iron": 1.29,
+      "vit_a": 0.71,
+      "thia": 0.1,
+      "ribo": 0.13,
+      "nia": 2.62,
+      "vit_c": 12.57
+    },
+    {
+      "id": 10,
+      "recipe_id": 10,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 321.37,
+      "protein": 16.77,
+      "fat": 20.11,
+      "carb": 22.53,
+      "calcium": 58.39,
+      "phos": 229.82,
+      "iron": 2.78,
+      "vit_a": 299.65,
+      "thia": 0.29,
+      "ribo": 0.12,
+      "nia": 7.08,
+      "vit_c": 11.39
+    },
+    {
+      "id": 11,
+      "recipe_id": 11,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 294.14,
+      "protein": 20.22,
+      "fat": 6.0,
+      "carb": 42.86,
+      "calcium": 167.16,
+      "phos": 301.01,
+      "iron": 5.88,
+      "vit_a": 67.35,
+      "thia": 0.45,
+      "ribo": 0.17,
+      "nia": 2.89,
+      "vit_c": 16.55
+    },
+    {
+      "id": 12,
+      "recipe_id": 12,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 220.32,
+      "protein": 14.24,
+      "fat": 0.77,
+      "carb": 41.36,
+      "calcium": 106.91,
+      "phos": 226.84,
+      "iron": 4.05,
+      "vit_a": 178.91,
+      "thia": 0.37,
+      "ribo": 0.16,
+      "nia": 1.51,
+      "vit_c": 22.15
+    },
+    {
+      "id": 13,
+      "recipe_id": 13,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 371.28,
+      "protein": 6.72,
+      "fat": 17.75,
+      "carb": 44.46,
+      "calcium": 20.3,
+      "phos": 119.92,
+      "iron": 0.9,
+      "vit_a": 0.0,
+      "thia": 0.07,
+      "ribo": 0.06,
+      "nia": 1.66,
+      "vit_c": 0.27
+    },
+    {
+      "id": 14,
+      "recipe_id": 14,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 145.32,
+      "protein": 16.15,
+      "fat": 2.78,
+      "carb": 15.31,
+      "calcium": 67.69,
+      "phos": 278.7,
+      "iron": 3.39,
+      "vit_a": 244.31,
+      "thia": 0.09,
+      "ribo": 0.11,
+      "nia": 3.31,
+      "vit_c": 98.29
+    },
+    {
+      "id": 15,
+      "recipe_id": 15,
+      "serving_size": 4,
+      "yield_amount": "4 servings",
+      "energy": 249.5,
+      "protein": 18.79,
+      "fat": 1.41,
+      "carb": 42.26,
+      "calcium": 166.13,
+      "phos": 281.04,
+      "iron": 5.87,
+      "vit_a": 138.84,
+      "thia": 0.39,
+      "ribo": 0.17,
+      "nia": 1.83,
+      "vit_c": 4.52
+    }
+  ],
+  "comments": [
+    {
+      "id": 1,
+      "recipe_id": 10,
+      "user_id": 7,
+      "comment": "This is comment number 1. Very delicious!"
+    },
+    {
+      "id": 2,
+      "recipe_id": 3,
+      "user_id": 6,
+      "comment": "This is comment number 2. Very delicious!"
+    },
+    {
+      "id": 3,
+      "recipe_id": 13,
+      "user_id": 6,
+      "comment": "This is comment number 3. Very delicious!"
+    },
+    {
+      "id": 4,
+      "recipe_id": 3,
+      "user_id": 4,
+      "comment": "This is comment number 4. Very delicious!"
+    },
+    {
+      "id": 5,
+      "recipe_id": 15,
+      "user_id": 3,
+      "comment": "This is comment number 5. Very delicious!"
+    },
+    {
+      "id": 6,
+      "recipe_id": 11,
+      "user_id": 4,
+      "comment": "This is comment number 6. Very delicious!"
+    },
+    {
+      "id": 7,
+      "recipe_id": 10,
+      "user_id": 8,
+      "comment": "This is comment number 7. Very delicious!"
+    },
+    {
+      "id": 8,
+      "recipe_id": 15,
+      "user_id": 8,
+      "comment": "This is comment number 8. Very delicious!"
+    },
+    {
+      "id": 9,
+      "recipe_id": 7,
+      "user_id": 5,
+      "comment": "This is comment number 9. Very delicious!"
+    },
+    {
+      "id": 10,
+      "recipe_id": 10,
+      "user_id": 1,
+      "comment": "This is comment number 10. Very delicious!"
+    },
+    {
+      "id": 11,
+      "recipe_id": 5,
+      "user_id": 4,
+      "comment": "This is comment number 11. Very delicious!"
+    },
+    {
+      "id": 12,
+      "recipe_id": 10,
+      "user_id": 6,
+      "comment": "This is comment number 12. Very delicious!"
+    },
+    {
+      "id": 13,
+      "recipe_id": 5,
+      "user_id": 1,
+      "comment": "This is comment number 13. Very delicious!"
+    },
+    {
+      "id": 14,
+      "recipe_id": 2,
+      "user_id": 2,
+      "comment": "This is comment number 14. Very delicious!"
+    },
+    {
+      "id": 15,
+      "recipe_id": 4,
+      "user_id": 6,
+      "comment": "This is comment number 15. Very delicious!"
+    },
+    {
+      "id": 16,
+      "recipe_id": 14,
+      "user_id": 8,
+      "comment": "This is comment number 16. Very delicious!"
+    },
+    {
+      "id": 17,
+      "recipe_id": 12,
+      "user_id": 1,
+      "comment": "This is comment number 17. Very delicious!"
+    },
+    {
+      "id": 18,
+      "recipe_id": 3,
+      "user_id": 1,
+      "comment": "This is comment number 18. Very delicious!"
+    },
+    {
+      "id": 19,
+      "recipe_id": 9,
+      "user_id": 1,
+      "comment": "This is comment number 19. Very delicious!"
+    },
+    {
+      "id": 20,
+      "recipe_id": 9,
+      "user_id": 8,
+      "comment": "This is comment number 20. Very delicious!"
+    },
+    {
+      "id": 21,
+      "recipe_id": 13,
+      "user_id": 6,
+      "comment": "This is comment number 21. Very delicious!"
+    },
+    {
+      "id": 22,
+      "recipe_id": 1,
+      "user_id": 1,
+      "comment": "This is comment number 22. Very delicious!"
+    },
+    {
+      "id": 23,
+      "recipe_id": 1,
+      "user_id": 1,
+      "comment": "This is comment number 23. Very delicious!"
+    },
+    {
+      "id": 24,
+      "recipe_id": 1,
+      "user_id": 4,
+      "comment": "This is comment number 24. Very delicious!"
+    },
+    {
+      "id": 25,
+      "recipe_id": 10,
+      "user_id": 2,
+      "comment": "This is comment number 25. Very delicious!"
+    },
+    {
+      "id": 26,
+      "recipe_id": 3,
+      "user_id": 5,
+      "comment": "This is comment number 26. Very delicious!"
+    },
+    {
+      "id": 27,
+      "recipe_id": 4,
+      "user_id": 6,
+      "comment": "This is comment number 27. Very delicious!"
+    },
+    {
+      "id": 28,
+      "recipe_id": 14,
+      "user_id": 3,
+      "comment": "This is comment number 28. Very delicious!"
+    },
+    {
+      "id": 29,
+      "recipe_id": 13,
+      "user_id": 3,
+      "comment": "This is comment number 29. Very delicious!"
+    },
+    {
+      "id": 30,
+      "recipe_id": 11,
+      "user_id": 5,
+      "comment": "This is comment number 30. Very delicious!"
+    }
+  ],
+  "saves": [
+    {
+      "id": 1,
+      "user_id": 7,
+      "recipe_id": 9
+    },
+    {
+      "id": 2,
+      "user_id": 7,
+      "recipe_id": 11
+    },
+    {
+      "id": 3,
+      "user_id": 6,
+      "recipe_id": 6
+    },
+    {
+      "id": 4,
+      "user_id": 2,
+      "recipe_id": 6
+    },
+    {
+      "id": 5,
+      "user_id": 5,
+      "recipe_id": 10
+    },
+    {
+      "id": 6,
+      "user_id": 8,
+      "recipe_id": 8
+    },
+    {
+      "id": 7,
+      "user_id": 3,
+      "recipe_id": 5
+    },
+    {
+      "id": 8,
+      "user_id": 4,
+      "recipe_id": 12
+    },
+    {
+      "id": 9,
+      "user_id": 2,
+      "recipe_id": 13
+    },
+    {
+      "id": 10,
+      "user_id": 2,
+      "recipe_id": 15
+    },
+    {
+      "id": 11,
+      "user_id": 7,
+      "recipe_id": 12
+    },
+    {
+      "id": 12,
+      "user_id": 5,
+      "recipe_id": 9
+    },
+    {
+      "id": 13,
+      "user_id": 5,
+      "recipe_id": 5
+    },
+    {
+      "id": 14,
+      "user_id": 2,
+      "recipe_id": 1
+    },
+    {
+      "id": 15,
+      "user_id": 7,
+      "recipe_id": 4
+    },
+    {
+      "id": 16,
+      "user_id": 8,
+      "recipe_id": 15
+    },
+    {
+      "id": 17,
+      "user_id": 2,
+      "recipe_id": 14
+    },
+    {
+      "id": 18,
+      "user_id": 8,
+      "recipe_id": 9
+    },
+    {
+      "id": 19,
+      "user_id": 4,
+      "recipe_id": 4
+    },
+    {
+      "id": 20,
+      "user_id": 7,
+      "recipe_id": 3
+    }
+  ],
+  "follows": [
+    {
+      "id": 1,
+      "follower_id": 5,
+      "followed_id": 2
+    },
+    {
+      "id": 2,
+      "follower_id": 6,
+      "followed_id": 8
+    },
+    {
+      "id": 3,
+      "follower_id": 8,
+      "followed_id": 1
+    },
+    {
+      "id": 4,
+      "follower_id": 3,
+      "followed_id": 6
+    },
+    {
+      "id": 5,
+      "follower_id": 6,
+      "followed_id": 1
+    },
+    {
+      "id": 6,
+      "follower_id": 6,
+      "followed_id": 5
+    },
+    {
+      "id": 7,
+      "follower_id": 2,
+      "followed_id": 6
+    },
+    {
+      "id": 8,
+      "follower_id": 4,
+      "followed_id": 1
+    },
+    {
+      "id": 9,
+      "follower_id": 7,
+      "followed_id": 8
+    },
+    {
+      "id": 10,
+      "follower_id": 4,
+      "followed_id": 5
+    },
+    {
+      "id": 11,
+      "follower_id": 5,
+      "followed_id": 6
+    },
+    {
+      "id": 12,
+      "follower_id": 8,
+      "followed_id": 4
+    },
+    {
+      "id": 13,
+      "follower_id": 1,
+      "followed_id": 7
+    },
+    {
+      "id": 14,
+      "follower_id": 8,
+      "followed_id": 5
+    },
+    {
+      "id": 15,
+      "follower_id": 1,
+      "followed_id": 2
+    }
+  ]
+}
