@@ -51,9 +51,31 @@ async function toggleLike(event: Event) {
   }
 }
 
+const aspectVariants = [
+  { class: "aspect-[3/4]", ratio: 3 / 4 },
+  { class: "aspect-[4/5]", ratio: 4 / 5 },
+  { class: "aspect-[2/3]", ratio: 2 / 3 },
+  { class: "aspect-square", ratio: 1 },
+  { class: "aspect-[3/5]", ratio: 3 / 5 },
+  { class: "aspect-[5/6]", ratio: 5 / 6 },
+] as const;
+
+const aspectVariant = computed(() => {
+  let hash = 0;
+  for (let i = 0; i < props.post.id.length; i++) {
+    hash = (hash << 5) - hash + props.post.id.charCodeAt(i);
+    hash |= 0;
+  }
+  return aspectVariants[Math.abs(hash) % aspectVariants.length];
+});
+
+const placeholderHeight = computed(() =>
+  Math.round(400 / aspectVariant.value.ratio),
+);
+
 const recipeImage = computed(() => {
   if (!props.post.imageUrl)
-    return `https://picsum.photos/400/600?random=${props.post.id}`;
+    return `https://picsum.photos/400/${placeholderHeight.value}?random=${props.post.id}`;
   if (props.post.imageUrl.startsWith("http")) return props.post.imageUrl;
   return `http://localhost:3001/${props.post.imageUrl}`;
 });
@@ -83,7 +105,8 @@ const nutriScoreClass = computed(() => {
 
 <template>
   <div
-    class="recipe-card group relative break-inside-avoid mb-6 rounded-card overflow-hidden cursor-pointer shadow-card transition-all duration-revamp border-1.5 border-glass-border bg-[#111] min-h-[280px] aspect-[3/4]"
+    class="recipe-card group relative rounded-card overflow-hidden cursor-pointer shadow-card transition-all duration-revamp border-1.5 border-glass-border bg-[#111] w-full"
+    :class="aspectVariant.class"
     @click="emit('click', post.id)"
   >
     <!-- Background Image -->
@@ -98,7 +121,7 @@ const nutriScoreClass = computed(() => {
     <!-- Top Actions -->
     <button
       @click="toggleLike"
-      class="card-heart-btn absolute top-3 right-3 z-10 w-9.5 h-9.5 rounded-full bg-black/45 backdrop-blur-md border border-white/20 flex items-center justify-center cursor-pointer transition-all duration-revamp group-hover:opacity-100 group-hover:translate-y-0 opacity-0 -translate-y-1 scale-90"
+      class="card-heart-btn absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-black/45 backdrop-blur-md border border-white/20 flex items-center justify-center cursor-pointer transition-all duration-revamp group-hover:opacity-100 group-hover:translate-y-0 opacity-0 -translate-y-1 scale-90"
       :class="{
         'liked bg-orange/85 !opacity-100 !translate-y-0 !scale-100':
           post.isLiked,

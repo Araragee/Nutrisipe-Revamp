@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use App\Models\Recipe;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -50,6 +51,17 @@ class CommentController extends Controller
         ]);
 
         $comment->load('user');
+
+        // Trigger notification
+        if ($recipe->user_id !== $request->user()->id) {
+            Notification::create([
+                'user_id' => $recipe->user_id,
+                'actor_id' => $request->user()->id,
+                'type' => 'comment',
+                'post_id' => $recipe->id,
+                'comment_id' => $comment->id,
+            ]);
+        }
 
         return new CommentResource($comment);
     }

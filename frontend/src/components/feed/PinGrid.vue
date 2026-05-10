@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { MasonryWall } from '@yeger/vue-masonry-wall'
 import PinCard from './PinCard.vue'
 import type { Post } from '@/typescript/interface/Post'
 
@@ -14,12 +15,18 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-    <PinCard
-      v-for="post in posts"
-      :key="post.id"
-      :post="post"
-      @click="(postId) => emit('postClick', postId)"
-    />
-  </div>
+  <MasonryWall
+    :items="posts"
+    :column-width="240"
+    :gap="16"
+    :ssr-columns="4"
+    :rtl="false"
+  >
+    <template #default="{ item }">
+      <PinCard
+        :post="(item as Post)"
+        @click="(postId) => emit('postClick', postId)"
+      />
+    </template>
+  </MasonryWall>
 </template>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RecipeResource;
 use App\Models\Recipe;
+use App\Models\Notification;
 use App\Services\NutritionCalculationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -282,6 +283,16 @@ class RecipeController extends Controller
         }
 
         $recipe->savedBy()->attach($user->id);
+
+        // Trigger notification
+        if ($recipe->user_id !== $user->id) {
+            Notification::create([
+                'user_id' => $recipe->user_id,
+                'actor_id' => $user->id,
+                'type' => 'like',
+                'post_id' => $recipe->id,
+            ]);
+        }
 
         return response()->json(['message' => 'Recipe saved successfully']);
     }

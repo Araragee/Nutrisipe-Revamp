@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\RecipeResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -111,6 +112,13 @@ class UserController extends Controller
 
         // Create follow relationship
         $currentUser->following()->attach($userToFollow->id);
+
+        // Trigger notification
+        Notification::create([
+            'user_id' => $userToFollow->id,
+            'actor_id' => $currentUser->id,
+            'type' => 'follow',
+        ]);
 
         return response()->json([
             'message' => 'Successfully followed user',
