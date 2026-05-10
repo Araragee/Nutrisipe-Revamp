@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { postsApi } from '@/http/endpoints/posts'
 import { PostCategory } from '@/typescript/types/enums'
 import { useUiStore } from '@/stores/ui'
 import ImageUpload from '@/components/ui/ImageUpload.vue'
 import IngredientAutocomplete from '@/components/recipe/IngredientAutocomplete.vue'
+import NutritionFactsLabel from '@/components/recipe/NutritionFactsLabel.vue'
+import { useNutritionCalc, type NutritionRow } from '@/composables/useNutritionCalc'
+import type { Ingredient } from '@/typescript/interface/Ingredient'
+
+interface IngredientRow {
+  name: string
+  quantity: string
+  ingredient: Ingredient | null
+}
 
 const router = useRouter()
 const uiStore = useUiStore()
@@ -21,7 +30,7 @@ const form = ref({
   time: '',
   servings: '',
   tag: '',
-  ingredients: [{ name: '', quantity: '' }],
+  ingredients: [{ name: '', quantity: '', ingredient: null }] as IngredientRow[],
   steps: [{ text: '' }],
   cals: '',
   protein: '',
@@ -29,8 +38,32 @@ const form = ref({
   fat: ''
 })
 
-const addIngredient = () => form.value.ingredients.push({ name: '', quantity: '' })
+const addIngredient = () => form.value.ingredients.push({ name: '', quantity: '', ingredient: null })
 const removeIngredient = (i: number) => form.value.ingredients.splice(i, 1)
+
+const onSelectIngredient = (i: number, ing: Ingredient) => {
+  form.value.ingredients[i].ingredient = ing
+}
+const onClearIngredient = (i: number) => {
+  form.value.ingredients[i].ingredient = null
+}
+
+const nutritionRows = computed<NutritionRow[]>(() =>
+  form.value.ingredients.map(r => ({
+    ingredient: r.ingredient,
+    amount: r.quantity,
+    isCustom: !r.ingredient,
+  })),
+)
+const yieldAmount = computed(() => form.value.servings || '1')
+const { perServing, hasData } = useNutritionCalc(nutritionRows, yieldAmount)
+
+watch(perServing, p => {
+  form.value.cals = p.energy ? p.energy.toFixed(0) : ''
+  form.value.protein = p.protein ? p.protein.toFixed(1) : ''
+  form.value.carbs = p.carb ? p.carb.toFixed(1) : ''
+  form.value.fat = p.fat ? p.fat.toFixed(1) : ''
+}, { deep: true })
 
 const addStep = () => form.value.steps.push({ text: '' })
 const removeStep = (i: number) => form.value.steps.splice(i, 1)
@@ -155,8 +188,14 @@ function handleClose() {
             
             <div class="space-y-4 mb-8">
                <div v-for="(ing, i) in form.ingredients" :key="i" class="flex gap-3">
-                  <IngredientAutocomplete v-model="ing.name" :placeholder="`Ingredient ${i+1}`" class="flex-1" />
-                  <input v-model="ing.quantity" class="w-32 bg-background-secondary border border-glass-border rounded-xl p-4 text-sm outline-none focus:border-orange font-bold" placeholder="Amount" />
+                  <IngredientAutocomplete
+                    v-model="ing.name"
+                    :placeholder="`Ingredient ${i+1}`"
+                    class="flex-1"
+                    @select-ingredient="onSelectIngredient(i, $event)"
+                    @clear-ingredient="onClearIngredient(i)"
+                  />
+                  <input v-model="ing.quantity" type="number" min="0" class="w-32 bg-background-secondary border border-glass-border rounded-xl p-4 text-sm outline-none focus:border-orange font-bold" placeholder="Grams" />
                   <button @click="removeIngredient(i)" class="w-13 h-13 shrink-0 border border-glass-border rounded-full flex items-center justify-center text-text-dim hover:text-red-500">✕</button>
                </div>
             </div>
@@ -173,19 +212,30 @@ function handleClose() {
             <button @click="addStep" class="w-full py-3.5 border-1.5 border-dashed border-glass-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add step</button>
           </div>
 
-          <!-- Step 3: Nutrition -->
+          <!-- Step 3: Nutrition (auto-calculated from ingredients) -->
           <div v-if="step === 3" class="space-y-6">
-            <div class="grid grid-cols-2 gap-4">
+            <div v-if="!hasData" class="p-6 bg-background-secondary border-1.5 border-dashed border-glass-border rounded-2xl text-center">
+              <p class="text-sm text-text-dim">
+                Pick ingredients from suggestions and enter grams in step 2 to auto-calculate nutrition.
+              </p>
+            </div>
+
+            <NutritionFactsLabel
+              v-else
+              :data="perServing"
+              :yield-amount="form.servings || '1'"
+            />
+
+            <div class="grid grid-cols-4 gap-3">
               <div v-for="n in [
-                {k:'cals', i:'⚡', l:'Calories', u:'kcal'},
-                {k:'protein', i:'💪', l:'Protein', u:'g'},
-                {k:'carbs', i:'🌾', l:'Carbs', u:'g'},
-                {k:'fat', i:'🥑', l:'Fat', u:'g'}
-              ]" :key="n.k" class="p-5 bg-background-secondary border-1.5 border-glass-border rounded-2xl focus-within:border-orange transition-all">
-                <span class="text-2xl mb-2 block">{{ n.i }}</span>
-                <label class="text-[10px] font-bold text-text-dim uppercase tracking-widest mb-1 block">{{ n.l }}</label>
-                <input v-model="form[n.k as keyof typeof form]" type="number" class="w-full bg-transparent border-none outline-none font-montserrat font-extrabold text-2xl text-text" placeholder="0" />
-                <span class="text-xs text-text-dim">{{ n.u }} per serving</span>
+                {v: perServing.energy, l: 'Calories', u: 'kcal', d: 0, i: '⚡'},
+                {v: perServing.protein, l: 'Protein', u: 'g', d: 1, i: '💪'},
+                {v: perServing.carb, l: 'Carbs', u: 'g', d: 1, i: '🌾'},
+                {v: perServing.fat, l: 'Fat', u: 'g', d: 1, i: '🥑'},
+              ]" :key="n.l" class="p-3 bg-background-secondary border-1.5 border-glass-border rounded-xl text-center">
+                <span class="text-lg block">{{ n.i }}</span>
+                <div class="font-montserrat font-extrabold text-lg text-text">{{ n.v.toFixed(n.d) }}</div>
+                <div class="text-[10px] font-bold text-text-dim uppercase tracking-wider">{{ n.l }} ({{ n.u }})</div>
               </div>
             </div>
           </div>
