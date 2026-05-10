@@ -99,19 +99,20 @@ function handleClose() {
     class="modal-backdrop"
     @click.self="handleClose"
   >
-    <div class="modal-container modal-container-lg dark:bg-gray-800 rounded-2xl">
+    <div class="modal-container relative modal-container-lg dark:bg-gray-800 rounded-2xl">
+      <button
+        @click="handleClose"
+        :disabled="isSubmitting"
+        class="absolute top-4 right-4 z-50 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-all disabled:opacity-50 flex items-center justify-center"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
       <!-- Header -->
       <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
         <h2 class="text-2xl font-bold text-gray-900">Create Post</h2>
-        <button
-          @click="handleClose"
-          :disabled="isSubmitting"
-          class="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
       </div>
 
       <!-- Form -->

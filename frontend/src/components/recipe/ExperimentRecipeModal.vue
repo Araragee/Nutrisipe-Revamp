@@ -132,7 +132,14 @@ const close = () => emit('close')
     class="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/75 backdrop-blur-md"
     @click.self="close"
   >
-    <div class="bg-background w-full max-w-5xl h-full max-h-[88vh] rounded-[28px] overflow-hidden border-1.5 border-glass-border shadow-modal grid grid-cols-1 md:grid-cols-[1.1fr_1fr] animate-modalIn">
+    <div class="relative bg-background w-full max-w-[960px] h-full max-h-[92vh] rounded-[28px] overflow-hidden border-1.5 border-glass-border shadow-modal grid grid-cols-1 md:grid-cols-[1fr_360px] animate-modalIn">
+      <button
+        @click="close"
+        class="absolute top-6 right-6 z-[130] w-9 h-9 rounded-full bg-background/80 backdrop-blur-md border-1.5 border-glass-border text-text-muted hover:border-orange hover:text-orange flex items-center justify-center transition-all shadow-lg"
+        aria-label="Close"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
 
       <!-- LEFT: ingredients editor -->
       <div class="flex flex-col h-full overflow-hidden border-r border-glass-border">
@@ -147,13 +154,6 @@ const close = () => emit('close')
               Adjust quantities, swap items, or remove anything you don't have. Nutrition updates as you go.
             </p>
           </div>
-          <button
-            @click="close"
-            class="w-9 h-9 rounded-full border-1.5 border-glass-border text-text-muted hover:border-orange hover:text-orange flex items-center justify-center transition-all shrink-0"
-            aria-label="Close"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
         </div>
 
         <div class="px-6 mb-3 flex items-center justify-between p-3.5 bg-background-secondary border border-glass-border rounded-xl mx-6 -mx-0">
@@ -206,69 +206,51 @@ const close = () => emit('close')
       </div>
 
       <!-- RIGHT: live nutrition -->
-      <div class="flex flex-col h-full overflow-hidden">
-        <div class="flex-1 overflow-y-auto p-6 space-y-5">
-          <div class="bg-background-secondary border border-glass-border rounded-2xl p-5">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="w-2 h-2 rounded-full bg-orange animate-pulse"></span>
-              <span class="text-[11px] font-bold uppercase tracking-widest text-text-dim">Live Nutrition</span>
+      <div class="flex flex-col h-full overflow-hidden border-l border-glass-border bg-gradient-to-br from-orange/5 to-orange/10 dark:from-zinc-900/60 dark:to-zinc-900/30">
+        <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
+          <div class="bg-background border border-glass-border rounded-[20px] p-[18px] shadow-[0_2px_12px_rgba(20,10,0,0.05)] dark:bg-white/5">
+            <div class="flex items-center gap-2 font-montserrat font-extrabold text-[13px] text-text mb-1">
+              <span class="w-[7px] h-[7px] rounded-full bg-green-500 shadow-[0_0_0_0_rgba(34,197,94,0.7)] animate-pulseDot"></span>
+              Live Nutrition
             </div>
-            <div class="text-[11px] text-text-dim mb-4">Updates as you tweak</div>
+            <div class="text-[11px] text-text-dim mb-3.5">Updates as you tweak</div>
 
-            <div class="text-center py-3">
-              <div class="font-montserrat font-extrabold text-5xl text-orange tabular-nums">{{ display.cals }}</div>
-              <div class="text-[11px] font-bold uppercase tracking-widest text-text-dim mt-1">kcal / serving</div>
-              <div
-                class="inline-block mt-2 px-2.5 py-1 rounded-full text-[10px] font-bold tabular-nums"
-                :class="calDelta === 0 ? 'bg-text-dim/15 text-text-muted' : (calDelta > 0 ? 'bg-amber-500/15 text-amber-600' : 'bg-green-500/15 text-green-600')"
-              >
+            <div class="text-center py-[18px] px-2 pb-3 rounded-2xl bg-gradient-to-br from-orange to-orange-light text-white shadow-[0_6px_20px_var(--orange-glow)] mb-3.5 transition-transform duration-300">
+              <div class="font-montserrat font-black text-[38px] leading-none tracking-tight tabular-nums">{{ display.cals }}</div>
+              <div class="text-[12px] font-semibold opacity-90 mt-1 uppercase tracking-widest">kcal / serving</div>
+              <div class="text-[11px] font-bold mt-1.5 opacity-95 tabular-nums">
                 {{ calDelta === 0 ? 'Same as original' : (calDelta > 0 ? `+${calDelta} vs original` : `${calDelta} vs original`) }}
               </div>
             </div>
 
-            <div class="space-y-3 mt-4">
-              <div v-for="m in macros" :key="m.key">
-                <div class="flex items-center justify-between text-xs mb-1.5">
-                  <span class="font-bold flex items-center gap-2">
-                    {{ m.label }}
-                    <span
-                      v-if="m.value - m.base !== 0"
-                      class="text-[10px] font-bold tabular-nums px-1.5 py-0.5 rounded"
-                      :class="m.value - m.base > 0 ? 'bg-amber-500/15 text-amber-600' : 'bg-green-500/15 text-green-600'"
-                    >
-                      {{ m.value - m.base > 0 ? `+${m.value - m.base}` : m.value - m.base }}{{ m.unit }}
-                    </span>
-                  </span>
-                  <span class="tabular-nums"><strong>{{ m.value }}</strong>{{ m.unit }}</span>
-                </div>
-                <div class="h-1.5 bg-background rounded-full overflow-hidden">
-                  <div
-                    class="h-full rounded-full transition-all duration-300"
-                    :style="{
-                      width: `${Math.min(100, (m.value / m.max) * 100)}%`,
-                      background: `linear-gradient(90deg, ${m.color}, ${m.color}aa)`,
-                    }"
-                  ></div>
-                </div>
+            <div v-for="m in macros" :key="m.key" class="mb-2.5">
+              <div class="flex items-center justify-between text-[11px] font-semibold text-text-muted mb-1.5">
+                <span class="flex items-center gap-1">
+                  {{ m.label }}
+                  <span v-if="m.value - m.base > 0" class="text-red-500 text-[10px] ml-1">+{{ m.value - m.base }}{{ m.unit }}</span>
+                  <span v-else-if="m.value - m.base < 0" class="text-green-500 text-[10px] ml-1">{{ m.value - m.base }}{{ m.unit }}</span>
+                </span>
+                <span class="tabular-nums"><strong class="font-bold text-text">{{ m.value }}</strong>{{ m.unit }}</span>
+              </div>
+              <div class="h-2 rounded-full bg-background-secondary overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-300"
+                  :style="{
+                    width: `${Math.min(100, (m.value / m.max) * 100)}%`,
+                    background: `linear-gradient(90deg, ${m.color}, ${m.color}aa)`,
+                  }"></div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="p-5 border-t border-glass-border flex gap-3">
-          <button
-            @click="reset"
-            class="flex-1 py-3 rounded-xl border-1.5 border-glass-border font-bold text-sm text-text-muted hover:bg-background-secondary"
-          >
-            Reset
-          </button>
-          <button
-            @click="close"
-            class="flex-1 py-3 rounded-xl bg-orange text-white font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-            Save Version
-          </button>
+          <div class="mt-auto flex gap-2.5 pt-3.5">
+            <button @click="reset" class="flex-1 py-3 rounded-xl border-1.5 border-glass-border bg-background-secondary text-text font-montserrat font-semibold text-[13px] hover:border-orange hover:text-orange transition-all">
+              Reset
+            </button>
+            <button @click="close" class="flex-1 py-3 rounded-xl bg-gradient-to-br from-orange to-orange-light text-white font-montserrat font-bold text-[13px] inline-flex items-center justify-center gap-2 shadow-[0_4px_16px_var(--orange-glow)] hover:opacity-95 transition-all">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              Save Version
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -281,4 +263,9 @@ const close = () => emit('close')
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 .animate-modalIn { animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes pulseDot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+  50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+}
+.animate-pulseDot { animation: pulseDot 1.6s infinite; }
 </style>

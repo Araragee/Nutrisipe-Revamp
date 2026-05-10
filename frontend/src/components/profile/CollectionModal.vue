@@ -66,6 +66,7 @@ onMounted(loadCollections)
   <div v-if="show" class="fixed inset-0 z-[110] flex items-center justify-center p-6">
     <div class="absolute inset-0 bg-background/80 backdrop-blur-md" @click="emit('close')"></div>
     <div class="relative w-full max-w-md bg-background-secondary border border-glass-border rounded-[40px] p-8 shadow-2xl animate-revamp">
+      <button @click="emit('close')" class="absolute top-6 right-6 w-9 h-9 rounded-full bg-background border-1.5 border-glass-border text-text-muted hover:border-orange hover:text-orange flex items-center justify-center transition-all">✕</button>
       <h2 class="font-montserrat font-extrabold text-2xl mb-8">Save to Collection</h2>
 
       <div v-if="loading" class="flex justify-center py-10">

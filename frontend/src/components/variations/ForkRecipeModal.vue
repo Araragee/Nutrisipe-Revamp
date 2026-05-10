@@ -1,9 +1,9 @@
 <template>
   <div v-if="isOpen" class="modal-overlay" @click.self="close">
-    <div class="modal-content">
+    <div class="modal-content relative">
+      <button @click="close" class="close-button absolute top-4 right-4 z-10">×</button>
       <div class="modal-header">
         <h2 class="modal-title">Create Recipe Variation</h2>
-        <button @click="close" class="close-button">×</button>
       </div>
 
       <div class="modal-body">
@@ -96,6 +96,7 @@ function handleSubmit() {
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  position: relative;
 }
 
 .modal-header {

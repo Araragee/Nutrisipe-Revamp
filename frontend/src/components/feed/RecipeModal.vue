@@ -183,7 +183,7 @@ const recipeImage = computed(() => {
     class="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-black/75 backdrop-blur-md animate-revamp"
   >
     <div
-      class="bg-background w-full max-w-5xl h-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-modal border-1.5 border-glass-border flex animate-modalIn"
+      class="relative bg-background w-full max-w-5xl h-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-modal border-1.5 border-glass-border flex animate-modalIn"
       @click.stop
     >
       <div v-if="isLoading" class="flex-1 flex items-center justify-center">
@@ -207,7 +207,7 @@ const recipeImage = computed(() => {
           v-if="showCopyToast"
           class="fixed left-1/2 -translate-x-1/2 bottom-10 z-[150] flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/85 text-white text-sm font-bold shadow-2xl backdrop-blur-xl animate-toastIn"
         >
-          <span class="w-5 h-5 rounded-full bg-orange flex items-center justify-center">
+          <span class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </span>
           Link copied
@@ -218,29 +218,29 @@ const recipeImage = computed(() => {
           <img :src="recipeImage" class="w-full h-full object-cover opacity-90" />
           <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
-          <!-- Glass dock: like / save / share (top-left) -->
-          <div class="absolute top-4 left-4 z-20 flex items-center gap-1 p-1 rounded-full bg-white/10 hover:bg-white/15 backdrop-blur-xl backdrop-saturate-150 border border-white/15 transition-all duration-300 shadow-lg">
+          <!-- Glass dock: like / save / share (iOS 26-style, top-left) -->
+          <div class="modal-quick-actions absolute top-4 left-4 z-20 flex items-center gap-1 p-1 rounded-full">
             <button
               @click="toggleLike"
-              :class="['w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all', post.isLiked && 'text-orange bg-white/20']"
+              :class="['quick-icon-btn w-9 h-9 rounded-full flex items-center justify-center text-white transition-all', post.isLiked && 'is-active']"
               :title="post.isLiked ? 'Liked' : 'Like'"
               aria-label="Like"
             >
-              <svg v-if="post.isLiked" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <svg v-if="post.isLiked" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <svg v-else width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
             <button
               @click="toggleSave"
-              :class="['w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all', post.isSaved && 'text-orange bg-white/20']"
+              :class="['quick-icon-btn w-9 h-9 rounded-full flex items-center justify-center text-white transition-all', post.isSaved && 'is-active']"
               :title="post.isSaved ? 'Saved' : 'Save'"
               aria-label="Save"
             >
-              <svg v-if="post.isSaved" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-              <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              <svg v-if="post.isSaved" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              <svg v-else width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
             </button>
             <button
               @click="shareRecipe"
-              class="w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all"
+              class="quick-icon-btn w-9 h-9 rounded-full flex items-center justify-center text-white transition-all"
               title="Share"
               aria-label="Share"
             >
@@ -451,5 +451,37 @@ const recipeImage = computed(() => {
 }
 .animate-toastIn {
   animation: toastIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* iOS 26-style glass dock for quick actions */
+.modal-quick-actions {
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(2px) saturate(120%);
+  -webkit-backdrop-filter: blur(2px) saturate(120%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+  transition: background 0.32s ease, backdrop-filter 0.32s ease,
+              border-color 0.32s ease, box-shadow 0.32s ease, transform 0.32s ease;
+}
+.modal-quick-actions:hover {
+  background: rgba(255,255,255,0.22);
+  border-color: rgba(255,255,255,0.45);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 -1px 0 rgba(255,255,255,0.10),
+    0 8px 32px rgba(0,0,0,0.18);
+  transform: translateY(-1px);
+}
+.quick-icon-btn {
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+.quick-icon-btn:hover { background: rgba(255,255,255,0.28); transform: scale(1.06); }
+.quick-icon-btn.is-active {
+  background: var(--orange);
+  color: #fff;
+  box-shadow: 0 4px 14px var(--orange-glow), inset 0 1px 0 rgba(255,255,255,0.3);
+  text-shadow: none;
 }
 </style>

@@ -113,11 +113,12 @@ function handleClose() {
 
 <template>
   <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/75 backdrop-blur-md animate-revamp">
-    <div class="create-modal bg-background w-full max-w-[720px] max-h-[90vh] rounded-[28px] border-1.5 border-glass-border shadow-modal flex flex-col overflow-hidden animate-modalIn">
+    <div class="create-modal relative bg-background w-full max-w-[720px] h-[800px] max-h-[90vh] rounded-[28px] border-1.5 border-glass-border shadow-modal flex flex-col overflow-hidden animate-modalIn">
+      <button @click="handleClose" class="absolute top-6 right-6 z-50 w-9 h-9 rounded-full bg-background-secondary border-1.5 border-glass-border flex items-center justify-center text-text-muted hover:border-orange hover:text-orange transition-all">✕</button>
 
       <!-- Header -->
       <header class="p-7 pb-5 border-b border-glass-border flex items-center gap-4">
-        <div class="flex gap-1.5 flex-1">
+        <div class="flex gap-1.5 flex-1 pr-12">
           <div
             v-for="(s, i) in STEPS"
             :key="i"
@@ -130,14 +131,13 @@ function handleClose() {
           </div>
         </div>
         <span class="text-[12px] font-bold text-text-dim whitespace-nowrap">Step {{ Math.min(step + 1, 4) }} of 4 — {{ STEPS[Math.min(step, 3)] }}</span>
-        <button @click="handleClose" class="w-8.5 h-8.5 rounded-full border-1.5 border-glass-border flex items-center justify-center text-text-muted hover:border-orange hover:text-orange">✕</button>
       </header>
 
       <!-- Body -->
-      <div class="flex-1 overflow-y-auto p-8">
+      <div class="flex-1 overflow-y-auto p-8 flex flex-col">
 
         <!-- Success Step -->
-        <div v-if="step === 4" class="flex flex-col items-center justify-center py-12 text-center">
+        <div v-if="step === 4" class="flex-1 flex flex-col items-center justify-center py-12 text-center animate-revamp">
           <div class="w-20 h-20 rounded-full bg-gradient-to-br from-orange to-orange-light flex items-center justify-center text-3xl text-white shadow-lg mb-6 animate-popIn">🎉</div>
           <h2 class="font-montserrat font-extrabold text-3xl mb-2">Recipe shared!</h2>
           <p class="text-text-muted text-sm max-w-xs mx-auto mb-8">
@@ -182,10 +182,7 @@ function handleClose() {
           </div>
 
           <!-- Step 1: Ingredients -->
-          <div v-if="step === 1" class="p-10 animate-revamp">
-            <h2 class="font-montserrat font-extrabold text-3xl mb-2">Ingredients</h2>
-            <p class="text-text-dim text-sm mb-10">Add the ingredients needed for your recipe.</p>
-            
+          <div v-if="step === 1" class="animate-revamp">
             <div class="space-y-4 mb-8">
                <div v-for="(ing, i) in form.ingredients" :key="i" class="flex gap-3">
                   <IngredientAutocomplete
