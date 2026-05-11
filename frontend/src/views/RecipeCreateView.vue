@@ -113,11 +113,11 @@ function handleClose() {
 
 <template>
   <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/75 backdrop-blur-md animate-revamp">
-    <div class="create-modal relative bg-background w-full max-w-[720px] h-[800px] max-h-[90vh] rounded-[28px] border-1.5 border-glass-border shadow-modal flex flex-col overflow-hidden animate-modalIn">
+    <div class="create-modal relative bg-background w-full max-w-[50vw] h-[800px] max-h-[90vh] rounded-[28px] border-1.5 border-glass-border shadow-modal flex flex-col overflow-hidden animate-modalIn">
       <button @click="handleClose" class="absolute top-6 right-6 z-50 w-9 h-9 rounded-full bg-background-secondary border-1.5 border-glass-border flex items-center justify-center text-text-muted hover:border-orange hover:text-orange transition-all">✕</button>
 
       <!-- Header -->
-      <header class="p-7 pb-5 border-b border-glass-border flex items-center gap-4">
+      <header class="p-5 border-b border-glass-border flex items-center gap-3">
         <div class="flex gap-1.5 flex-1 pr-12">
           <div
             v-for="(s, i) in STEPS"
@@ -126,7 +126,7 @@ function handleClose() {
           >
             <div
               class="h-full bg-orange transition-all duration-500"
-              :style="{ width: step > i ? '100%' : step === i ? '60%' : '0%' }"
+              :style="{ width: step > i ? '100%' : step === i ? '100%' : '0%' }"
             ></div>
           </div>
         </div>

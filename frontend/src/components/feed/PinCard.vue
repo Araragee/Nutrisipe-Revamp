@@ -121,7 +121,7 @@ const nutriScoreClass = computed(() => {
     <!-- Top Actions -->
     <button
       @click="toggleLike"
-      class="card-heart-btn absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-black/45 backdrop-blur-md border border-white/20 flex items-center justify-center cursor-pointer transition-all duration-revamp group-hover:opacity-100 group-hover:translate-y-0 opacity-0 -translate-y-1 scale-90"
+      class="card-heart-btn absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-black/10 backdrop-blur-[3px] border border-white/20 flex items-center justify-center cursor-pointer transition-all duration-revamp delay-150 group-hover:opacity-100 group-hover:translate-y-0 opacity-0 -translate-y-1 scale-90"
       :class="{
         'liked bg-orange/85 !opacity-100 !translate-y-0 !scale-100':
           post.isLiked,
@@ -131,7 +131,7 @@ const nutriScoreClass = computed(() => {
     </button>
 
     <div
-      class="card-like-count absolute top-3 right-14 z-10 bg-black/45 backdrop-blur-md border border-white/20 rounded-full px-3 py-1.5 font-montserrat font-bold text-xs text-white transition-all duration-revamp delay-75 group-hover:opacity-100 group-hover:translate-y-0 opacity-0 -translate-y-1 scale-90"
+      class="card-like-count absolute top-3 right-14 z-10 bg-black/10 backdrop-blur-[3px] border border-white/20 rounded-full w-10 h-10 items-center flex justify-center font-montserrat font-bold text-xs text-white transition-all duration-revamp delay-150 group-hover:opacity-100 group-hover:translate-y-0 opacity-0 -translate-y-1 scale-90"
       :class="{ '!opacity-100 !translate-y-0 !scale-100': post.isLiked }"
     >
       {{ formatNumber(post.likeCount) }}

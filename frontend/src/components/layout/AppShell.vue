@@ -172,7 +172,7 @@ onUnmounted(() => {
     </aside>
 
     <!-- ── Main Content ── -->
-    <main class="main-content flex-1 overflow-y-auto relative">
+    <main class="main-content flex-1 overflow-y-auto relative scrollbar-hide">
       <slot />
     </main>
 
@@ -224,15 +224,20 @@ onUnmounted(() => {
               {{ cat.icon }}
             </div>
             <div class="flex-1 text-left min-w-0">
-              <div class="text-[14px] font-bold text-text truncate tracking-tight">{{ cat.name }}</div>
-              <div class="text-[11px] text-text-dim mt-0.5">{{ cat.desc }}</div>
-            </div>
-            <div :class="[
-              'px-2.5 py-1 rounded-full text-[10px] font-extrabold tabular-nums',
-              selectedCategory === cat.name ? 'bg-orange/20 text-orange' : 'bg-background-secondary text-text-dim'
+              <div class="flex gap-1.5 flex-nowrap justify-between">
+                <span class="text-[14px] font-bold text-text truncate tracking-tight break-keep">
+                  {{ cat.name }}
+                </span>
+                 <div :class="[
+              'px-2.5 py-1 rounded-full text-[10px] font-extrabold tabular-nums ',
+              selectedCategory === cat.name ? 'bg-orange/20 text-orange bg-orange-600/10' : 'bg-background-secondary text-text-dim'
             ]">
               {{ cat.count }}
             </div>
+              </div>
+              <div class="text-[11px] text-text-dim mt-0.5">{{ cat.desc }}</div>
+            </div>
+           
           </button>
         </div>
       </div>
@@ -295,9 +300,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.scrollbar-hide::-webkit-scrollbar { display: none; }
-.scrollbar-hide { scrollbar-width: none; }
-
 .ls-card {
   background: var(--glass);
   backdrop-filter: blur(24px) saturate(120%);

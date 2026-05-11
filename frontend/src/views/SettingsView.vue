@@ -70,7 +70,7 @@ function handleLogout() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+  <div class="min-h-screen bg-background">
     <div class="max-w-4xl mx-auto px-4 py-8">
       <!-- Header -->
       <div class="mb-8">
@@ -257,25 +257,6 @@ function handleLogout() {
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Danger Zone -->
-    <div
-      class="mt-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-red-100 dark:border-red-900/30"
-    >
-      <h2 class="text-xl font-semibold text-red-600 dark:text-red-400 mb-4">
-        Danger Zone
-      </h2>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-        Logout from your account. You will need to login again to access your
-        saved recipes and profile.
-      </p>
-      <button
-        @click="handleLogout"
-        class="px-6 py-3 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-medium rounded-lg hover:bg-red-200 dark:hover:bg-red-900/40 transition-colors"
-      >
-        Logout of Nutrisipe
-      </button>
     </div>
   </div>
 </template>

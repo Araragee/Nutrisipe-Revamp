@@ -54,23 +54,23 @@ const quickActions = [
 
       <div v-else-if="stats">
         <!-- Stats Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          <div class="bg-background-secondary border border-glass-border rounded-[32px] p-8 shadow-xl">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="bg-background-secondary border border-glass-border rounded-3xl p-5">
              <div class="text-orange text-2xl mb-4">👥</div>
              <div class="font-montserrat font-extrabold text-3xl mb-1">{{ stats.users.total }}</div>
              <div class="text-[10px] font-bold uppercase tracking-widest text-text-dim">Total Citizens</div>
           </div>
-          <div class="bg-background-secondary border border-glass-border rounded-[32px] p-8 shadow-xl">
+          <div class="bg-background-secondary border border-glass-border rounded-3xl p-5">
              <div class="text-orange text-2xl mb-4">📝</div>
              <div class="font-montserrat font-extrabold text-3xl mb-1">{{ stats.content.posts }}</div>
              <div class="text-[10px] font-bold uppercase tracking-widest text-text-dim">Recipes Shared</div>
           </div>
-          <div class="bg-background-secondary border border-glass-border rounded-[32px] p-8 shadow-xl">
+          <div class="bg-background-secondary border border-glass-border rounded-3xl p-5">
              <div class="text-orange text-2xl mb-4">🔥</div>
              <div class="font-montserrat font-extrabold text-3xl mb-1">+{{ stats.users.newToday }}</div>
              <div class="text-[10px] font-bold uppercase tracking-widest text-text-dim">New Today</div>
           </div>
-          <div class="bg-background-secondary border border-glass-border rounded-[32px] p-8 shadow-xl">
+          <div class="bg-background-secondary border border-glass-border rounded-3xl p-5">
              <div class="text-orange text-2xl mb-4">⚠️</div>
              <div class="font-montserrat font-extrabold text-3xl mb-1">{{ stats.moderation.pendingReports }}</div>
              <div class="text-[10px] font-bold uppercase tracking-widest text-text-dim">Pending Reports</div>
@@ -78,7 +78,7 @@ const quickActions = [
         </div>
 
         <h2 class="font-montserrat font-extrabold text-xl mb-8 tracking-tight uppercase">Quick Controls</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
            <RouterLink
              v-for="action in quickActions"
              :key="action.path"
