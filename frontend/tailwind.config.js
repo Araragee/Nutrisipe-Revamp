@@ -56,6 +56,9 @@ module.exports = {
       transitionTimingFunction: {
         'revamp': 'var(--transition)',
       },
+      transitionDuration: {
+        'revamp': '300ms',
+      },
       opacity: {
         '18': '0.18',
       },
