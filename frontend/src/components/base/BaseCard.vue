@@ -24,7 +24,7 @@ const variantClasses = computed(() => {
     case 'flat':
       return 'bg-background-secondary'
     case 'outline':
-      return 'bg-transparent border-1.5 border-glass-border'
+      return 'bg-transparent border-[1.5px] border-glass-border'
     default:
       return ''
   }

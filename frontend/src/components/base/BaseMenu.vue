@@ -30,7 +30,7 @@ const emit = defineEmits(['select'])
     <div>
       <slot name="trigger">
         <MenuButton
-          class="inline-flex w-full justify-center gap-x-1.5 rounded-3xl bg-background px-4 py-2.5 text-sm font-bold text-text shadow-sm border border-glass-border hover:bg-background-secondary transition-colors focus:outline-none"
+          class="inline-flex w-full justify-center gap-x-1.5 rounded-3xl bg-background px-4 py-2.5 text-sm font-bold text-text shadow-sm border border-glass-border hover:bg-background-secondary transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           {{ label }}
           <ChevronDownIcon

@@ -69,7 +69,7 @@ const sizeClasses = {
           >
             <DialogPanel
               :class="[
-                'relative transform overflow-hidden rounded-[32px] bg-background border-1.5 border-glass-border text-left shadow-modal transition-all sm:my-8 w-full',
+                'relative transform overflow-hidden rounded-[32px] bg-background border-[1.5px] border-glass-border text-left shadow-modal transition-all sm:my-8 w-full',
                 sizeClasses[size],
               ]"
             >
@@ -77,7 +77,7 @@ const sizeClasses = {
                 <button
                   v-if="closeable"
                   type="button"
-                  class="rounded-full bg-background-secondary p-2 text-text-muted hover:text-orange transition-colors focus:outline-none"
+                  class="rounded-full bg-background-secondary p-2 text-text-muted hover:text-orange transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   @click="close"
                 >
                   <XMarkIcon class="h-5 w-5" aria-hidden="true" />
