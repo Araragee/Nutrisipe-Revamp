@@ -64,13 +64,14 @@ const emit = defineEmits(['select'])
             :disabled="option.disabled"
           >
             <button
+              :disabled="option.disabled"
               :class="[
                 active ? 'bg-orange/10 text-orange' : 'text-text',
                 option.danger ? 'hover:bg-red-500/10 hover:text-red-500' : '',
                 option.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
                 'group flex w-full items-center rounded-[12px] px-3 py-2.5 text-sm font-semibold transition-colors',
               ]"
-              @click="emit('select', option.value)"
+              @click="!option.disabled && emit('select', option.value)"
             >
               <component
                 :is="option.icon"
