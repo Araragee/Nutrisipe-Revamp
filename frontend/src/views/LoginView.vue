@@ -84,7 +84,7 @@ async function handleGoogleLogin() {
        <div class="auth-bg-img absolute inset-0 opacity-18 bg-[url('https://picsum.photos/1200/800?random=99')] bg-cover bg-center blur-[2px]"></div>
     </div>
 
-    <div class="auth-card relative z-[2] bg-glass backdrop-blur-2xl border-1.5 border-[var(--glass-border)] rounded-[32px] p-12 px-11 w-[420px] shadow-[0_24px_64px_rgba(20,10,0,0.18)] dark:bg-[rgba(24,22,30,0.95)]">
+    <div class="auth-card relative z-[2] bg-glass backdrop-blur-2xl rounded-3xl p-12 px-11 w-[420px] shadow-[0_24px_64px_rgba(20,10,0,0.18)] dark:bg-[rgba(24,22,30,0.95)]">
       <div class="auth-logo font-montserrat font-extrabold text-xl mb-8">Nutri<span class="text-orange">sipe</span></div>
       <h2 class="auth-title font-montserrat font-extrabold text-[28px] tracking-tight mb-1.5">Welcome back</h2>
       <p class="auth-sub text-sm text-text-muted mb-8">Sign in to your Nutrisipe account.</p>
@@ -123,15 +123,6 @@ async function handleGoogleLogin() {
           {{ isLoading ? 'Signing in...' : 'Sign in →' }}
         </button>
       </form>
-
-      <div class="mt-8">
-        <p class="text-xs text-text-dim text-center mb-3">Quick demo login (no password needed)</p>
-        <div class="flex gap-2">
-          <button v-for="demo in demoAccounts" :key="demo.email" @click="loginWithDemo(demo.email)" class="flex-1 py-2 rounded-lg border border-orange/30 text-[10px] font-bold text-orange hover:bg-orange-soft transition-all">
-            {{ demo.label }}
-          </button>
-        </div>
-      </div>
 
       <p class="auth-footer text-center mt-5 text-[13px] text-text-dim">
         Don't have an account? <router-link to="/register" class="text-orange font-bold cursor-pointer hover:underline">Sign up</router-link>

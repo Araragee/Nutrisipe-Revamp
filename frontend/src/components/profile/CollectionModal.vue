@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { collectionsApi, type Collection } from '@/http/endpoints/collections'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
+import BaseModal from '@/components/base/BaseModal.vue'
 
 const props = defineProps<{
   show: boolean
@@ -63,56 +64,52 @@ onMounted(loadCollections)
 </script>
 
 <template>
-  <div v-if="show" class="fixed inset-0 z-[110] flex items-center justify-center p-6">
-    <div class="absolute inset-0 bg-background/80 backdrop-blur-md" @click="emit('close')"></div>
-    <div class="relative w-full max-w-md bg-background-secondary border border-glass-border rounded-[40px] p-8 shadow-2xl animate-revamp">
-      <button @click="emit('close')" class="absolute top-6 right-6 w-9 h-9 rounded-full bg-background border-1.5 border-glass-border text-text-muted hover:border-orange hover:text-orange flex items-center justify-center transition-all">✕</button>
-      <h2 class="font-montserrat font-extrabold text-2xl mb-8">Save to Collection</h2>
-
+  <BaseModal :show="show" title="Save to Collection" size="md" @close="emit('close')">
+    <div class="space-y-6">
       <div v-if="loading" class="flex justify-center py-10">
-         <div class="w-8 h-8 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
+        <div class="w-8 h-8 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
       </div>
 
-      <div v-else class="space-y-4 max-h-[400px] overflow-y-auto mb-8 pr-2">
-         <button
-           v-for="col in collections"
-           :key="col.id"
-           @click="addToCollection(col.id)"
-           class="w-full flex items-center gap-4 p-4 rounded-2xl bg-background border border-glass-border hover:border-orange transition-all group"
-         >
-            <div class="w-12 h-12 bg-background-tertiary rounded-xl flex items-center justify-center text-xl overflow-hidden">
-               <img v-if="col.thumbnailUrl" :src="col.thumbnailUrl" class="w-full h-full object-cover" />
-               <span v-else>📁</span>
-            </div>
-            <div class="flex-1 text-left">
-               <div class="font-bold text-sm">{{ col.name }}</div>
-               <div class="text-[10px] text-text-dim uppercase tracking-widest">{{ col.postCount }} items</div>
-            </div>
-            <span class="opacity-0 group-hover:opacity-100 text-orange transition-opacity">+</span>
-         </button>
+      <div v-else class="max-h-96 overflow-y-auto space-y-3 -mx-6 px-6">
+        <button
+          v-for="col in collections"
+          :key="col.id"
+          @click="addToCollection(col.id)"
+          class="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 hover:border-orange dark:hover:border-orange transition-all group"
+        >
+          <div class="w-12 h-12 bg-gray-200 dark:bg-zinc-600 rounded-lg flex items-center justify-center text-xl overflow-hidden flex-shrink-0">
+            <img v-if="col.thumbnailUrl" :src="col.thumbnailUrl" class="w-full h-full object-cover" />
+            <span v-else>📁</span>
+          </div>
+          <div class="flex-1 text-left min-w-0">
+            <div class="font-semibold text-sm text-gray-900 dark:text-white truncate">{{ col.name }}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">{{ col.postCount }} items</div>
+          </div>
+          <span class="opacity-0 group-hover:opacity-100 text-orange transition-opacity flex-shrink-0">+</span>
+        </button>
 
-         <div v-if="collections.length === 0" class="text-center py-6">
-            <p class="text-text-dim text-xs">You don't have any collections yet.</p>
-         </div>
-      </div>
-
-      <div class="border-t border-glass-border pt-8">
-         <div class="flex gap-2">
-            <input
-              v-model="newCollectionName"
-              type="text"
-              placeholder="New collection name..."
-              class="flex-1 bg-background border border-glass-border rounded-xl px-4 py-3 text-sm outline-none focus:border-orange"
-            />
-            <button
-              @click="createAndAdd"
-              :disabled="!newCollectionName || isCreating"
-              class="bg-orange text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-orange-dark disabled:opacity-50 transition-all"
-            >
-               Create
-            </button>
-         </div>
+        <div v-if="collections.length === 0" class="text-center py-8">
+          <p class="text-gray-500 dark:text-gray-400 text-sm">You don't have any collections yet.</p>
+        </div>
       </div>
     </div>
-  </div>
+
+    <template #footer>
+      <div class="flex gap-2">
+        <input
+          v-model="newCollectionName"
+          type="text"
+          placeholder="New collection name..."
+          class="flex-1 bg-white dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 rounded-lg px-4 py-2 text-sm outline-none focus:border-orange dark:text-white dark:placeholder-gray-400"
+        />
+        <button
+          @click="createAndAdd"
+          :disabled="!newCollectionName || isCreating"
+          class="bg-orange hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Create
+        </button>
+      </div>
+    </template>
+  </BaseModal>
 </template>

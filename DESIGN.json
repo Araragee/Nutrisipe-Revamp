@@ -1,0 +1,311 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-13T00:00:00.000Z",
+  "title": "Design System: Nutrisipe",
+  "extensions": {
+    "colorMeta": {
+      "ember-orange": {
+        "role": "primary",
+        "displayName": "Ember Orange",
+        "canonical": "oklch(66% 0.22 40)",
+        "tonalRamp": [
+          "oklch(18% 0.10 40)",
+          "oklch(28% 0.15 40)",
+          "oklch(38% 0.20 40)",
+          "oklch(50% 0.22 40)",
+          "oklch(60% 0.22 40)",
+          "oklch(66% 0.22 40)",
+          "oklch(76% 0.18 42)",
+          "oklch(90% 0.08 50)"
+        ]
+      },
+      "ember-orange-light": {
+        "role": "primary-variant",
+        "displayName": "Ember Orange Light",
+        "canonical": "oklch(72% 0.20 42)",
+        "tonalRamp": [
+          "oklch(22% 0.10 42)",
+          "oklch(32% 0.15 42)",
+          "oklch(44% 0.18 42)",
+          "oklch(54% 0.20 42)",
+          "oklch(62% 0.20 42)",
+          "oklch(72% 0.20 42)",
+          "oklch(82% 0.14 46)",
+          "oklch(93% 0.06 52)"
+        ]
+      },
+      "warm-parchment": {
+        "role": "neutral-bg",
+        "displayName": "Warm Parchment",
+        "canonical": "oklch(98.5% 0.008 60)",
+        "tonalRamp": [
+          "oklch(38% 0.008 60)",
+          "oklch(50% 0.009 60)",
+          "oklch(62% 0.009 58)",
+          "oklch(72% 0.009 58)",
+          "oklch(82% 0.009 58)",
+          "oklch(90% 0.008 60)",
+          "oklch(94% 0.008 60)",
+          "oklch(98.5% 0.008 60)"
+        ]
+      },
+      "warm-parchment-deep": {
+        "role": "neutral-bg-secondary",
+        "displayName": "Warm Parchment Deep",
+        "canonical": "oklch(96% 0.010 55)",
+        "tonalRamp": [
+          "oklch(36% 0.010 55)",
+          "oklch(48% 0.010 55)",
+          "oklch(60% 0.010 55)",
+          "oklch(70% 0.010 55)",
+          "oklch(80% 0.010 55)",
+          "oklch(88% 0.010 55)",
+          "oklch(92% 0.010 55)",
+          "oklch(96% 0.010 55)"
+        ]
+      },
+      "dark-slate": {
+        "role": "neutral-bg-dark",
+        "displayName": "Dark Slate",
+        "canonical": "oklch(11% 0.010 240)",
+        "tonalRamp": [
+          "oklch(11% 0.010 240)",
+          "oklch(20% 0.012 240)",
+          "oklch(30% 0.014 240)",
+          "oklch(42% 0.012 240)",
+          "oklch(54% 0.011 240)",
+          "oklch(66% 0.010 240)",
+          "oklch(78% 0.008 240)",
+          "oklch(90% 0.006 240)"
+        ]
+      },
+      "dark-slate-raised": {
+        "role": "neutral-bg-dark-secondary",
+        "displayName": "Dark Slate Raised",
+        "canonical": "oklch(17% 0.014 240)",
+        "tonalRamp": [
+          "oklch(11% 0.010 240)",
+          "oklch(17% 0.014 240)",
+          "oklch(26% 0.014 240)",
+          "oklch(38% 0.013 240)",
+          "oklch(50% 0.012 240)",
+          "oklch(62% 0.011 240)",
+          "oklch(76% 0.008 240)",
+          "oklch(90% 0.006 240)"
+        ]
+      },
+      "ink": {
+        "role": "text-primary",
+        "displayName": "Ink",
+        "canonical": "oklch(18% 0.012 240)",
+        "tonalRamp": [
+          "oklch(10% 0.010 240)",
+          "oklch(18% 0.012 240)",
+          "oklch(28% 0.013 240)",
+          "oklch(40% 0.012 240)",
+          "oklch(52% 0.011 240)",
+          "oklch(64% 0.010 240)",
+          "oklch(78% 0.008 240)",
+          "oklch(92% 0.005 240)"
+        ]
+      },
+      "ink-muted": {
+        "role": "text-secondary",
+        "displayName": "Ink Muted",
+        "canonical": "oklch(45% 0.010 240)",
+        "tonalRamp": [
+          "oklch(12% 0.010 240)",
+          "oklch(22% 0.011 240)",
+          "oklch(32% 0.011 240)",
+          "oklch(45% 0.010 240)",
+          "oklch(56% 0.010 240)",
+          "oklch(68% 0.009 240)",
+          "oklch(80% 0.007 240)",
+          "oklch(92% 0.005 240)"
+        ]
+      },
+      "surface": {
+        "role": "surface",
+        "displayName": "Surface",
+        "canonical": "rgba(255,255,255,0.85)",
+        "tonalRamp": [
+          "rgba(255,255,255,0.10)",
+          "rgba(255,255,255,0.18)",
+          "rgba(255,255,255,0.30)",
+          "rgba(255,255,255,0.45)",
+          "rgba(255,255,255,0.60)",
+          "rgba(255,255,255,0.70)",
+          "rgba(255,255,255,0.85)",
+          "rgba(255,255,255,1.00)"
+        ]
+      },
+      "surface-dark": {
+        "role": "surface-dark",
+        "displayName": "Surface Dark",
+        "canonical": "rgb(26, 24, 32)",
+        "tonalRamp": [
+          "oklch(9% 0.012 260)",
+          "oklch(14% 0.012 255)",
+          "oklch(18% 0.013 250)",
+          "oklch(24% 0.013 248)",
+          "oklch(32% 0.012 246)",
+          "oklch(42% 0.011 244)",
+          "oklch(56% 0.010 242)",
+          "oklch(74% 0.007 240)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page heroes and major section headers. One per screen maximum." },
+      "headline": { "displayName": "Headline", "purpose": "Recipe titles in modals, profile names, section headings." },
+      "title": { "displayName": "Title", "purpose": "Card overlays, onboarding step titles, sidebar section labels." },
+      "body": { "displayName": "Body", "purpose": "Recipe descriptions, message copy, settings prose. Max line length 65ch." },
+      "label": { "displayName": "Label", "purpose": "Form field labels, tag text, Nutri-Score badge, category chips. Always uppercase." }
+    },
+    "shadows": [
+      {
+        "name": "card",
+        "value": "0 4px 24px rgba(30,20,10,0.10), 0 1px 4px rgba(30,20,10,0.06)",
+        "purpose": "Always-on ambient shadow for recipe cards and content containers. Warm-tinted base."
+      },
+      {
+        "name": "modal",
+        "value": "0 24px 80px rgba(20,10,0,0.22), 0 4px 16px rgba(20,10,0,0.10)",
+        "purpose": "Recipe detail modals and any surface floating above content."
+      },
+      {
+        "name": "glow-orange",
+        "value": "0 6px 24px rgba(255,107,53,0.35)",
+        "purpose": "Orange halo on primary buttons and active accent states."
+      },
+      {
+        "name": "glow-orange-lg",
+        "value": "0 12px 32px rgba(255,107,53,0.35)",
+        "purpose": "Expanded orange glow on primary button hover."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-revamp",
+        "value": "cubic-bezier(0.34, 1.2, 0.64, 1)",
+        "purpose": "Default easing for state transitions — subtle spring gives tactility without bounce."
+      },
+      {
+        "name": "ease-out-standard",
+        "value": "cubic-bezier(0, 0, 0.2, 1)",
+        "purpose": "Image transitions and larger element entrances where spring would be too lively."
+      },
+      {
+        "name": "duration-fast",
+        "value": "150ms",
+        "purpose": "Micro-interactions: border color shifts, icon state changes."
+      },
+      {
+        "name": "duration-standard",
+        "value": "200ms",
+        "purpose": "Button hover, input focus, nav state changes."
+      },
+      {
+        "name": "duration-slow",
+        "value": "500ms",
+        "purpose": "Image scale on card hover."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm",  "value": "640px" },
+      { "name": "md",  "value": "768px" },
+      { "name": "lg",  "value": "1024px" },
+      { "name": "xl",  "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main CTA. Orange gradient fill, Montserrat bold, lifts on hover.",
+      "html": "<button class=\"ds-btn-primary\">Save Recipe</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #FF6B35, #FF8C42); color: #ffffff; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 15px; padding: 16px 32px; border: none; border-radius: 14px; box-shadow: 0 6px 24px rgba(255,107,53,0.35); cursor: pointer; transition: transform 200ms ease, box-shadow 200ms ease; } .ds-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(255,107,53,0.35); } .ds-btn-primary:focus-visible { outline: 2px solid #FF6B35; outline-offset: 3px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ghost button with glass-border stroke. Hover shifts to Ember Orange.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; background: transparent; color: oklch(18% 0.012 240); font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 15px; padding: 16px 24px; border: 1.5px solid oklch(80% 0.012 240); border-radius: 14px; cursor: pointer; transition: border-color 200ms ease, color 200ms ease; } .ds-btn-secondary:hover { border-color: #FF6B35; color: #FF6B35; } .ds-btn-secondary:focus-visible { outline: 2px solid #FF6B35; outline-offset: 3px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Glass-surfaced field. Montserrat uppercase label above. Focus shifts border to Ember Orange.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-label\">Email</label><input class=\"ds-input\" type=\"email\" placeholder=\"you@example.com\" /></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 8px; } .ds-label { font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: oklch(45% 0.010 240); } .ds-input { background: rgba(255,255,255,0.85); border: 1.5px solid rgba(255,255,255,0.5); border-radius: 14px; padding: 14px 18px; font-family: 'Inter', sans-serif; font-size: 15px; color: oklch(18% 0.012 240); outline: none; transition: border-color 200ms ease; width: 100%; box-sizing: border-box; } .ds-input:focus { border-color: #FF6B35; } .ds-input::placeholder { color: oklch(65% 0.008 240); }"
+    },
+    {
+      "name": "Recipe Pin Card",
+      "kind": "card",
+      "refersTo": "button-primary",
+      "description": "Signature component. Full-bleed food photography with gradient overlay and tag/author chrome. Aspect ratio varies per card.",
+      "html": "<article class=\"ds-pin-card\"><img class=\"ds-pin-img\" src=\"https://picsum.photos/400/500\" alt=\"Avocado Toast\" /><div class=\"ds-pin-overlay\"><div class=\"ds-pin-tags\"><span class=\"ds-chip\">Healthy</span><span class=\"ds-chip\">Quick</span></div><h3 class=\"ds-pin-title\">Avocado Toast</h3><div class=\"ds-pin-meta\"><div class=\"ds-pin-avatar-ring\"></div><span class=\"ds-pin-author\">@username</span></div></div></article>",
+      "css": ".ds-pin-card { position: relative; border-radius: 24px; overflow: hidden; cursor: pointer; border: 1.5px solid rgba(255,255,255,0.18); background: #111; aspect-ratio: 3/4; box-shadow: 0 4px 24px rgba(30,20,10,0.10), 0 1px 4px rgba(30,20,10,0.06); transition: transform 300ms cubic-bezier(0.34,1.2,0.64,1); } .ds-pin-card:hover { transform: scale(1.02); } .ds-pin-img { width: 100%; height: 100%; object-fit: cover; transition: transform 500ms ease; display: block; } .ds-pin-card:hover .ds-pin-img { transform: scale(1.05); } .ds-pin-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; padding-top: 48px; background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.40), transparent); pointer-events: none; } .ds-pin-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; } .ds-chip { display: inline-block; padding: 4px 12px; background: rgba(255,255,255,0.20); border: 1px solid rgba(255,255,255,0.30); border-radius: 999px; font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 700; color: #ffffff; backdrop-filter: blur(4px); letter-spacing: 0.05em; } .ds-pin-title { font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 800; color: #ffffff; margin: 0 0 8px; line-height: 1.3; } .ds-pin-meta { display: flex; align-items: center; gap: 6px; } .ds-pin-avatar-ring { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.30); background: rgba(255,255,255,0.2); } .ds-pin-author { font-family: 'Inter', sans-serif; font-size: 12px; color: rgba(255,255,255,0.70); }"
+    },
+    {
+      "name": "Sidebar Navigation Card",
+      "kind": "nav",
+      "refersTo": "button-secondary",
+      "description": "Glass card with icon + label nav items. Left sidebar on desktop, bottom bar on mobile.",
+      "html": "<nav class=\"ds-sidebar-card\"><a class=\"ds-nav-item ds-nav-item--active\" href=\"#\"><svg class=\"ds-nav-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z\"/><polyline points=\"9 22 9 12 15 12 15 22\"/></svg><span>Discover</span></a><a class=\"ds-nav-item\" href=\"#\"><svg class=\"ds-nav-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><polygon points=\"16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76\"/></svg><span>Explore</span></a><a class=\"ds-nav-item\" href=\"#\"><svg class=\"ds-nav-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z\"/></svg><span>Saved</span></a></nav>",
+      "css": ".ds-sidebar-card { background: rgba(255,255,255,0.18); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1.5px solid rgba(255,255,255,0.5); border-radius: 20px; padding: 8px; overflow: hidden; } .ds-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; color: oklch(45% 0.010 240); text-decoration: none; transition: background-color 150ms ease, color 150ms ease; } .ds-nav-item:hover { background: rgba(255,107,53,0.08); color: #FF6B35; } .ds-nav-item--active { background: rgba(255,107,53,0.10); color: #FF6B35; font-weight: 600; } .ds-nav-icon { width: 18px; height: 18px; flex-shrink: 0; }"
+    },
+    {
+      "name": "Category Filter Chip",
+      "kind": "chip",
+      "refersTo": "button-secondary",
+      "description": "Filter pill for feed category selection. Active state uses Ember Orange tint.",
+      "html": "<div class=\"ds-filter-bar\"><button class=\"ds-filter-chip ds-filter-chip--active\">All Recipes</button><button class=\"ds-filter-chip\">Vegan</button><button class=\"ds-filter-chip\">High Protein</button></div>",
+      "css": ".ds-filter-bar { display: flex; gap: 8px; flex-wrap: wrap; } .ds-filter-chip { display: inline-flex; align-items: center; padding: 6px 16px; background: rgba(255,255,255,0.85); border: 1.5px solid rgba(255,255,255,0.5); border-radius: 999px; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700; color: oklch(45% 0.010 240); cursor: pointer; transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease; } .ds-filter-chip:hover { border-color: #FF6B35; color: #FF6B35; } .ds-filter-chip--active { background: rgba(255,107,53,0.10); border-color: rgba(255,107,53,0.30); color: #FF6B35; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Kitchen Table",
+    "overview": "Nutrisipe is the digital equivalent of a kitchen table — the surface where food is shared, recipes are passed around, and cooking becomes communal. The visual system is warm, dimensional, and human. Every surface has slight texture from ambient shadows and translucent glass layers. Nothing is sterile; nothing is corporate. The UI makes room, steps back, and lets food photography claim the frame.\n\nThe design is food-first and warmth-forward. Orange acts as a hearth light — present, but never overbearing. Backgrounds carry a barely-there golden tint (warm parchment) rather than clinical white. Type is expressive in headings (Montserrat, heavy weights) and invisible in body copy (Inter, light enough to read without thinking). Rounded edges soften every surface, and generous shadows keep cards from feeling flat.\n\nThis system explicitly rejects the overcrowded food blog (walls of text, ad-polluted layouts, recipe content buried in life-story preamble) and the corporate SaaS dashboard (enterprise-blue, form-heavy, dense, treating recipes like data rows).",
+    "keyCharacteristics": [
+      "Ambient warmth in every surface layer",
+      "Food photography fills the frame — UI decorates the edges, never competes",
+      "Orange as accent, not background color",
+      "Glass + backdrop-blur as the primary depth language for chrome elements",
+      "Generous radius everywhere — nothing has a sharp corner without reason",
+      "Montserrat for identity, Inter for clarity"
+    ],
+    "rules": [
+      { "name": "The Ember Rule", "body": "Ember Orange appears on ≤15% of any given screen's painted area. Its warmth is the point; abundance destroys it.", "section": "colors" },
+      { "name": "The No-True-White Rule", "body": "#ffffff and #000000 are forbidden. Backgrounds tint toward warm (hue ~55–60); darks tint toward cool (hue ~240).", "section": "colors" },
+      { "name": "The Montserrat Gate", "body": "Montserrat is identity type only — headings, buttons, labels, brand mark. Never for body paragraphs, never below 600 weight.", "section": "typography" },
+      { "name": "The Warm Shadow Rule", "body": "All shadows use warm-tinted black (rgba ~20–40 hue), never neutral gray. rgba(30,20,10,...) reads as depth; rgba(0,0,0,...) reads as dirt.", "section": "elevation" },
+      { "name": "The Glass Layer Rule", "body": "Glass (backdrop-blur 20px, 18% opacity fill) is reserved for persistent chrome: sidebar, header panels, modal backdrops. Never on recipe cards.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do let food photography fill the full card frame.",
+      "Do use warm-tinted shadows (rgba(30,20,10,...) family) on every elevated surface.",
+      "Do use --radius-card (24px) as the minimum corner radius for content containers.",
+      "Do apply backdrop-blur: 20px on all persistent chrome.",
+      "Do vary aspect ratios in the feed grid — preserve the hash-derived ratio system.",
+      "Do label every form field with Montserrat Label style (uppercase, 11px, 0.1em tracking).",
+      "Do ensure all text on food photography passes WCAG AA via gradient overlays."
+    ],
+    "donts": [
+      "Don't use pure #ffffff or #000000 — every neutral is tinted.",
+      "Don't use Ember Orange as a background color for sections or full-bleed areas.",
+      "Don't build walls of text before recipe content — no overcrowded food blog patterns.",
+      "Don't apply enterprise or SaaS visual patterns — no corporate SaaS dashboard patterns.",
+      "Don't use border-left greater than 1px as a colored stripe on cards or callouts.",
+      "Don't use background-clip: text with a gradient — use solid Ember Orange instead.",
+      "Don't apply glassmorphism to recipe cards or content containers — glass is for chrome only.",
+      "Don't use Inter below 400 weight or Montserrat below 600 weight.",
+      "Don't adjust the Nutri-Score badge colors for brand alignment — they are regulatory."
+    ]
+  }
+}

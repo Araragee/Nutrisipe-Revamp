@@ -4,6 +4,7 @@ import { createPost, type CreatePostData } from '@/http/posts'
 import { useFeedStore } from '@/stores/feed'
 import { useModal } from '@/composables/useModal'
 import BaseButton from '@/components/base/BaseButton.vue'
+import BaseModal from '@/components/base/BaseModal.vue'
 import RichTextEditor from '@/components/ui/RichTextEditor.vue'
 import ImageUpload from '@/components/ui/ImageUpload.vue'
 
@@ -94,141 +95,121 @@ function handleClose() {
 </script>
 
 <template>
-  <div
-    v-if="show"
-    class="modal-backdrop"
-    @click.self="handleClose"
-  >
-    <div class="modal-container relative modal-container-lg dark:bg-gray-800 rounded-2xl">
-      <button
-        @click="handleClose"
-        :disabled="isSubmitting"
-        class="absolute top-4 right-4 z-50 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-all disabled:opacity-50 flex items-center justify-center"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-
-      <!-- Header -->
-      <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-        <h2 class="text-2xl font-bold text-gray-900">Create Post</h2>
+  <BaseModal :show="show" title="Create Post" size="lg" @close="handleClose">
+    <form @submit.prevent="handleSubmit" class="space-y-6">
+      <!-- Error Message -->
+      <div v-if="error" class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm border border-red-200 dark:border-red-800">
+        {{ error }}
       </div>
 
-      <!-- Form -->
-      <form @submit.prevent="handleSubmit" class="p-6 space-y-6">
-        <!-- Error Message -->
-        <div v-if="error" class="bg-red-50 text-red-700 px-4 py-3 rounded-lg text-sm">
-          {{ error }}
-        </div>
+      <!-- Title -->
+      <div>
+        <label for="title" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          Title *
+        </label>
+        <input
+          id="title"
+          v-model="title"
+          type="text"
+          required
+          placeholder="Enter post title"
+          class="w-full px-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all dark:bg-zinc-700 dark:text-white"
+        />
+      </div>
 
-        <!-- Title -->
-        <div>
-          <label for="title" class="block text-sm font-semibold text-gray-700 mb-2">
-            Title *
-          </label>
-          <input
-            id="title"
-            v-model="title"
-            type="text"
-            required
-            placeholder="Enter post title"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-          />
-        </div>
+      <!-- Category -->
+      <div>
+        <label for="category" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          Category *
+        </label>
+        <select
+          id="category"
+          v-model="category"
+          required
+          class="w-full px-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all dark:bg-zinc-700 dark:text-white"
+        >
+          <option v-for="cat in categories" :key="cat.value" :value="cat.value">
+            {{ cat.label }}
+          </option>
+        </select>
+      </div>
 
-        <!-- Category -->
-        <div>
-          <label for="category" class="block text-sm font-semibold text-gray-700 mb-2">
-            Category *
-          </label>
-          <select
-            id="category"
-            v-model="category"
-            required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+      <!-- Image Upload -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          Post Image *
+        </label>
+        <ImageUpload
+          v-model="imageUrl"
+          :max-size="5"
+          @error="(msg) => error = msg"
+        />
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          Upload an image for your post (max 5MB)
+        </p>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          Description
+        </label>
+        <RichTextEditor
+          v-model="description"
+          placeholder="Tell us about your post..."
+          :max-length="2000"
+        />
+      </div>
+
+      <!-- Tags -->
+      <div>
+        <label for="tags" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          Tags
+        </label>
+        <input
+          id="tags"
+          v-model="tags"
+          type="text"
+          placeholder="healthy, quick, easy (comma separated)"
+          class="w-full px-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all dark:bg-zinc-700 dark:text-white"
+        />
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          Separate tags with commas
+        </p>
+        <div v-if="tagsArray.length > 0" class="mt-3 flex flex-wrap gap-2">
+          <span
+            v-for="tag in tagsArray"
+            :key="tag"
+            class="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-sm font-medium"
           >
-            <option v-for="cat in categories" :key="cat.value" :value="cat.value">
-              {{ cat.label }}
-            </option>
-          </select>
+            {{ tag }}
+          </span>
         </div>
+      </div>
+    </form>
 
-        <!-- Image Upload -->
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Post Image *
-          </label>
-          <ImageUpload
-            v-model="imageUrl"
-            :max-size="5"
-            @error="(msg) => error = msg"
-          />
-          <p class="mt-2 text-sm text-gray-500">
-            Upload an image for your post (max 5MB)
-          </p>
-        </div>
-
-        <!-- Description -->
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Description
-          </label>
-          <RichTextEditor
-            v-model="description"
-            placeholder="Tell us about your post..."
-            :max-length="2000"
-          />
-        </div>
-
-        <!-- Tags -->
-        <div>
-          <label for="tags" class="block text-sm font-semibold text-gray-700 mb-2">
-            Tags
-          </label>
-          <input
-            id="tags"
-            v-model="tags"
-            type="text"
-            placeholder="healthy, quick, easy (comma separated)"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-          />
-          <p class="mt-2 text-sm text-gray-500">
-            Separate tags with commas
-          </p>
-          <div v-if="tagsArray.length > 0" class="mt-3 flex flex-wrap gap-2">
-            <span
-              v-for="tag in tagsArray"
-              :key="tag"
-              class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium"
-            >
-              {{ tag }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex gap-3 pt-4 border-t border-gray-200">
-          <BaseButton
-            type="button"
-            variant="secondary"
-            @click="handleClose"
-            :disabled="isSubmitting"
-            class="flex-1"
-          >
-            Cancel
-          </BaseButton>
-          <BaseButton
-            type="submit"
-            variant="primary"
-            :disabled="!canSubmit"
-            :loading="isSubmitting"
-            class="flex-1"
-          >
-            {{ isSubmitting ? 'Creating...' : 'Create Post' }}
-          </BaseButton>
-        </div>
-      </form>
-    </div>
-  </div>
+    <template #footer>
+      <div class="flex gap-3">
+        <BaseButton
+          type="button"
+          variant="secondary"
+          @click="handleClose"
+          :disabled="isSubmitting"
+          class="flex-1"
+        >
+          Cancel
+        </BaseButton>
+        <BaseButton
+          type="submit"
+          variant="primary"
+          :disabled="!canSubmit"
+          :loading="isSubmitting"
+          class="flex-1"
+          @click="handleSubmit"
+        >
+          {{ isSubmitting ? 'Creating...' : 'Create Post' }}
+        </BaseButton>
+      </div>
+    </template>
+  </BaseModal>
 </template>
