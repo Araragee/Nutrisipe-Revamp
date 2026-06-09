@@ -26,6 +26,7 @@ export const useUiStore = defineStore('ui', () => {
     toastMessage.value = message
     toastType.value = type
 
+    // TODO(audit:F-09) [MEDIUM] Overlapping toasts race: a second showToast within 3s gets cleared early by the first timer — keep the timer handle and clearTimeout before re-arming.
     setTimeout(() => {
       toastMessage.value = null
     }, 3000)

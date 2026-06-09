@@ -1,3 +1,4 @@
+// TODO(audit:F-04) [HIGH] Duplicate API client — overlaps with http/endpoints/posts.ts (same for http/comments.ts vs endpoints/comments.ts). Consolidate on endpoints/* and delete this file after migrating importers (e.g. PostDetailModal.vue).
 import { httpClient } from './client'
 import type { Post } from '@/typescript/interface/Post'
 

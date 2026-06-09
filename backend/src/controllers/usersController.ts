@@ -136,6 +136,7 @@ export async function updateProfileHandler(req: AuthRequest, res: Response, next
       throw new AppError(401, 'Unauthorized')
     }
 
+    // TODO(audit:B-06) [MEDIUM] req.body passed to updateUserProfile with no Zod schema — whitelist allowed fields (displayName, bio, avatarUrl) so callers can't inject arbitrary columns.
     const user = await userService.updateUserProfile(req.userId, req.body)
 
     res.json({

@@ -71,6 +71,7 @@ async function loadProfile() {
       likedPosts.value = likedRes.data.data
     }
   } catch (error) {
+    // TODO(audit:F-13) [MEDIUM] Failure only logged to console — user sees an empty profile with no error state; show a toast/error UI. Also Promise.all above fails the whole load if one call rejects; consider Promise.allSettled for partial data.
     console.error('Failed to load profile:', error)
   } finally {
     isLoading.value = false

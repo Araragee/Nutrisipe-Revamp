@@ -23,6 +23,7 @@ export async function auth(
     }
 
     const token = authHeader.substring(7)
+    // TODO(audit:B-02) [HIGH] Remove console.log of token fragments and decoded JWT payloads — leaks auth material into logs (also lines 49, 53, 58).
     console.log('Auth Token Extracted:', token.substring(0, 10) + '...')
 
     let payload;

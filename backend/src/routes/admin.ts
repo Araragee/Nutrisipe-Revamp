@@ -196,6 +196,7 @@ router.put('/users/:id/role', auth, adminOnly, async (req: AuthRequest, res) => 
 })
 
 // Ban user
+// TODO(audit:B-14) [MEDIUM] Ban only flips flags — banned user's posts/comments stay publicly visible. Decide policy: hide content of banned users in queries or soft-delete it here.
 router.post('/users/:id/ban', auth, adminOnly, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params

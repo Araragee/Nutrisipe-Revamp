@@ -6,6 +6,7 @@ import { AppError } from './errorHandler'
 // Configure storage
 const storage = multer.diskStorage({
   destination: (_req: any, _file: any, cb: any) => {
+    // TODO(audit:B-13) [MEDIUM] Hardcoded 'uploads/temp' is never created/verified at startup — multer errors if it's missing; ensure dir exists and resolve from a config path.
     cb(null, 'uploads/temp')
   },
   filename: (_req: any, file: any, cb: any) => {

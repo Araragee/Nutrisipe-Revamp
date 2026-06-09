@@ -112,6 +112,7 @@ export async function uploadVideoWithThumbnailHandler(
         // Delete temporary thumbnail file
         await fs.unlink(thumbnailFile.path)
       } catch (err) {
+        // TODO(audit:B-11) [MEDIUM] Custom thumbnail failure is swallowed — user silently gets the auto-generated one; surface a warning in the response.
         console.error('Thumbnail upload failed, using auto-generated:', err)
       }
     }

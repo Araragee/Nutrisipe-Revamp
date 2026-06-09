@@ -88,6 +88,7 @@ export const useVariationsStore = defineStore('variations', () => {
     error.value = null
 
     try {
+      // TODO(audit:F-12) [LOW] Delete is a stub — cache is cleared but the variation is never deleted server-side, so it reappears on reload. Implement variationsApi.deleteVariation or remove the action.
       // Need to add delete to variationsApi if needed, but for now just stub
       // await variationsApi.deleteVariation(variationId)
 

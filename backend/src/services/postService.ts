@@ -242,6 +242,7 @@ export async function getRelatedPosts(postId: string, userId?: string, limit: nu
   }))
 }
 
+// TODO(audit:B-12) [MEDIUM] Feed mixes 70/30 followed/popular with fractional skips — pagination metadata doesn't match the actual returned posts, so the frontend shows wrong totals/pages.
 export async function getFeed(userId: string, page: number = 1, limit: number = 20) {
   const skip = (page - 1) * limit
 

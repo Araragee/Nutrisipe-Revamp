@@ -37,6 +37,7 @@ app.use(cors({
 
 // Global rate limiter — raised to 500 req/15min to accommodate SPA page loads,
 // socket handshakes, and realtime polling without false positives.
+// TODO(audit:B-05) [MEDIUM] Auth endpoints (/api/auth/login, /register) need a much stricter dedicated limiter to slow brute force.
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 500,

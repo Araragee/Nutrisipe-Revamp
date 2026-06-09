@@ -41,6 +41,7 @@ export async function registerHandler(req: Request, res: Response, next: NextFun
 
 export async function loginHandler(req: Request, res: Response, next: NextFunction) {
   try {
+    // TODO(audit:B-04) [HIGH] Remove PII logging — email addresses and user IDs (line 48) must not go to console.
     console.log('Login attempt for email:', req.body.email)
     const validated = loginSchema.parse(req.body)
     const result = await authService.login(validated.email, validated.password)

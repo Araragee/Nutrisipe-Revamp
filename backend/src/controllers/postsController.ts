@@ -43,6 +43,7 @@ export async function getFeedHandler(req: AuthRequest, res: Response, next: Next
       throw new AppError(401, 'Unauthorized')
     }
 
+    // TODO(audit:B-08) [MEDIUM] Pagination params unclamped here and across all controllers — limit=999999 or page=-1 allowed; add shared parsePagination() with Math.max(1, page) / Math.min(limit, 100).
     const page = parseInt(req.query.page as string) || 1
     const limit = parseInt(req.query.limit as string) || 20
 

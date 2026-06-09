@@ -17,6 +17,7 @@ export async function createNotification(data: CreateNotificationData) {
     return null
   }
 
+  // TODO(audit:B-07) [MEDIUM] Check-then-create race: two concurrent requests both pass findFirst and create duplicate notifications — wrap in a transaction or add a unique constraint + upsert.
   // Check if similar notification already exists (to avoid spam)
   const existingNotification = await prisma.notification.findFirst({
     where: {

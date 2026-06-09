@@ -26,6 +26,7 @@ watch(
   () => props.modelValue,
   (newValue) => {
     if (editor.value && editor.value.innerHTML !== newValue) {
+      // TODO(audit:F-06) [HIGH] modelValue written to innerHTML unsanitized — XSS if stored content is ever attacker-controlled; sanitize (DOMPurify) on read AND render. Also document.execCommand below (lines 42, 57) is deprecated — plan migration to a maintained editor.
       editor.value.innerHTML = newValue
     }
   }

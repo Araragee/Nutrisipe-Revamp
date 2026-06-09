@@ -39,6 +39,7 @@ async function handleLogin() {
   }
 }
 
+// TODO(audit:F-16) [HIGH] Demo login depends on the backend /dev-login endpoint (see backend audit B-01) — must be hidden/disabled in production builds together with that endpoint.
 async function loginWithDemo(demoEmail: string) {
   isLoading.value = true
   error.value = null

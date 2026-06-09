@@ -39,6 +39,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
   }
 
+  // TODO(audit:F-10) [MEDIUM] Items in `notifications` are mutated in place after the API call — if the list is refreshed concurrently (socket push) state desyncs; prefer replacing the array or reconciling by id.
   async function markAllAsRead() {
     try {
       await notificationsApi.markAllAsRead()

@@ -119,6 +119,7 @@ export const useMessagesStore = defineStore('messages', () => {
     }
 
     // Update conversation list
+    // TODO(audit:F-08) [MEDIUM] Fire-and-forget async call — rejection is unhandled (also in handleMessageSent below); add .catch() with user-visible error state.
     loadConversations()
   }
 

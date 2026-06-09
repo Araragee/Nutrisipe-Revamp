@@ -6,6 +6,7 @@ import type { User } from '@/typescript/interface/User'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
+  // TODO(audit:F-03) [HIGH] JWT in localStorage is readable by any XSS payload — move auth to httpOnly cookies (backend change required) or document the accepted risk.
   const token = ref<string | null>(localStorage.getItem('auth_token'))
   const isLoading = ref(false)
   const isInitialized = ref(false)

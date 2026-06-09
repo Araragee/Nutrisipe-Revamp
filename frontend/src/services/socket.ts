@@ -20,6 +20,7 @@ class SocketService {
       return;
     }
 
+    // TODO(audit:F-02) [HIGH] Silent localhost fallback hides missing VITE_API_URL in prod builds — fail loudly instead. Also strip the console.log noise in this file (lines 19, 43, 48, 69) and replace the ~20 `any`-typed event callbacks below with typed payload interfaces (F-05).
     const serverUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
     this.socket = io(serverUrl, {
