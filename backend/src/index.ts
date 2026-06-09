@@ -2,7 +2,11 @@ import express from 'express'
 import cors from 'cors'
 import rateLimit from 'express-rate-limit'
 import { createServer } from 'http'
+import { mkdirSync } from 'fs'
 import { env } from './config/env'
+
+// Ensure temp upload dir exists before multer tries to write to it (B-13).
+mkdirSync('uploads/temp', { recursive: true })
 import { errorHandler } from './middleware/errorHandler'
 import { initializeSocketServer } from './socket'
 import authRoutes from './routes/auth'

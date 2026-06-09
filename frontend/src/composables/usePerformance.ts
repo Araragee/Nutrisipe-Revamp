@@ -208,11 +208,10 @@ export function usePerformance() {
       measureNavigationTiming()
       measureResourceTiming()
     } else {
-      // TODO(audit:F-11) [MEDIUM] 'load' listener is never removed and the composable has no onUnmounted cleanup — accumulates a listener per component that uses it; use { once: true } and clean up observers.
       window.addEventListener('load', () => {
         measureNavigationTiming()
         measureResourceTiming()
-      })
+      }, { once: true })
     }
   })
 

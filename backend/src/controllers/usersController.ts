@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from 'express'
+import { z } from 'zod'
 import * as userService from '../services/userService'
 import * as recommendationService from '../services/recommendationService'
 import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
+import { parsePagination } from '../utils/pagination'
 
 export async function getUserByIdHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
@@ -22,8 +24,7 @@ export async function getUserByIdHandler(req: AuthRequest, res: Response, next: 
 export async function getUserFollowersHandler(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const result = await userService.getUserFollowers(id, page, limit)
 
@@ -40,8 +41,7 @@ export async function getUserFollowersHandler(req: Request, res: Response, next:
 export async function getUserFollowingHandler(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const result = await userService.getUserFollowing(id, page, limit)
 
@@ -130,14 +130,20 @@ export async function getSuggestionsHandler(req: AuthRequest, res: Response, nex
   }
 }
 
+const updateProfileSchema = z.object({
+  displayName: z.string().min(1).max(100).optional(),
+  bio: z.string().max(500).optional(),
+  avatarUrl: z.string().url().optional().or(z.literal('')),
+})
+
 export async function updateProfileHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     if (!req.userId) {
       throw new AppError(401, 'Unauthorized')
     }
 
-    // TODO(audit:B-06) [MEDIUM] req.body passed to updateUserProfile with no Zod schema — whitelist allowed fields (displayName, bio, avatarUrl) so callers can't inject arbitrary columns.
-    const user = await userService.updateUserProfile(req.userId, req.body)
+    const validated = updateProfileSchema.parse(req.body)
+    const user = await userService.updateUserProfile(req.userId, validated)
 
     res.json({
       success: true,
@@ -151,8 +157,7 @@ export async function updateProfileHandler(req: AuthRequest, res: Response, next
 export async function searchUsersHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const query = req.query.q as string
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     if (!query || query.trim().length === 0) {
       res.json({
@@ -183,8 +188,7 @@ export async function searchUsersHandler(req: AuthRequest, res: Response, next: 
 export async function getSavedPostsHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const { id } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     // Self always allowed; others gated by privacy flag.
     if (id !== req.userId) {
@@ -206,8 +210,7 @@ export async function getSavedPostsHandler(req: AuthRequest, res: Response, next
 export async function getLikedPostsHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const { id } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     if (id !== req.userId) {
       await userService.assertPrivacyAllowed(id, req.userId, 'showLiked')

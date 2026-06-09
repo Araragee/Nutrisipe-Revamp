@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { auth, AuthRequest } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
 import { transformPost } from '../utils/modelTransformer'
+import { parsePagination } from '../utils/pagination'
 
 const router = Router()
 
@@ -10,8 +11,7 @@ router.get('/', auth, async (req: AuthRequest, res) => {
   try {
     const query = req.query.q as string
     const type = req.query.type as string // 'posts', 'users', 'all'
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     if (!query || query.trim().length < 2) {
       res.status(400).json({ error: 'Search query must be at least 2 characters' })
@@ -151,8 +151,7 @@ router.get('/', auth, async (req: AuthRequest, res) => {
 router.get('/trending', auth, async (req: AuthRequest, res) => {
   try {
     const period = req.query.period as string || '7days' // 24h, 7days, 30days, all
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     let dateFilter: any = {}
 
@@ -222,8 +221,7 @@ router.get('/trending', auth, async (req: AuthRequest, res) => {
 router.get('/category/:category', auth, async (req: AuthRequest, res) => {
   try {
     const { category } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const posts = await prisma.post.findMany({
       where: {
@@ -312,8 +310,7 @@ router.get('/categories', auth, async (_req: AuthRequest, res) => {
 router.get('/tag/:tag', auth, async (req: AuthRequest, res) => {
   try {
     const { tag } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const posts = await prisma.post.findMany({
       where: {

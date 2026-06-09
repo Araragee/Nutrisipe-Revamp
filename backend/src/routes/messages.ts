@@ -2,6 +2,7 @@ import { Router, Response } from 'express'
 import { auth } from '../middleware/auth'
 import { AuthRequest } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
+import { parsePagination } from '../utils/pagination'
 
 const router = Router()
 
@@ -79,8 +80,7 @@ router.get(
     try {
       const currentUserId = req.userId!
       const { userId: otherUserId } = req.params
-      const page = parseInt(req.query.page as string) || 1
-      const limit = parseInt(req.query.limit as string) || 50
+      const { page, limit } = parsePagination(req, 50)
 
       // Find conversation
       const conversation = await prisma.conversation.findFirst({

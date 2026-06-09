@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { auth, AuthRequest } from '../middleware/auth'
 import { adminOnly } from '../middleware/roles'
 import { prisma } from '../lib/prisma'
+import { parsePagination } from '../utils/pagination'
 
 const router = Router()
 
@@ -90,8 +91,7 @@ router.get('/stats', auth, adminOnly, async (req, res) => {
 // Get all users with pagination
 router.get('/users', auth, adminOnly, async (req: AuthRequest, res) => {
   try {
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
     const search = req.query.search as string
     const role = req.query.role as string
     const status = req.query.status as string
@@ -262,8 +262,7 @@ router.post('/users/:id/unban', auth, adminOnly, async (req: AuthRequest, res) =
 // Get all reports with pagination
 router.get('/reports', auth, adminOnly, async (req: AuthRequest, res) => {
   try {
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
     const status = req.query.status as string
     const type = req.query.type as string
 

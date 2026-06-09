@@ -102,6 +102,7 @@ export async function uploadVideoWithThumbnailHandler(
     await fs.unlink(videoFile.path)
 
     let customThumbnailUrl = videoResult.thumbnailUrl
+    let thumbnailWarning: string | undefined
 
     // If custom thumbnail provided, upload it
     if (thumbnailFile) {
@@ -112,14 +113,14 @@ export async function uploadVideoWithThumbnailHandler(
         // Delete temporary thumbnail file
         await fs.unlink(thumbnailFile.path)
       } catch (err) {
-        // TODO(audit:B-11) [MEDIUM] Custom thumbnail failure is swallowed — user silently gets the auto-generated one; surface a warning in the response.
-        console.error('Thumbnail upload failed, using auto-generated:', err)
+        thumbnailWarning = 'Custom thumbnail upload failed — auto-generated thumbnail used instead.'
       }
     }
 
     res.json({
       success: true,
       message: 'Video and thumbnail uploaded successfully',
+      ...(thumbnailWarning && { warning: thumbnailWarning }),
       data: {
         videoUrl: videoResult.url,
         thumbnailUrl: customThumbnailUrl,

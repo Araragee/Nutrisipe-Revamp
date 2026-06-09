@@ -118,9 +118,10 @@ export const useMessagesStore = defineStore('messages', () => {
       currentMessages.value.push(message)
     }
 
-    // Update conversation list
-    // TODO(audit:F-08) [MEDIUM] Fire-and-forget async call — rejection is unhandled (also in handleMessageSent below); add .catch() with user-visible error state.
-    loadConversations()
+    // Refresh conversation list; surface error in store state so UI can show it.
+    loadConversations().catch((err) => {
+      error.value = err?.message || 'Failed to refresh conversations'
+    })
   }
 
   // Handle message sent (from Socket.IO)
@@ -134,8 +135,10 @@ export const useMessagesStore = defineStore('messages', () => {
       }
     }
 
-    // Update conversation list
-    loadConversations()
+    // Refresh conversation list; surface error in store state so UI can show it.
+    loadConversations().catch((err) => {
+      error.value = err?.message || 'Failed to refresh conversations'
+    })
   }
 
   // Handle typing indicator

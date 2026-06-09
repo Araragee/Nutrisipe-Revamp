@@ -7,6 +7,7 @@ export const useUiStore = defineStore('ui', () => {
   const sidebarCollapsed = ref(false)
   const toastMessage = ref<string | null>(null)
   const toastType = ref<'success' | 'error' | 'info'>('info')
+  let toastTimer: ReturnType<typeof setTimeout> | null = null
 
   function openPinModal(postId: string) {
     selectedPostId.value = postId
@@ -26,9 +27,10 @@ export const useUiStore = defineStore('ui', () => {
     toastMessage.value = message
     toastType.value = type
 
-    // TODO(audit:F-09) [MEDIUM] Overlapping toasts race: a second showToast within 3s gets cleared early by the first timer — keep the timer handle and clearTimeout before re-arming.
-    setTimeout(() => {
+    if (toastTimer !== null) clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => {
       toastMessage.value = null
+      toastTimer = null
     }, 3000)
   }
 
