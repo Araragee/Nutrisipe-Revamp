@@ -168,9 +168,9 @@ export function usePerformance() {
 
   // Log all metrics
   function logMetrics(): void {
-    console.group('🚀 Performance Metrics')
-    logger.log('Navigation Timing:')
-    console.table({
+    if (!import.meta.env.DEV) return
+    logger.log('🚀 Performance Metrics — Navigation Timing:')
+    logger.log({
       'DNS Lookup': `${metrics.value.dns.toFixed(2)}ms`,
       'TCP Connection': `${metrics.value.tcp.toFixed(2)}ms`,
       'Time to First Byte': `${metrics.value.ttfb.toFixed(2)}ms`,
@@ -178,21 +178,18 @@ export function usePerformance() {
       'Window Load': `${metrics.value.windowLoad.toFixed(2)}ms`,
     })
 
-    logger.log('\nResource Timing:')
-    console.table({
+    logger.log('Resource Timing:', {
       'Total Resources': metrics.value.totalResources,
       'Total Transfer Size': `${(metrics.value.totalTransferSize / 1024).toFixed(2)} KB`,
     })
 
     if (metrics.value.customMeasures.size > 0) {
-      logger.log('\nCustom Measures:')
       const customData: Record<string, string> = {}
       metrics.value.customMeasures.forEach((duration, name) => {
         customData[name] = `${duration.toFixed(2)}ms`
       })
-      console.table(customData)
+      logger.log('Custom Measures:', customData)
     }
-    console.groupEnd()
   }
 
   // Clear all custom marks and measures

@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary'
 import { env } from './env'
+import { logger } from '../utils/logger'
 
 // Configure Cloudinary
 cloudinary.config({
@@ -53,7 +54,7 @@ export async function uploadVideo(
       thumbnailUrl
     }
   } catch (error) {
-    console.error('Cloudinary upload error:', error)
+    logger.error('Cloudinary upload error:', error)
     throw new Error('Failed to upload video')
   }
 }
@@ -65,7 +66,7 @@ export async function deleteVideo(publicId: string): Promise<void> {
       resource_type: 'video'
     })
   } catch (error) {
-    console.error('Cloudinary delete error:', error)
+    logger.error('Cloudinary delete error:', error)
     throw new Error('Failed to delete video')
   }
 }
@@ -92,7 +93,7 @@ export async function uploadImage(
       publicId: result.public_id
     }
   } catch (error) {
-    console.error('Cloudinary image upload error:', error)
+    logger.error('Cloudinary image upload error:', error)
     throw new Error('Failed to upload image')
   }
 }
@@ -104,7 +105,7 @@ export async function deleteImage(publicId: string): Promise<void> {
       resource_type: 'image'
     })
   } catch (error) {
-    console.error('Cloudinary delete error:', error)
+    logger.error('Cloudinary delete error:', error)
     throw new Error('Failed to delete image')
   }
 }

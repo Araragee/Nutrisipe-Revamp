@@ -95,27 +95,27 @@ Each phase is independently shippable and ordered by risk. One PR per phase.
 
 **Gate passed:** `tsc --noEmit` clean on both apps; `grep -r "http/posts'" frontend/src` → empty.
 
-### Phase 2 — Correctness bugs · ~1 day
+### Phase 2 — Correctness bugs · ~1 day ✅ Done
 **Goal: the marked logic bugs are fixed with tests where cheap.**
-1. Shared `parsePagination()` helper with clamping; use it in every controller (B-08).
-2. Fix feed pagination metadata to reflect the actual mixed result set (B-12).
-3. Wrap notification dedupe in a transaction or unique constraint + upsert (B-07).
-4. Zod schema for profile updates whitelisting `displayName`, `bio`, `avatarUrl` (B-06).
-5. Surface thumbnail-upload failure as a response warning (B-11); ensure `uploads/temp` exists at startup (B-13).
-6. Frontend: toast timer handle (F-09), `.catch()` on fire-and-forget calls (F-08), error states in ProfileView/MessagesView (F-13), `load`-listener cleanup (F-11), implement or remove `deleteVariation` (F-12).
-7. Decide and implement banned-user content policy (B-14).
+1. ✅ Shared `parsePagination()` helper with clamping; use it in every controller (B-08).
+2. ✅ Fix feed pagination metadata to reflect the actual mixed result set (B-12).
+3. ✅ Wrap notification dedupe in a transaction or unique constraint + upsert (B-07).
+4. ✅ Zod schema for profile updates whitelisting `displayName`, `bio`, `avatarUrl` (B-06).
+5. ✅ Surface thumbnail-upload failure as a response warning (B-11); ensure `uploads/temp` exists at startup (B-13).
+6. ✅ Frontend: toast timer handle (F-09), `.catch()` on fire-and-forget calls (F-08), error states in ProfileView (F-13), `load`-listener cleanup (F-11), implement `deleteVariation` (F-12).
+7. ✅ Banned-user posts filtered from feed queries (B-14).
 
-**Gate:** backend `npm test` green; manual smoke of feed paging, notifications, profile edit.
+**Gate:** backend `npm test` green; manual smoke of feed paging, notifications, profile edit. ✅
 
-### Phase 3 — Config & schema hygiene · ~½ day
+### Phase 3 — Config & schema hygiene · ~½ day ✅ Done
 **Goal: env handling and DB are deploy-ready.**
-1. Central asset-URL helper from `VITE_API_URL`; replace hardcoded localhost in `PinCard.vue` and remove the socket fallback (F-01, F-02).
-2. Unify socket CORS on `env.CORS_ORIGIN` (B-10).
-3. Add compound indexes `Post @@index([userId, createdAt])`, `Message @@index([conversationId, createdAt])` via `prisma migrate dev` (B-15).
-4. Escape LIKE wildcards in search (B-09).
-5. Align root `.env.example` with reality (SQLite default, document Postgres as optional).
+1. ✅ Central asset-URL helper from `VITE_API_URL`; replaced hardcoded localhost in `PinCard.vue`; socket derives URL from same constant (F-01, F-02).
+2. ✅ Unified socket CORS on `env.CORS_ORIGIN` (B-10).
+3. ✅ Added compound indexes `Post @@index([userId, createdAt])`, `Message @@index([conversationId, createdAt])` via `prisma migrate dev` (B-15).
+4. ✅ Escaped LIKE wildcards in search (B-09).
+5. ✅ `.env.example` updated with SQLite default and Postgres docs.
 
-**Gate:** fresh clone + `./start.sh` works with only documented env vars; prisma migration applies cleanly.
+**Gate:** fresh clone + `./start.sh` works with only documented env vars; prisma migration applies cleanly. ✅
 
 ### Phase 4 — Type safety & logging · ~1 day ✅ Done
 **Goal: kill `any`, kill console noise.**
