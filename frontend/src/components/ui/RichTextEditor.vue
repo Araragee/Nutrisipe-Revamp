@@ -1,5 +1,16 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import DOMPurify from 'dompurify'
+
+// Only the markup the toolbar can produce; everything else is stripped.
+const SANITIZE_OPTIONS = {
+  ALLOWED_TAGS: ['b', 'strong', 'i', 'em', 'u', 'a', 'p', 'div', 'br', 'span', 'ul', 'ol', 'li'],
+  ALLOWED_ATTR: ['href', 'target', 'rel'],
+}
+
+function sanitize(html: string): string {
+  return DOMPurify.sanitize(html, SANITIZE_OPTIONS)
+}
 
 interface Props {
   modelValue: string
@@ -26,18 +37,18 @@ watch(
   () => props.modelValue,
   (newValue) => {
     if (editor.value && editor.value.innerHTML !== newValue) {
-      // TODO(audit:F-06) [HIGH] modelValue written to innerHTML unsanitized — XSS if stored content is ever attacker-controlled; sanitize (DOMPurify) on read AND render. Also document.execCommand below (lines 42, 57) is deprecated — plan migration to a maintained editor.
-      editor.value.innerHTML = newValue
+      editor.value.innerHTML = sanitize(newValue)
     }
   }
 )
 
 function handleInput() {
   if (editor.value) {
-    emit('update:modelValue', editor.value.innerHTML)
+    emit('update:modelValue', sanitize(editor.value.innerHTML))
   }
 }
 
+// TODO(audit:F-06b) [MEDIUM] document.execCommand is deprecated — migrate to a maintained editor (e.g. TipTap) in Phase 5.
 function execCommand(command: string, value?: string) {
   document.execCommand(command, false, value)
   editor.value?.focus()

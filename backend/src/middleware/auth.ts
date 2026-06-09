@@ -23,15 +23,11 @@ export async function auth(
     }
 
     const token = authHeader.substring(7)
-    // TODO(audit:B-02) [HIGH] Remove console.log of token fragments and decoded JWT payloads — leaks auth material into logs (also lines 49, 53, 58).
-    console.log('Auth Token Extracted:', token.substring(0, 10) + '...')
 
     let payload;
     try {
       payload = verifyToken(token)
-      console.log('JWT Payload Decoded:', payload)
     } catch (error) {
-      console.error('JWT Verification Error:', error)
       throw new AppError(401, 'Unauthorized - Invalid token')
     }
 
@@ -47,16 +43,13 @@ export async function auth(
     })
 
     if (!user) {
-      console.warn('User not found in DB for ID:', payload.userId)
       throw new AppError(401, 'User not found')
     }
 
-    console.log('Auth Success for User:', user.username)
     req.user = user
     req.userId = payload.userId
     next()
   } catch (error) {
-    console.error('Auth Middleware Error:', error)
     next(error)
   }
 }

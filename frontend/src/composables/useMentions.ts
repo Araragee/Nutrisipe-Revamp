@@ -119,10 +119,19 @@ export function useMentions() {
     }
   }
 
-  // Convert @mentions to clickable links (for display)
-  // TODO(audit:F-07) [MEDIUM] Builds an HTML string from user text without escaping the non-mention parts — escape `text` before the replace or render mentions as VNodes instead of v-html.
+  function escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+  }
+
+  // Convert @mentions to clickable links (for display).
+  // Input is escaped first so only the mention spans survive as markup.
   function renderMentions(text: string): string {
-    return text.replace(
+    return escapeHtml(text).replace(
       /@(\w+)/g,
       '<span class="mention" data-username="$1">@$1</span>'
     )

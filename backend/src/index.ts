@@ -37,7 +37,6 @@ app.use(cors({
 
 // Global rate limiter — raised to 500 req/15min to accommodate SPA page loads,
 // socket handshakes, and realtime polling without false positives.
-// TODO(audit:B-05) [MEDIUM] Auth endpoints (/api/auth/login, /register) need a much stricter dedicated limiter to slow brute force.
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 500,
@@ -46,6 +45,15 @@ const limiter = rateLimit({
   message: 'Too many requests from this IP, please try again after 15 minutes',
 })
 
+// Stricter limit for credential endpoints; relaxed in dev so demo logins aren't throttled.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: env.NODE_ENV === 'production' ? 10 : 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: 'Too many authentication attempts, please try again after 15 minutes',
+})
 
 // Apply the rate limiting middleware to all requests
 app.use(limiter)
@@ -72,7 +80,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-app.use('/api/auth', authRoutes)
+app.use('/api/auth', authLimiter, authRoutes)
 app.use('/api/posts', postsRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/social', socialRoutes)

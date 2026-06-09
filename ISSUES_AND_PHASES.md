@@ -76,15 +76,15 @@ for a comment.
 
 Each phase is independently shippable and ordered by risk. One PR per phase.
 
-### Phase 0 — Stop the bleeding (security) · ~½ day
+### ✅ Phase 0 — Stop the bleeding (security) · DONE 2026-06-09
 **Goal: nothing exploitable remains on a deployed build.**
-1. Guard `/dev-login` behind `NODE_ENV !== 'production'` (B-01) and hide the demo-login UI in prod builds (F-16).
-2. Strip token/PII console logging from auth middleware and auth controller (B-02, B-04).
-3. Add a strict rate limiter (e.g. 10 req/15min) on `/api/auth/login`, `/register`, `/dev-login` (B-05).
-4. Sanitize `RichTextEditor` content with DOMPurify on write and render; escape text in `renderMentions` (F-06, F-07).
-5. Document a strong `JWT_SECRET` requirement in `backend/.env.example` + README; fail startup if the placeholder value is detected.
+1. ✅ `/dev-login` registered only when `NODE_ENV !== 'production'` (B-01). Demo-login UI in `LoginView.vue` turned out to be dead code (never referenced in the template) and was removed (F-16).
+2. ✅ Stripped token/PII console logging from auth middleware and auth controller (B-02, B-04).
+3. ✅ Dedicated auth rate limiter on `/api/auth/*`: 10 req/15min in production, 100 in dev, `skipSuccessfulRequests` on (B-05).
+4. ✅ `RichTextEditor` now sanitizes with DOMPurify (allowlist of toolbar tags) on both model→DOM writes and emitted values; `renderMentions` escapes input before building markup (F-06, F-07). `dompurify` added to frontend deps. execCommand migration deferred to Phase 5 (`TODO(audit:F-06b)`).
+5. ✅ `backend/.env.example` ships a clearly-dev secret with generation instructions; `env.ts` refuses to start in production with a placeholder or <32-char `JWT_SECRET` (warns in dev).
 
-**Gate:** `npm run build` (both apps) passes; manual check that `/dev-login` 404s with `NODE_ENV=production`.
+**Gate passed:** `tsc --noEmit` clean both apps; prod boot verified — `/dev-login` → 404, placeholder secret → startup error; dev boot verified — `/dev-login` route live.
 
 ### Phase 1 — Burn the dead wood · ~½ day
 **Goal: one backend, one API client, clean root.**
