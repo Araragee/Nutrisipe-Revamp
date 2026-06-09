@@ -1,3 +1,4 @@
+import { logger } from '@/utils/logger'
 import { ref, onMounted } from 'vue'
 
 export interface PerformanceMetrics {
@@ -63,7 +64,7 @@ export function usePerformance() {
       performance.mark(name)
       metrics.value.customMarks.set(name, performance.now())
     } catch (error) {
-      console.error('Failed to mark performance:', error)
+      logger.error('Failed to mark performance:', error)
     }
   }
 
@@ -76,7 +77,7 @@ export function usePerformance() {
       metrics.value.customMeasures.set(name, duration)
       return duration
     } catch (error) {
-      console.error('Failed to measure performance:', error)
+      logger.error('Failed to measure performance:', error)
       return 0
     }
   }
@@ -168,7 +169,7 @@ export function usePerformance() {
   // Log all metrics
   function logMetrics(): void {
     console.group('🚀 Performance Metrics')
-    console.log('Navigation Timing:')
+    logger.log('Navigation Timing:')
     console.table({
       'DNS Lookup': `${metrics.value.dns.toFixed(2)}ms`,
       'TCP Connection': `${metrics.value.tcp.toFixed(2)}ms`,
@@ -177,14 +178,14 @@ export function usePerformance() {
       'Window Load': `${metrics.value.windowLoad.toFixed(2)}ms`,
     })
 
-    console.log('\nResource Timing:')
+    logger.log('\nResource Timing:')
     console.table({
       'Total Resources': metrics.value.totalResources,
       'Total Transfer Size': `${(metrics.value.totalTransferSize / 1024).toFixed(2)} KB`,
     })
 
     if (metrics.value.customMeasures.size > 0) {
-      console.log('\nCustom Measures:')
+      logger.log('\nCustom Measures:')
       const customData: Record<string, string> = {}
       metrics.value.customMeasures.forEach((duration, name) => {
         customData[name] = `${duration.toFixed(2)}ms`

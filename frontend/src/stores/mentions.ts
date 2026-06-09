@@ -1,3 +1,4 @@
+import { logger } from '@/utils/logger'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { mentionsApi, type Mention } from '@/http/endpoints/mentions'
@@ -40,7 +41,7 @@ export const useMentionsStore = defineStore('mentions', () => {
       hasMore.value = response.pagination.hasMore
       currentOffset.value += response.mentions.length
     } catch (error) {
-      console.error('Failed to load mentions:', error)
+      logger.error('Failed to load mentions:', error)
     } finally {
       isLoading.value = false
     }

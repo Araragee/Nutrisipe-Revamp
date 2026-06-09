@@ -1,3 +1,4 @@
+import { logger } from '@/utils/logger'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authApi } from '@/http/endpoints/auth'
@@ -117,7 +118,7 @@ export const useAuthStore = defineStore('auth', () => {
         await authApi.logout()
       }
     } catch (err) {
-      console.error('Logout error:', err)
+      logger.error('Logout error:', err)
     } finally {
       user.value = null
       token.value = null
@@ -132,7 +133,7 @@ export const useAuthStore = defineStore('auth', () => {
         await authApi.logoutAll()
       }
     } catch (err) {
-      console.error('Logout all error:', err)
+      logger.error('Logout all error:', err)
     } finally {
       user.value = null
       token.value = null

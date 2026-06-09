@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger'
 import { Router } from 'express'
 import { auth, AuthRequest } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
@@ -142,7 +143,7 @@ router.get('/', auth, async (req: AuthRequest, res) => {
       counts,
     })
   } catch (error) {
-    console.error('Search error:', error)
+    logger.error('Search error:', error)
     res.status(500).json({ error: 'Search failed' })
   }
 })
@@ -212,7 +213,7 @@ router.get('/trending', auth, async (req: AuthRequest, res) => {
       },
     })
   } catch (error) {
-    console.error('Trending posts error:', error)
+    logger.error('Trending posts error:', error)
     res.status(500).json({ error: 'Failed to fetch trending posts' })
   }
 })
@@ -271,7 +272,7 @@ router.get('/category/:category', auth, async (req: AuthRequest, res) => {
       },
     })
   } catch (error) {
-    console.error('Category posts error:', error)
+    logger.error('Category posts error:', error)
     res.status(500).json({ error: 'Failed to fetch category posts' })
   }
 })
@@ -301,7 +302,7 @@ router.get('/categories', auth, async (_req: AuthRequest, res) => {
       })),
     })
   } catch (error) {
-    console.error('Categories error:', error)
+    logger.error('Categories error:', error)
     res.status(500).json({ error: 'Failed to fetch categories' })
   }
 })
@@ -360,7 +361,7 @@ router.get('/tag/:tag', auth, async (req: AuthRequest, res) => {
       },
     })
   } catch (error) {
-    console.error('Tag posts error:', error)
+    logger.error('Tag posts error:', error)
     res.status(500).json({ error: 'Failed to fetch tag posts' })
   }
 })

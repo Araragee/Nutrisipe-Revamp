@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger'
 import { Router } from 'express';
 import prisma from '../lib/prisma';
 import { authenticate, AuthRequest } from '../middleware/auth';
@@ -133,7 +134,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
       }
     });
   } catch (error) {
-    console.error('Error fetching mentions:', error);
+    logger.error('Error fetching mentions:', error);
     res.status(500).json({ error: 'Failed to fetch mentions' });
   }
 });
@@ -186,7 +187,7 @@ router.get('/search', authenticate, async (req: AuthRequest, res) => {
     res.json({ users });
     return;
   } catch (error) {
-    console.error('Error searching users:', error);
+    logger.error('Error searching users:', error);
     res.status(500).json({ error: 'Failed to search users' });
     return;
   }
@@ -225,7 +226,7 @@ router.get('/post/:postId', authenticate, async (req: AuthRequest, res) => {
 
     res.json({ mentions });
   } catch (error) {
-    console.error('Error fetching post mentions:', error);
+    logger.error('Error fetching post mentions:', error);
     res.status(500).json({ error: 'Failed to fetch post mentions' });
   }
 });
@@ -263,7 +264,7 @@ router.get('/comment/:commentId', authenticate, async (req: AuthRequest, res) =>
 
     res.json({ mentions });
   } catch (error) {
-    console.error('Error fetching comment mentions:', error);
+    logger.error('Error fetching comment mentions:', error);
     res.status(500).json({ error: 'Failed to fetch comment mentions' });
   }
 });

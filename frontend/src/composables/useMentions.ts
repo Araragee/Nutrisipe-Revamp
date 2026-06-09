@@ -1,3 +1,4 @@
+import { logger } from '@/utils/logger'
 import { ref, computed } from 'vue'
 import { mentionsApi } from '@/http/endpoints/mentions'
 
@@ -29,7 +30,7 @@ export function useMentions() {
       showSuggestions.value = response.users.length > 0
       selectedIndex.value = 0
     } catch (error) {
-      console.error('Failed to search users:', error)
+      logger.error('Failed to search users:', error)
       searchResults.value = []
       showSuggestions.value = false
     } finally {

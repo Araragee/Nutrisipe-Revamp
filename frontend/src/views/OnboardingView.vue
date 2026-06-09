@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -116,7 +117,7 @@ async function finish() {
     uiStore.showToast('You’re all set!', 'success')
     router.push('/')
   } catch (error) {
-    console.error('Failed to save onboarding:', error)
+    logger.error('Failed to save onboarding:', error)
     uiStore.showToast('Failed to save preferences', 'error')
     router.push('/')
   } finally {

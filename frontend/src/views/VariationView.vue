@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { variationsApi } from '@/http/endpoints/variations'
@@ -22,7 +23,7 @@ async function loadData() {
     const data = origRes.data.data as any
     originalPost.value = data.originalPost
   } catch (error) {
-    console.error('Failed to load variation comparison:', error)
+    logger.error('Failed to load variation comparison:', error)
   } finally {
     loading.value = false
   }

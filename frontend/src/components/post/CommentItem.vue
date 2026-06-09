@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { commentsApi } from '@/http/endpoints/comments'
@@ -42,7 +43,7 @@ async function loadReplies() {
     const response = await commentsApi.getByPost(props.postId, 1, 50, props.comment.id)
     replies.value = response.data.data
   } catch (error) {
-    console.error('Failed to load replies:', error)
+    logger.error('Failed to load replies:', error)
   } finally {
     isLoadingReplies.value = false
   }
@@ -63,7 +64,7 @@ async function handleReply() {
     isReplying.value = false
     showReplies.value = true
   } catch (error) {
-    console.error('Failed to reply:', error)
+    logger.error('Failed to reply:', error)
   } finally {
     isSubmittingReply.value = false
   }
@@ -81,7 +82,7 @@ async function handleUpdate() {
     emit('update', response.data.data)
     editingCommentId.value = null
   } catch (error) {
-    console.error('Failed to update:', error)
+    logger.error('Failed to update:', error)
   }
 }
 

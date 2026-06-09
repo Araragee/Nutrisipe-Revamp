@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger'
 import { Router } from 'express'
 import { auth, AuthRequest } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
@@ -82,7 +83,7 @@ router.post('/', auth, async (req: AuthRequest, res) => {
 
     res.status(201).json({ data: report })
   } catch (error) {
-    console.error('Error creating report:', error)
+    logger.error('Error creating report:', error)
     res.status(500).json({ error: 'Failed to create report' })
   }
 })
@@ -134,7 +135,7 @@ router.get('/my-reports', auth, async (req: AuthRequest, res) => {
       },
     })
   } catch (error) {
-    console.error('Error fetching reports:', error)
+    logger.error('Error fetching reports:', error)
     res.status(500).json({ error: 'Failed to fetch reports' })
   }
 })

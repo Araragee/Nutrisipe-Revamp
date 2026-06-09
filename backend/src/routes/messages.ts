@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger'
 import { Router, Response } from 'express'
 import { auth } from '../middleware/auth'
 import { AuthRequest } from '../middleware/auth'
@@ -67,7 +68,7 @@ router.get('/conversations', auth, async (req: AuthRequest, res: Response) => {
 
     res.json({ data: transformedConversations })
   } catch (error) {
-    console.error('Error fetching conversations:', error)
+    logger.error('Error fetching conversations:', error)
     res.status(500).json({ error: 'Failed to fetch conversations' })
   }
 })
@@ -127,7 +128,7 @@ router.get(
       })
       return
     } catch (error) {
-      console.error('Error fetching messages:', error)
+      logger.error('Error fetching messages:', error)
       res.status(500).json({ error: 'Failed to fetch messages' })
       return
     }
@@ -206,7 +207,7 @@ router.post('/send', auth, async (req: AuthRequest, res: Response) => {
 
     return res.status(201).json({ data: message })
   } catch (error) {
-    console.error('Error sending message:', error)
+    logger.error('Error sending message:', error)
     return res.status(500).json({ error: 'Failed to send message' })
   }
 })
@@ -261,7 +262,7 @@ router.put(
       res.json({ success: true })
       return
     } catch (error) {
-      console.error('Error marking messages as read:', error)
+      logger.error('Error marking messages as read:', error)
       res.status(500).json({ error: 'Failed to mark messages as read' })
       return
     }
@@ -295,7 +296,7 @@ router.get('/unread-count', auth, async (req: AuthRequest, res: Response) => {
 
     res.json({ data: { unreadCount: totalUnread } })
   } catch (error) {
-    console.error('Error fetching unread count:', error)
+    logger.error('Error fetching unread count:', error)
     res.status(500).json({ error: 'Failed to fetch unread count' })
   }
 })
@@ -326,7 +327,7 @@ router.delete('/:messageId', auth, async (req: AuthRequest, res: Response) => {
     res.json({ success: true })
     return
   } catch (error) {
-    console.error('Error deleting message:', error)
+    logger.error('Error deleting message:', error)
     res.status(500).json({ error: 'Failed to delete message' })
     return
   }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { usersApi } from '@/http/endpoints/users'
@@ -82,7 +83,7 @@ async function fetchSavedPosts(reset = false) {
     hasMore.value = page.value < response.data.pagination.totalPages
     page.value++
   } catch (error) {
-    console.error('Failed to load saved posts:', error)
+    logger.error('Failed to load saved posts:', error)
   } finally {
     isLoadingPosts.value = false
   }

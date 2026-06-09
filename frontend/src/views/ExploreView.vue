@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { postsApi } from '@/http/endpoints/posts'
@@ -71,7 +72,7 @@ async function loadTrending() {
     const response = await searchApi.getTrending({ period: '7days', page: 1, limit: 16 })
     trendingPosts.value = response.data.data
   } catch (error) {
-    console.error('Load trending error:', error)
+    logger.error('Load trending error:', error)
   } finally {
     loadingTrending.value = false
   }
@@ -128,7 +129,7 @@ async function runSearch() {
       userResults.value = res.data.data.users ?? []
     }
   } catch (error) {
-    console.error('Search error:', error)
+    logger.error('Search error:', error)
   } finally {
     isSearching.value = false
   }

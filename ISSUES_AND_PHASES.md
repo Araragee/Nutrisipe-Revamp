@@ -117,14 +117,14 @@ Each phase is independently shippable and ordered by risk. One PR per phase.
 
 **Gate:** fresh clone + `./start.sh` works with only documented env vars; prisma migration applies cleanly.
 
-### Phase 4 — Type safety & logging · ~1 day
+### Phase 4 — Type safety & logging · ~1 day ✅ Done
 **Goal: kill `any`, kill console noise.**
-1. Typed socket event payload interfaces shared between `services/socket.ts` and stores (F-05).
-2. Replace `any` in backend routes/services with proper types; remove `req.user!` assertions.
-3. Introduce a tiny logger wrapper (silent in prod) and sweep all `console.*` from both apps.
-4. Structured error logging with request context before 500 responses in admin/messages routes.
+1. Typed socket event payload interfaces shared between `services/socket.ts` and stores (F-05). ✅
+2. Replace `any` in backend routes/services with proper types; remove `req.user!` assertions. ✅
+3. Introduce a tiny logger wrapper (silent in prod) and sweep all `console.*` from both apps. ✅
+4. Structured error logging with request context before 500 responses in admin/messages routes. ✅
 
-**Gate:** `tsc --noEmit` clean in both apps; `grep -rn "console\." src` only hits the logger.
+**Gate:** `tsc --noEmit` clean in both apps; `grep -rn "console\." src` only hits the logger. ✅
 
 ### Phase 5 — Hardening (optional / discuss first) · ~1-2 days
 1. Move auth from localStorage JWT to httpOnly cookie sessions (F-03) — touches backend auth, CORS, socket auth; needs a decision.
