@@ -2,6 +2,7 @@ import { Server as HTTPServer } from 'http'
 import { Server as SocketIOServer, Socket } from 'socket.io'
 import { verifyToken } from '../utils/jwt'
 import { prisma } from '../lib/prisma'
+import { env } from '../config/env'
 
 interface AuthenticatedSocket extends Socket {
   userId?: string
@@ -10,8 +11,7 @@ interface AuthenticatedSocket extends Socket {
 export function initializeSocketServer(httpServer: HTTPServer) {
   const io = new SocketIOServer(httpServer, {
     cors: {
-      // TODO(audit:B-10) [LOW] Uses process.env.CLIENT_URL while Express CORS uses env.CORS_ORIGIN — unify on the validated env config so origins can't drift apart.
-      origin: process.env.CLIENT_URL || 'http://localhost:5173',
+      origin: env.CORS_ORIGIN,
       credentials: true
     }
   })

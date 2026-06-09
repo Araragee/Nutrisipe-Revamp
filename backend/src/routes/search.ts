@@ -18,8 +18,8 @@ router.get('/', auth, async (req: AuthRequest, res) => {
       return
     }
 
-    // TODO(audit:B-09) [LOW] LIKE wildcards (% and _) not escaped from user query — escape them so searches behave literally.
-    const searchQuery = query.trim()
+    // Escape LIKE special characters so the query is treated as a literal string (B-09).
+    const searchQuery = query.trim().replace(/[%_\\]/g, '\\$&')
 
     let results: any = {
       posts: [],

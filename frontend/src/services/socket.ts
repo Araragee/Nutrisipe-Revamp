@@ -1,5 +1,9 @@
 import { io, Socket } from "socket.io-client";
 import { useAuthStore } from "@/stores/auth";
+import { API_URL } from "@/utils/constants";
+
+// Derive socket origin from the same env var used by the HTTP client.
+const SOCKET_URL = API_URL.replace(/\/api\/?$/, '')
 
 class SocketService {
   private socket: Socket | null = null;
@@ -16,14 +20,10 @@ class SocketService {
     }
 
     if (this.socket?.connected) {
-      console.log("Socket already connected");
       return;
     }
 
-    // TODO(audit:F-02) [HIGH] Silent localhost fallback hides missing VITE_API_URL in prod builds — fail loudly instead. Also strip the console.log noise in this file (lines 19, 43, 48, 69) and replace the ~20 `any`-typed event callbacks below with typed payload interfaces (F-05).
-    const serverUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
-
-    this.socket = io(serverUrl, {
+    this.socket = io(SOCKET_URL, {
       auth: {
         token,
       },

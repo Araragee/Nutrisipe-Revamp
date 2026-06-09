@@ -91,10 +91,10 @@ model Post {
   mealPlans          MealPlan[]
 
   @@map("posts")
-  // TODO(audit:B-15) [MEDIUM] Profile/feed queries filter by userId AND sort by createdAt — add compound @@index([userId, createdAt]); same for Message @@index([conversationId, createdAt]).
   @@index([userId])
   @@index([createdAt])
   @@index([category])
+  @@index([userId, createdAt])
 }
 
 model Recipe {
@@ -308,6 +308,7 @@ model Message {
   @@index([recipientId])
   @@index([createdAt])
   @@index([isRead])
+  @@index([conversationId, createdAt])
 }
 
 model Mention {
