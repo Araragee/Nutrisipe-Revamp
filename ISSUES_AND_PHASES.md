@@ -86,14 +86,14 @@ Each phase is independently shippable and ordered by risk. One PR per phase.
 
 **Gate passed:** `tsc --noEmit` clean both apps; prod boot verified — `/dev-login` → 404, placeholder secret → startup error; dev boot verified — `/dev-login` route live.
 
-### Phase 1 — Burn the dead wood · ~½ day
+### ✅ Phase 1 — Burn the dead wood · DONE 2026-06-09
 **Goal: one backend, one API client, clean root.**
-1. Delete the Laravel skeleton (`backend/app`, `routes`, `config`, `bootstrap`, `database`, `resources`, `public`, `vendor`, `composer.*`, `artisan`, `phpunit.xml`) after grep-confirming zero references from the Express app.
-2. Delete `src/config/database.ts`; point `postService.perf.test.ts` at `lib/prisma` (B-03).
-3. Migrate `PostDetailModal.vue` and any other importers off `http/posts.ts` / `http/comments.ts` to `http/endpoints/*`, then delete the legacy clients (F-04, F-14).
-4. Root cleanup: remove `Nutrisipe.html`, merge `DEMO_ACCOUNTS.md` into `ACCOUNTS.md`, archive or delete stale `AUDIT_AND_PLAN.md`, move `frontend/nutrisipe_revamp_ui/` to `/docs` or delete.
+1. ✅ Deleted entire Laravel skeleton: `app/`, `routes/`, `config/`, `bootstrap/`, `database/`, `resources/`, `public/`, `vendor/`, `composer.json`, `composer.lock`, `artisan`, `phpunit.xml` — grepped zero references first.
+2. ✅ Deleted `src/config/database.ts`; migrated `postService.perf.test.ts` to mock `lib/prisma` instead (B-03).
+3. ✅ Migrated `PostDetailModal.vue` → `postsApi.getById`, `CreatePostModal.vue` → `postsApi.create`, then deleted `http/posts.ts` and `http/comments.ts` (no importers on comments.ts) (F-04, F-14).
+4. ✅ Root cleanup: removed `Nutrisipe.html` (155 KB dead prototype), `DEMO_ACCOUNTS.md` (duplicate of `ACCOUNTS.md`), `AUDIT_AND_PLAN.md` (stale), `frontend/nutrisipe_revamp_ui/` (design handoff bundle).
 
-**Gate:** both apps build and boot via `./start.sh`; `grep -r "http/posts'" frontend/src` returns nothing.
+**Gate passed:** `tsc --noEmit` clean on both apps; `grep -r "http/posts'" frontend/src` → empty.
 
 ### Phase 2 — Correctness bugs · ~1 day
 **Goal: the marked logic bugs are fixed with tests where cheap.**

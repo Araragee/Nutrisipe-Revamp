@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-// TODO(audit:F-14) [MEDIUM] Mixes legacy client (http/posts) with new client (http/endpoints/*) in one component — migrate to postsApi.getById when consolidating clients (see F-04).
-import { getPostById } from '@/http/posts'
+import { postsApi } from '@/http/endpoints/posts'
 import { socialApi } from '@/http/endpoints/social'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import CommentSection from '@/components/post/CommentSection.vue'
@@ -32,7 +31,7 @@ async function loadPost() {
 
   isLoading.value = true
   try {
-    post.value = await getPostById(props.postId)
+    post.value = (await postsApi.getById(props.postId)).data.data
   } catch (error) {
     console.error('Failed to load post:', error)
   } finally {

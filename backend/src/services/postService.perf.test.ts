@@ -1,8 +1,8 @@
 import { getPostsByUser } from './postService';
-import prisma from '../config/database';
+import prisma from '../lib/prisma';
 
 // Mock the prisma client
-jest.mock('../config/database', () => ({
+jest.mock('../lib/prisma', () => ({
   __esModule: true,
   default: {
     post: {
