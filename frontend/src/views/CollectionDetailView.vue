@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { collectionsApi } from '@/http/endpoints/collections'
@@ -27,7 +28,7 @@ async function load() {
     const response = await collectionsApi.getById(collectionId())
     collection.value = response.data.data
   } catch (error) {
-    console.error('Failed to load collection:', error)
+    logger.error('Failed to load collection:', error)
     uiStore.showToast('Collection not found', 'error')
     router.push('/saved')
   } finally {

@@ -369,8 +369,8 @@ router.get('/tag/:tag', auth, async (req: AuthRequest, res) => {
 // Trending tags aggregated from recent public posts
 router.get('/trending-tags', async (req: AuthRequest, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit as string) || 20, 50)
-    const days = parseInt(req.query.days as string) || 14
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20))
+    const days = Math.min(90, Math.max(1, parseInt(req.query.days as string) || 14))
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
     const posts = await prisma.post.findMany({
@@ -402,7 +402,7 @@ router.get('/trending-tags', async (req: AuthRequest, res) => {
 
     res.json({ data: top })
   } catch (error) {
-    console.error('Trending tags error:', error)
+    logger.error('Trending tags error:', error)
     res.status(500).json({ error: 'Failed to fetch trending tags' })
   }
 })

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -92,7 +93,7 @@ async function loadPreferences() {
     notifPrefs.value = { ...DEFAULT_NOTIF, ...(data.notifications ?? {}) }
     privacyPrefs.value = { ...DEFAULT_PRIVACY, ...(data.privacy ?? {}) }
   } catch (error) {
-    console.error('Failed to load preferences:', error)
+    logger.error('Failed to load preferences:', error)
   }
 }
 

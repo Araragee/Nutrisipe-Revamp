@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { mealPlansApi, type GroceryList } from '@/http/endpoints/mealPlans'
@@ -62,7 +63,7 @@ async function load() {
     const response = await mealPlansApi.grocery(toLocalIsoDate(today), toLocalIsoDate(end))
     grocery.value = response.data.data
   } catch (error) {
-    console.error('Failed to load grocery list:', error)
+    logger.error('Failed to load grocery list:', error)
   } finally {
     isLoading.value = false
   }

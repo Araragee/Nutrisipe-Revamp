@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { z } from 'zod'
 import * as ingredientService from '../services/ingredientService'
 import { AppError } from '../middleware/errorHandler'
+import { parsePagination } from '../utils/pagination'
 
 const ingredientSchema = z.object({
   food_item: z.string().min(1).max(255),
@@ -27,11 +28,12 @@ const updateSchema = ingredientSchema.partial()
 
 export async function listHandler(req: Request, res: Response, next: NextFunction) {
   try {
+    const { page, limit } = parsePagination(req, 50)
     const result = await ingredientService.listIngredients({
       search: req.query.search as string | undefined,
       category: req.query.category as string | undefined,
-      page: req.query.page ? parseInt(req.query.page as string) : undefined,
-      limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
+      page,
+      limit,
       all: req.query.all === '1' || req.query.all === 'true',
     })
     res.json({

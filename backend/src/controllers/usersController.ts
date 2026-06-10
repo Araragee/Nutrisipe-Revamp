@@ -58,7 +58,7 @@ export async function getUserFollowingHandler(req: Request, res: Response, next:
 export async function getUserActivityHandler(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params
-    const limit = parseInt(req.query.limit as string) || 20
+    const { limit } = parsePagination(req)
 
     const activities = await userService.getUserActivity(id, limit)
 
@@ -100,7 +100,7 @@ export async function cancelDeleteMeHandler(req: AuthRequest, res: Response, nex
 
 export async function getPopularHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    const limit = Math.min(parseInt(req.query.limit as string) || 12, 50)
+    const { limit } = parsePagination(req, 12, 50)
     const users = await userService.getPopularUsers(limit, req.userId)
     res.json({
       success: true,
@@ -117,7 +117,7 @@ export async function getSuggestionsHandler(req: AuthRequest, res: Response, nex
       throw new AppError(401, 'Unauthorized')
     }
 
-    const limit = parseInt(req.query.limit as string) || 15
+    const { limit } = parsePagination(req, 15)
 
     const suggestions = await recommendationService.getSuggestedUsers(req.userId, limit)
 
@@ -245,13 +245,22 @@ export async function getUserPreferencesHandler(req: AuthRequest, res: Response,
   }
 }
 
+const updatePreferencesSchema = z.object({
+  cuisines: z.array(z.string().max(50)).max(50).optional(),
+  allergies: z.array(z.string().max(50)).max(50).optional(),
+  dietary: z.array(z.string().max(50)).max(50).optional(),
+  notifications: z.record(z.boolean()).optional(),
+  privacy: z.record(z.boolean()).optional(),
+})
+
 export async function updatePreferencesHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     if (!req.userId) {
       throw new AppError(401, 'Unauthorized')
     }
 
-    const preferences = await userService.updateUserPreferences(req.userId, req.body)
+    const validated = updatePreferencesSchema.parse(req.body)
+    const preferences = await userService.updateUserPreferences(req.userId, validated)
 
     res.json({
       success: true,

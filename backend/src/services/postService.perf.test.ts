@@ -1,10 +1,9 @@
 import { getPostsByUser } from './postService';
 import prisma from '../lib/prisma';
 
-// Mock the prisma client
-jest.mock('../lib/prisma', () => ({
-  __esModule: true,
-  default: {
+// Mock the prisma client — postService uses the named export, this file the default.
+jest.mock('../lib/prisma', () => {
+  const client = {
     post: {
       findMany: jest.fn(),
       count: jest.fn(),
@@ -17,8 +16,9 @@ jest.mock('../lib/prisma', () => ({
       findUnique: jest.fn(),
       findMany: jest.fn(),
     },
-  },
-}));
+  };
+  return { __esModule: true, default: client, prisma: client };
+});
 
 describe('getPostsByUser Performance', () => {
   beforeEach(() => {

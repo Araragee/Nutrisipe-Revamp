@@ -81,7 +81,7 @@ async function loadCreators() {
       bio: u.bio,
     }))
   } catch (error) {
-    console.error('Failed to load creators:', error)
+    logger.error('Failed to load creators:', error)
   } finally {
     isLoadingCreators.value = false
   }

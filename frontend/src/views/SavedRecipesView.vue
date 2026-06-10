@@ -55,7 +55,7 @@ async function loadCollections() {
     const response = await collectionsApi.getUserCollections(authStore.user.id)
     collections.value = response.data.data
   } catch (error) {
-    console.error('Failed to load collections:', error)
+    logger.error('Failed to load collections:', error)
   } finally {
     isLoadingCollections.value = false
   }
@@ -107,7 +107,7 @@ async function createCollection() {
     newPublic.value = false
     uiStore.showToast('Collection created', 'success')
   } catch (error) {
-    console.error('Failed to create collection:', error)
+    logger.error('Failed to create collection:', error)
     uiStore.showToast('Failed to create collection', 'error')
   } finally {
     isCreating.value = false

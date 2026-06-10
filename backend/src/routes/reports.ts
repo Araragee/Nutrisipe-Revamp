@@ -2,6 +2,7 @@ import { logger } from '../utils/logger'
 import { Router } from 'express'
 import { auth, AuthRequest } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
+import { parsePagination } from '../utils/pagination'
 
 const router = Router()
 
@@ -91,8 +92,7 @@ router.post('/', auth, async (req: AuthRequest, res) => {
 // Get user's reports
 router.get('/my-reports', auth, async (req: AuthRequest, res) => {
   try {
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const [reports, total] = await Promise.all([
       prisma.report.findMany({

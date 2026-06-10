@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { mealPlansApi, type MealPlan, type MealSlot } from '@/http/endpoints/mealPlans'
@@ -88,7 +89,7 @@ async function loadWeek() {
     const response = await mealPlansApi.list(from, to)
     plans.value = response.data.data
   } catch (error) {
-    console.error('Failed to load plans:', error)
+    logger.error('Failed to load plans:', error)
   } finally {
     isLoading.value = false
   }
@@ -125,7 +126,7 @@ async function openPicker(date: Date, slot: MealSlot) {
         pickerPosts.value = res.data.data.map((item: any) => item.post || item)
       }
     } catch (error) {
-      console.error('Picker load error:', error)
+      logger.error('Picker load error:', error)
     } finally {
       isPickerLoading.value = false
     }

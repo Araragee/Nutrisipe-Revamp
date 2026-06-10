@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -99,7 +100,7 @@ async function loadSuggestions() {
       why: u.followerCount > 0 ? `${u.followerCount} followers` : 'New creator',
     }))
   } catch (error) {
-    console.error('Load suggestions error:', error)
+    logger.error('Load suggestions error:', error)
   }
 }
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, onMounted } from 'vue'
 import { storiesApi, type StoryGroup } from '@/http/endpoints/stories'
 import { useAuthStore } from '@/stores/auth'
@@ -55,7 +56,7 @@ async function load() {
     groups.value = res.data.data
     loadSeenFromStorage()
   } catch (error) {
-    console.error('Stories feed error:', error)
+    logger.error('Stories feed error:', error)
   } finally {
     isLoading.value = false
   }

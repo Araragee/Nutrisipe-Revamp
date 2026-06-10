@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, onMounted } from 'vue'
 import { storiesApi } from '@/http/endpoints/stories'
 import { usersApi } from '@/http/endpoints/users'
@@ -29,7 +30,7 @@ async function loadSaved() {
     const res = await usersApi.getSavedPosts(authStore.user.id, 1, 12)
     savedPosts.value = res.data.data.map((item: any) => item.post || item)
   } catch (error) {
-    console.error('Saved posts error:', error)
+    logger.error('Saved posts error:', error)
   } finally {
     isLoadingSaved.value = false
   }

@@ -83,7 +83,7 @@ async function loadTrendingTags() {
     const response = await searchApi.getTrendingTags(20)
     trendingTags.value = response.data.data
   } catch (error) {
-    console.error('Load trending tags error:', error)
+    logger.error('Load trending tags error:', error)
   }
 }
 
@@ -94,7 +94,7 @@ async function loadCollections() {
     const response = await collectionsApi.getUserCollections(authStore.user.id)
     collections.value = response.data.data
   } catch (error) {
-    console.error('Load collections error:', error)
+    logger.error('Load collections error:', error)
   } finally {
     loadingCollections.value = false
   }

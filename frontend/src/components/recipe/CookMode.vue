@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
 interface Instruction {
@@ -48,7 +49,7 @@ async function requestWakeLock() {
       })
     }
   } catch (error) {
-    console.warn('Wake lock unavailable:', error)
+    logger.warn('Wake lock unavailable:', error)
   }
 }
 

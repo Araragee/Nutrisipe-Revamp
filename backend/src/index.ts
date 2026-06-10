@@ -4,6 +4,7 @@ import rateLimit from 'express-rate-limit'
 import { createServer } from 'http'
 import { mkdirSync } from 'fs'
 import { env } from './config/env'
+import { logger } from './utils/logger'
 
 // Ensure temp upload dir exists before multer tries to write to it (B-13).
 mkdirSync('uploads/temp', { recursive: true })
@@ -124,9 +125,9 @@ httpServer.listen(env.PORT, () => {
 setInterval(async () => {
   try {
     const { deleted } = await purgeExpiredStories()
-    if (deleted > 0) console.log(`🗑  Purged ${deleted} expired stories`)
+    if (deleted > 0) logger.log(`🗑  Purged ${deleted} expired stories`)
   } catch (e) {
-    console.error('Story purge error:', e)
+    logger.error('Story purge error:', e)
   }
 }, 60 * 60 * 1000)
 
@@ -134,8 +135,8 @@ setInterval(async () => {
 setInterval(async () => {
   try {
     const { purged } = await purgeScheduledDeletions()
-    if (purged > 0) console.log(`🗑  Purged ${purged} scheduled account deletions`)
+    if (purged > 0) logger.log(`🗑  Purged ${purged} scheduled account deletions`)
   } catch (e) {
-    console.error('Account deletion purge error:', e)
+    logger.error('Account deletion purge error:', e)
   }
 }, 6 * 60 * 60 * 1000)
