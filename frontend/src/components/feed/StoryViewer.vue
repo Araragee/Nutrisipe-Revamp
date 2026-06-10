@@ -254,7 +254,7 @@ onUnmounted(() => {
             aria-label="Delete"
           >🗑</button>
           <button
-            @click="emit('close', groupIndex.value)"
+            @click="emit('close', groupIndex)"
             class="w-9 h-9 rounded-full bg-white/10 text-white text-xl flex items-center justify-center"
             aria-label="Close"
           >✕</button>
