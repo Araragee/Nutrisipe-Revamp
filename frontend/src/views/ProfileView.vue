@@ -10,6 +10,7 @@ import FollowButton from '@/components/user/FollowButton.vue'
 import PinGrid from '@/components/feed/PinGrid.vue'
 import EditProfileModal from '@/components/user/EditProfileModal.vue'
 import RecipeModal from '@/components/feed/RecipeModal.vue'
+import RecipeMosaicBackground from '@/components/common/RecipeMosaicBackground.vue'
 import { formatNumber } from '@/utils/format'
 import type { Post } from '@/typescript/interface/Post'
 import type { User } from '@/typescript/interface/User'
@@ -95,9 +96,9 @@ const displayPosts = computed(() => {
 
     <div v-else-if="user">
       <!-- Profile Header Hero -->
-      <div class="relative h-64 md:h-80 bg-[#111]">
-         <img src="https://picsum.photos/1200/400?random=99" class="w-full h-full object-cover opacity-40 blur-[2px]" />
-         <div class="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent"></div>
+      <div class="relative h-64 md:h-80 overflow-hidden bg-background-secondary">
+         <RecipeMosaicBackground :posts="posts" :count="12" :intensity="0.55" fallback-variant="warm" :blur="30" />
+         <div class="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent pointer-events-none"></div>
 
          <div class="absolute -bottom-16 left-8 md:left-12 flex items-end gap-6">
             <div class="relative group">

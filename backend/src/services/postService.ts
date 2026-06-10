@@ -2,6 +2,69 @@ import { prisma } from '../lib/prisma'
 import { AppError } from '../middleware/errorHandler'
 import { transformPost } from '../utils/modelTransformer'
 
+interface PreferenceFilters {
+  positive: string[]
+  negative: string[]
+}
+
+async function getPreferenceFilters(userId: string): Promise<PreferenceFilters> {
+  const prefs = await prisma.userPreference.findUnique({ where: { userId } })
+  if (!prefs) return { positive: [], negative: [] }
+  const safeParse = (s: string): string[] => {
+    try {
+      const arr = JSON.parse(s)
+      return Array.isArray(arr) ? arr.filter((x: any) => typeof x === 'string' && x.length > 0) : []
+    } catch {
+      return []
+    }
+  }
+  const dietary = safeParse(prefs.dietary)
+  const cuisines = safeParse(prefs.cuisines)
+  const allergies = safeParse(prefs.allergies)
+  const positive = [...dietary, ...cuisines].map((t) => t.toLowerCase())
+  const negative = allergies.map((t) => t.toLowerCase())
+  return { positive, negative }
+}
+
+function buildTagOrFilter(keywords: string[]) {
+  if (keywords.length === 0) return undefined
+  return {
+    OR: keywords.flatMap((kw) => [
+      { tags: { contains: kw } },
+      { tags: { contains: kw.toLowerCase() } },
+      { category: { contains: kw } },
+    ]),
+  }
+}
+
+function interleave<T extends { id: string }>(...lists: T[][]): T[] {
+  const result: T[] = []
+  const seen = new Set<string>()
+  const maxLen = Math.max(0, ...lists.map((l) => l.length))
+  for (let i = 0; i < maxLen; i++) {
+    for (const list of lists) {
+      const item = list[i]
+      if (item && !seen.has(item.id)) {
+        seen.add(item.id)
+        result.push(item)
+      }
+    }
+  }
+  return result
+}
+
+function buildTagNotFilter(keywords: string[]) {
+  if (keywords.length === 0) return undefined
+  return {
+    NOT: {
+      OR: keywords.flatMap((kw) => [
+        { tags: { contains: kw } },
+        { tags: { contains: kw.toLowerCase() } },
+      ]),
+    },
+  }
+}
+
 interface CreatePostData {
   title: string
   description?: string
@@ -182,15 +245,31 @@ export async function getRelatedPosts(postId: string, userId?: string, limit: nu
 export async function getFeed(userId: string, page: number = 1, limit: number = 20) {
   const skip = (page - 1) * limit
 
-  const followedUsers = await prisma.follow.findMany({
-    where: { followerId: userId },
-    select: { followingId: true },
-  })
+  const [followedUsers, prefs] = await Promise.all([
+    prisma.follow.findMany({
+      where: { followerId: userId },
+      select: { followingId: true },
+    }),
+    getPreferenceFilters(userId),
+  ])
 
   const followedUserIds = followedUsers.map(f => f.followingId)
+  const hasPrefs = prefs.positive.length > 0
 
-  const followedPostsCount = Math.ceil(limit * 0.7)
-  const popularPostsCount = limit - followedPostsCount
+  const followedQuota = Math.ceil(limit * 0.6)
+  const preferenceQuota = hasPrefs ? Math.ceil(limit * 0.25) : 0
+
+  const allergyFilter = buildTagNotFilter(prefs.negative)
+  const userIncludeBlock = {
+    user: {
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        avatarUrl: true,
+      },
+    },
+  } as const
 
   let followedPosts: any[] = []
   if (followedUserIds.length > 0) {
@@ -198,53 +277,62 @@ export async function getFeed(userId: string, page: number = 1, limit: number = 
       where: {
         userId: { in: followedUserIds },
         isPublic: true,
+        ...(allergyFilter ?? {}),
       },
-      take: followedPostsCount,
-      skip: Math.floor(skip * 0.7),
+      take: followedQuota,
+      skip: Math.floor(skip * 0.6),
       orderBy: { createdAt: 'desc' },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            displayName: true,
-            avatarUrl: true,
-          },
-        },
-      },
+      include: userIncludeBlock,
     })
   }
 
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-  const popularPosts = await prisma.post.findMany({
-    where: {
-      isPublic: true,
-      createdAt: { gte: sevenDaysAgo },
-      NOT: {
-        id: { in: followedPosts.map(p => p.id) },
-      },
-    },
-    take: popularPostsCount,
-    skip: Math.floor(skip * 0.3),
-    orderBy: [
-      { likeCount: 'desc' },
-      { saveCount: 'desc' },
-    ],
-    include: {
-      user: {
-        select: {
-          id: true,
-          username: true,
-          displayName: true,
-          avatarUrl: true,
-        },
-      },
-    },
-  })
+  const excludeIds = followedPosts.map(p => p.id)
 
-  const allPosts = [...followedPosts, ...popularPosts]
+  let preferencePosts: any[] = []
+  if (preferenceQuota > 0) {
+    const tagFilter = buildTagOrFilter(prefs.positive)
+    preferencePosts = await prisma.post.findMany({
+      where: {
+        isPublic: true,
+        id: { notIn: excludeIds },
+        ...(tagFilter ?? {}),
+        ...(allergyFilter ?? {}),
+      },
+      take: preferenceQuota,
+      skip: Math.floor(skip * 0.25),
+      orderBy: [
+        { likeCount: 'desc' },
+        { saveCount: 'desc' },
+        { createdAt: 'desc' },
+      ],
+      include: userIncludeBlock,
+    })
+  }
+
+  const fillNeeded = limit - followedPosts.length - preferencePosts.length
+  let popularPosts: any[] = []
+  if (fillNeeded > 0) {
+    popularPosts = await prisma.post.findMany({
+      where: {
+        isPublic: true,
+        createdAt: { gte: sevenDaysAgo },
+        id: { notIn: [...excludeIds, ...preferencePosts.map(p => p.id)] },
+        ...(allergyFilter ?? {}),
+      },
+      take: fillNeeded,
+      skip: Math.floor(skip * 0.15),
+      orderBy: [
+        { likeCount: 'desc' },
+        { saveCount: 'desc' },
+      ],
+      include: userIncludeBlock,
+    })
+  }
+
+  const allPosts = interleave(followedPosts, preferencePosts, popularPosts)
 
   const postIds = allPosts.map(p => p.id)
 

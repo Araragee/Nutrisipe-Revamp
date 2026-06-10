@@ -30,10 +30,13 @@ export interface RatingWithPost extends Rating {
   }
 }
 
+export type RatingDistribution = Record<1 | 2 | 3 | 4 | 5, number>
+
 export interface PostRatingsResponse {
   ratings: Rating[]
   averageRating: number
   totalRatings: number
+  distribution?: RatingDistribution
   pagination: {
     page: number
     limit: number

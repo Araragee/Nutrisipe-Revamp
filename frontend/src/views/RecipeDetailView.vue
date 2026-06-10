@@ -8,11 +8,17 @@ import { useUiStore } from '@/stores/ui'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import FollowButton from '@/components/user/FollowButton.vue'
 import PinGrid from '@/components/feed/PinGrid.vue'
+import RatingInput from '@/components/ratings/RatingInput.vue'
 import RatingList from '@/components/ratings/RatingList.vue'
+import RatingHistogram from '@/components/ratings/RatingHistogram.vue'
+import CommentSection from '@/components/post/CommentSection.vue'
 import VariationList from '@/components/recipe/VariationList.vue'
+import CookMode from '@/components/recipe/CookMode.vue'
 import CollectionModal from '@/components/profile/CollectionModal.vue'
 import { variationsApi } from '@/http/endpoints/variations'
 import { ratingsApi } from '@/http/endpoints/ratings'
+import { resolveSrcset, ogShareUrl } from '@/utils/imageUrl'
+import { scaleQuantity } from '@/utils/scaleQuantity'
 import type { Post } from '@/typescript/interface/Post'
 
 const route = useRoute()
@@ -25,8 +31,32 @@ const relatedPosts = ref<Post[]>([])
 const isLoading = ref(true)
 const activeTab = ref('ingredients')
 const ratingListRef = ref<any>(null)
+const histogramRef = ref<any>(null)
 const showCollectionModal = ref(false)
+const showCookMode = ref(false)
 const isForking = ref(false)
+const hasInstructions = computed(
+  () => (post.value?.recipe?.instructions?.length ?? 0) > 0,
+)
+const targetServings = ref<number | null>(null)
+
+const baseServings = computed(() => post.value?.recipe?.servings ?? null)
+const scaleFactor = computed(() => {
+  if (!baseServings.value || !targetServings.value || baseServings.value <= 0) return 1
+  return targetServings.value / baseServings.value
+})
+const scaledIngredients = computed(() => {
+  const list = post.value?.recipe?.ingredients ?? []
+  if (scaleFactor.value === 1) return list
+  return list.map((ing: any) => ({ ...ing, quantity: scaleQuantity(ing.quantity, scaleFactor.value) }))
+})
+function adjustServings(delta: number) {
+  const current = targetServings.value ?? baseServings.value ?? 1
+  targetServings.value = Math.max(1, current + delta)
+}
+function resetServings() {
+  targetServings.value = baseServings.value
+}
 
 const postId = computed(() => (Array.isArray(route.params.id) ? route.params.id[0] : route.params.id) as string)
 const isOwner = computed(() => authStore.user?.id === post.value?.userId)
@@ -73,6 +103,7 @@ async function loadPost() {
   try {
     const response = await postsApi.getById(postId.value)
     post.value = response.data.data
+    targetServings.value = post.value?.recipe?.servings ?? null
 
     // Fetch real related posts
     const relatedRes = await postsApi.getRelated(postId.value)
@@ -92,10 +123,11 @@ async function handleRatingSubmit(data: { rating: number; review?: string }) {
     await ratingsApi.createOrUpdateRating(post.value.id, data.rating, data.review)
     uiStore.showToast('Rating submitted!', 'success')
     
-    // Refresh post and rating list
+    // Refresh post + rating list + histogram
     const response = await postsApi.getById(postId.value)
     post.value = response.data.data
     ratingListRef.value?.refresh()
+    histogramRef.value?.refresh()
   } catch (error) {
     console.error('Failed to submit rating:', error)
     uiStore.showToast('Failed to submit rating', 'error')
@@ -136,12 +168,36 @@ async function toggleSave() {
   }
 }
 
+async function shareRecipe() {
+  if (!post.value) return
+  const url = ogShareUrl(post.value.id)
+  const shareData = {
+    title: post.value.title,
+    text: post.value.description || post.value.title,
+    url,
+  }
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData)
+      return
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(url)
+    uiStore.showToast('Link copied to clipboard', 'success')
+  } catch {
+    uiStore.showToast('Failed to share', 'error')
+  }
+}
+
 onMounted(loadPost)
 watch(postId, loadPost)
 
-const recipeImage = computed(() => {
-  return post.value?.imageUrl || `https://picsum.photos/800/1000?random=${post.value?.id}`
-})
+const recipeImage = computed(() =>
+  resolveSrcset(post.value?.imageUrl, post.value?.id, [800, 1200, 1600]),
+)
 </script>
 
 <template>
@@ -155,7 +211,7 @@ const recipeImage = computed(() => {
           <!-- Left: Hero Image -->
           <div class="w-full lg:w-1/2 shrink-0">
              <div class="relative rounded-[40px] overflow-hidden shadow-2xl group border-1.5 border-glass-border">
-                <img :src="recipeImage" class="w-full object-cover aspect-[4/5]" />
+                <img :src="recipeImage.src" :srcset="recipeImage.srcset" sizes="(min-width:1024px) 45vw, 100vw" class="w-full object-cover aspect-[4/5]" />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
                 <button
@@ -214,15 +270,27 @@ const recipeImage = computed(() => {
              </div>
 
              <div class="flex-1 mb-10">
-                <div v-if="activeTab === 'ingredients'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <template v-if="post.recipe?.ingredients && post.recipe.ingredients.length > 0">
-                     <div v-for="(ing, idx) in post.recipe.ingredients" :key="idx" class="flex items-center gap-4 p-4 bg-background-secondary/30 rounded-2xl border border-glass-border">
-                        <div class="w-2.5 h-2.5 rounded-full bg-orange"></div>
-                        <span class="text-[15px] font-medium">{{ ing.name }}</span>
-                        <span class="ml-auto font-bold text-orange text-sm">{{ ing.quantity }}</span>
-                     </div>
-                   </template>
-                   <div v-else class="col-span-full text-center py-10 text-text-dim italic">No ingredients listed.</div>
+                <div v-if="activeTab === 'ingredients'">
+                   <div v-if="baseServings" class="flex items-center justify-between gap-3 mb-5 p-3 bg-background-secondary/40 border border-glass-border rounded-2xl">
+                      <span class="text-xs font-bold uppercase tracking-widest text-text-dim">Servings</span>
+                      <div class="flex items-center gap-2">
+                         <button @click="adjustServings(-1)" :disabled="(targetServings ?? baseServings) <= 1" class="w-8 h-8 rounded-full bg-background-secondary border border-glass-border text-text font-bold disabled:opacity-40">−</button>
+                         <span class="font-montserrat font-extrabold text-lg w-12 text-center tabular-nums">{{ targetServings ?? baseServings }}</span>
+                         <button @click="adjustServings(1)" class="w-8 h-8 rounded-full bg-background-secondary border border-glass-border text-text font-bold">+</button>
+                         <button v-if="scaleFactor !== 1" @click="resetServings" class="ml-2 text-[10px] font-bold uppercase tracking-widest text-orange hover:underline">Reset</button>
+                      </div>
+                   </div>
+
+                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <template v-if="scaledIngredients.length > 0">
+                       <div v-for="(ing, idx) in scaledIngredients" :key="idx" class="flex items-center gap-4 p-4 bg-background-secondary/30 rounded-2xl border border-glass-border">
+                          <div class="w-2.5 h-2.5 rounded-full bg-orange"></div>
+                          <span class="text-[15px] font-medium">{{ ing.name }}</span>
+                          <span class="ml-auto font-bold text-orange text-sm">{{ ing.quantity }}</span>
+                       </div>
+                     </template>
+                     <div v-else class="col-span-full text-center py-10 text-text-dim italic">No ingredients listed.</div>
+                   </div>
                 </div>
 
                 <div v-if="activeTab === 'instructions'" class="space-y-8">
@@ -238,6 +306,7 @@ const recipeImage = computed(() => {
                 </div>
 
                 <div v-if="activeTab === 'reviews'" class="space-y-8">
+                   <RatingHistogram ref="histogramRef" :post-id="post.id" />
                    <div v-if="authStore.isAuthenticated && !isOwner">
                       <RatingInput @submit="handleRatingSubmit" />
                       <div class="my-8 border-b border-glass-border"></div>
@@ -249,14 +318,17 @@ const recipeImage = computed(() => {
              </div>
 
              <!-- Actions -->
-             <div class="flex gap-4 mb-10">
-                <button @click="showCollectionModal = true" class="flex-1 btn-secondary flex items-center justify-center gap-2 h-14">
+             <div class="flex flex-wrap gap-4 mb-10">
+                <button v-if="hasInstructions" @click="showCookMode = true" class="flex-1 min-w-[200px] btn-primary flex items-center justify-center gap-2 h-14">
+                  <span>🍳</span> Cook Mode
+                </button>
+                <button @click="showCollectionModal = true" class="flex-1 min-w-[160px] btn-secondary flex items-center justify-center gap-2 h-14">
                   <span>📁</span> Save to Collection
                 </button>
-                <button @click="forkRecipe" :disabled="isForking" class="flex-1 btn-primary flex items-center justify-center gap-2 h-14">
-                  <span>{{ isForking ? '⏳' : '🍴' }}</span> Fork Variation
+                <button @click="forkRecipe" :disabled="isForking" class="flex-1 min-w-[160px] btn-secondary flex items-center justify-center gap-2 h-14">
+                  <span>{{ isForking ? '⏳' : '🍴' }}</span> Fork
                 </button>
-                <button class="flex-1 btn-secondary flex items-center justify-center gap-2 h-14">
+                <button @click="shareRecipe" class="flex-1 min-w-[140px] btn-secondary flex items-center justify-center gap-2 h-14">
                   <span>📤</span> Share
                 </button>
              </div>
@@ -276,5 +348,13 @@ const recipeImage = computed(() => {
     </div>
 
     <CollectionModal v-if="post && showCollectionModal" :show="showCollectionModal" :post-id="post.id" @close="showCollectionModal = false" />
+
+    <CookMode
+      v-if="post"
+      :show="showCookMode"
+      :title="post.title"
+      :instructions="post.recipe?.instructions ?? []"
+      @close="showCookMode = false"
+    />
   </div>
 </template>

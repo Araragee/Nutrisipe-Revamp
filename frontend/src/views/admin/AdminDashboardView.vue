@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { adminApi } from '@/http/endpoints/admin'
-import StatCard from '@/components/admin/StatCard.vue'
+import { MEDIA_BASE } from '@/utils/imageUrl'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -11,13 +11,14 @@ const authStore = useAuthStore()
 const stats = ref<any>(null)
 const error = ref('')
 const isLoading = ref(true)
+const serverHealthy = ref<boolean | null>(null)
 
 onMounted(async () => {
   if (authStore.user?.role !== 'ADMIN') {
     router.push('/')
     return
   }
-  await loadStats()
+  await Promise.all([loadStats(), pingHealth()])
 })
 
 async function loadStats() {
@@ -31,6 +32,23 @@ async function loadStats() {
     isLoading.value = false
   }
 }
+
+async function pingHealth() {
+  try {
+    const r = await fetch(`${MEDIA_BASE}/health`, { method: 'GET' })
+    serverHealthy.value = r.ok
+  } catch {
+    serverHealthy.value = false
+  }
+}
+
+const growthRate = computed(() => {
+  if (!stats.value) return 0
+  const total = stats.value.users.total ?? 0
+  const newToday = stats.value.users.newToday ?? 0
+  const base = Math.max(total - newToday, 1)
+  return Math.round((newToday / base) * 1000) / 10
+})
 
 const quickActions = [
   { path: '/admin/users', icon: '👤', title: 'Manage Users', desc: 'Control user accounts and roles' },
@@ -108,15 +126,17 @@ const quickActions = [
               <div>
                  <p class="text-text-dim font-bold text-[10px] uppercase tracking-[0.2em] mb-4">Growth Rate</p>
                  <div class="flex items-end gap-3">
-                    <span class="font-montserrat font-extrabold text-4xl text-green-500">+12%</span>
-                    <span class="text-text-muted text-sm font-bold pb-1.5">This week</span>
+                    <span :class="['font-montserrat font-extrabold text-4xl', growthRate > 0 ? 'text-green-500' : 'text-text-dim']">{{ growthRate > 0 ? `+${growthRate}%` : '—' }}</span>
+                    <span class="text-text-muted text-sm font-bold pb-1.5">Today</span>
                  </div>
               </div>
               <div>
                  <p class="text-text-dim font-bold text-[10px] uppercase tracking-[0.2em] mb-4">Server Status</p>
                  <div class="flex items-center gap-3 mt-1">
-                    <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
-                    <span class="font-bold text-lg">Operational</span>
+                    <div v-if="serverHealthy === null" class="w-3 h-3 rounded-full bg-text-dim animate-pulse"></div>
+                    <div v-else-if="serverHealthy" class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                    <div v-else class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span class="font-bold text-lg">{{ serverHealthy === null ? 'Checking…' : serverHealthy ? 'Operational' : 'Unreachable' }}</span>
                  </div>
               </div>
            </div>

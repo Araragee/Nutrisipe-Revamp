@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { onMounted, onErrorCaptured, computed, ref } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useTheme } from '@/composables/useTheme'
 import LayoutBackground from '@/components/layout/LayoutBackground.vue'
 import AppShell from '@/components/layout/AppShell.vue'
 import ToastContainer from '@/components/ToastContainer.vue'
@@ -9,24 +10,56 @@ import Toast from '@/components/ui/Toast.vue'
 
 const authStore = useAuthStore()
 const route = useRoute()
+useTheme()
 
 // Routes that should NOT show the sidebar/navigation shell
-const noShellRoutes = ['/login', '/signup', '/onboarding']
+const noShellRoutes = ['/login', '/register', '/onboarding']
 const shouldShowAppShell = computed(() => {
   return authStore.isAuthenticated && !noShellRoutes.includes(route.path)
 })
 
-// Authentication initialization is now handled in the router guard to prevent race conditions on refresh
+// ── Error boundary ────────────────────────────────────────────────────────
+const appError = ref<string | null>(null)
+// Incrementing this key forces RouterView to destroy + re-mount on retry
+const appShellKey = ref(0)
+
+onErrorCaptured((err, _vm, info) => {
+  console.error('[App error boundary]', info, err)
+  if (err instanceof Error) {
+    appError.value = err.message
+  }
+  return false // don't propagate further
+})
+
+function retryApp() {
+  appError.value = null
+  appShellKey.value++
+}
+
 onMounted(async () => {
-  // Add any other non-auth initialization here
+  // initialization hook reserved for future use
 })
 </script>
 
 <template>
-  <div :class="{ 'dark': authStore.user?.settings?.darkMode }">
-    <LayoutBackground>
+  <div>
+    <!-- Global error boundary fallback -->
+    <div
+      v-if="appError"
+      class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background p-8 text-center"
+    >
+      <p class="text-4xl mb-4">⚠️</p>
+      <h1 class="font-montserrat font-extrabold text-2xl mb-2">Something went wrong</h1>
+      <p class="text-text-muted text-sm mb-6 max-w-sm">{{ appError }}</p>
+      <button
+        class="btn-primary px-6 py-2.5 text-sm"
+        @click="retryApp"
+      >Try again</button>
+    </div>
+
+    <LayoutBackground v-else>
       <AppShell :show-shell="shouldShowAppShell">
-        <RouterView />
+        <RouterView :key="appShellKey" />
       </AppShell>
 
       <ToastContainer />

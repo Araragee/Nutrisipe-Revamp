@@ -14,6 +14,7 @@ import CollectionModal from "@/components/profile/CollectionModal.vue";
 import ExperimentRecipeModal from "@/components/recipe/ExperimentRecipeModal.vue";
 import { variationsApi } from "@/http/endpoints/variations";
 import { ratingsApi } from "@/http/endpoints/ratings";
+import { resolveSrcset, ogShareUrl } from "@/utils/imageUrl";
 import { useRouter } from "vue-router";
 import type { Post } from "@/typescript/interface/Post";
 
@@ -52,7 +53,7 @@ const nutritionFacts = computed(() => {
 
 async function shareRecipe() {
   if (!post.value) return;
-  const url = `${window.location.origin}/recipes/${post.value.id}`;
+  const url = ogShareUrl(post.value.id);
   try {
     await navigator.clipboard.writeText(url);
   } catch {
@@ -172,9 +173,9 @@ watch(
   },
 );
 
-const recipeImage = computed(() => {
-  return post.value?.imageUrl || `https://picsum.photos/800/1000?random=${post.value?.id || Math.random()}`;
-});
+const recipeImage = computed(() =>
+  resolveSrcset(post.value?.imageUrl, post.value?.id, [800, 1200, 1600]),
+);
 </script>
 
 <template>
@@ -215,7 +216,7 @@ const recipeImage = computed(() => {
 
         <!-- Left: Image side -->
         <div class="hidden md:block w-[45%] h-full relative overflow-hidden bg-black">
-          <img :src="recipeImage" class="w-full h-full object-cover opacity-90" />
+          <img :src="recipeImage.src" :srcset="recipeImage.srcset" sizes="(min-width:1024px) 50vw, 100vw" class="w-full h-full object-cover opacity-90" />
           <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
           <!-- Glass dock: like / save / share (iOS 26-style, top-left) -->

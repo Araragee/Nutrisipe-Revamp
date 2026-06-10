@@ -90,6 +90,24 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/plan',
+      name: 'meal-plan',
+      component: () => import('@/views/MealPlanView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/groceries',
+      name: 'grocery-list',
+      component: () => import('@/views/GroceryView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/collections/:id',
+      name: 'collection-detail',
+      component: () => import('@/views/CollectionDetailView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/following',
       name: 'following-feed',
       redirect: { name: 'home', query: { scope: 'following' } }

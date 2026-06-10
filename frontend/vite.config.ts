@@ -31,26 +31,12 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
+        // Only vendor splits — Vite handles component chunks automatically.
+        // Explicit component chunks cause circular-chunk warnings when components
+        // import each other (UserAvatar used by both feed and post components).
         manualChunks: {
-          // Vendor chunks
           'vue-vendor': ['vue', 'vue-router', 'pinia'],
           'axios-vendor': ['axios'],
-          // Component chunks
-          'feed-components': [
-            './src/components/feed/PinGrid.vue',
-            './src/components/feed/PinCard.vue',
-            './src/components/feed/PinSkeleton.vue',
-          ],
-          'post-components': [
-            './src/components/post/PostDetailModal.vue',
-            './src/components/post/CreatePostModal.vue',
-            './src/components/post/CommentSection.vue',
-          ],
-          'user-components': [
-            './src/components/user/UserAvatar.vue',
-            './src/components/user/UserCard.vue',
-            './src/components/user/UserSearchModal.vue',
-          ],
         },
       },
     },

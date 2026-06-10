@@ -7,6 +7,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useUiStore } from "@/stores/ui";
 import UserAvatar from "@/components/user/UserAvatar.vue";
 import { formatNumber } from "@/utils/format";
+import { resolveSrcset } from "@/utils/imageUrl";
 import type { Post } from "@/typescript/interface/Post";
 
 interface Props {
@@ -69,16 +70,11 @@ const aspectVariant = computed(() => {
   return aspectVariants[Math.abs(hash) % aspectVariants.length];
 });
 
-const placeholderHeight = computed(() =>
-  Math.round(400 / aspectVariant.value.ratio),
+const recipeImage = computed(() =>
+  resolveSrcset(props.post.imageUrl, props.post.id, [400, 800, 1200]),
 );
 
-const recipeImage = computed(() => {
-  if (!props.post.imageUrl)
-    return `https://picsum.photos/400/${placeholderHeight.value}?random=${props.post.id}`;
-  if (props.post.imageUrl.startsWith("http")) return props.post.imageUrl;
-  return `http://localhost:3001/${props.post.imageUrl}`;
-});
+const imageLoaded = ref(false);
 
 const tags = computed(() => {
   return props.post.tags || ["Healthy", "Nutrisipe"];
@@ -111,12 +107,23 @@ const nutriScoreClass = computed(() => {
   >
     <!-- Background Image -->
     <img
-      :src="recipeImage"
+      :src="recipeImage.src"
+      :srcset="recipeImage.srcset"
+      sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
       :alt="post.title"
       loading="lazy"
       decoding="async"
-      class="recipe-img w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 will-change-transform"
+      @load="imageLoaded = true"
+      :class="[
+        'recipe-img w-full h-full object-cover transition-all duration-500 group-hover:scale-105 will-change-transform',
+        imageLoaded ? 'opacity-100' : 'opacity-0 blur-sm',
+      ]"
     />
+    <div
+      v-if="!imageLoaded"
+      class="absolute inset-0 bg-background-secondary animate-pulse"
+      aria-hidden="true"
+    ></div>
 
     <!-- Top Actions -->
     <button

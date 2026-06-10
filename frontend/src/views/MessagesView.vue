@@ -9,6 +9,12 @@ import EmptyState from '@/components/ui/EmptyState.vue'
 import { formatDistanceToNow } from 'date-fns'
 import type { Conversation } from '@/http/endpoints/messages'
 
+interface PresenceRow {
+  userId: string
+  isOnline: boolean
+  lastSeenAt: string
+}
+
 const authStore = useAuthStore()
 const messagesStore = useMessagesStore()
 
@@ -16,25 +22,62 @@ const selectedConversation = ref<Conversation | null>(null)
 const messageText = ref('')
 const messagesContainer = ref<HTMLElement | null>(null)
 const typingTimeout = ref<NodeJS.Timeout | null>(null)
+const searchQuery = ref('')
+const presence = ref<Record<string, PresenceRow>>({})
 
 const conversations = computed(() => messagesStore.conversations)
+const filteredConversations = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return conversations.value
+  return conversations.value.filter((c) => {
+    const name = c.otherUser.displayName?.toLowerCase() ?? ''
+    const user = c.otherUser.username?.toLowerCase() ?? ''
+    const last = c.lastMessage?.content?.toLowerCase() ?? ''
+    return name.includes(q) || user.includes(q) || last.includes(q)
+  })
+})
 const currentMessages = computed(() => messagesStore.currentMessages)
 const isLoading = computed(() => messagesStore.isLoading)
 const isLoadingMessages = ref(false)
+
+const selectedPresence = computed(() => {
+  const id = selectedConversation.value?.otherUser.id
+  if (!id) return null
+  return presence.value[id] ?? null
+})
+
+function refreshPresence() {
+  const ids = conversations.value.map((c) => c.otherUser.id)
+  if (ids.length > 0) socketService.checkPresence(ids)
+}
+
+function handlePresenceStatus(rows: PresenceRow[]) {
+  const next = { ...presence.value }
+  for (const row of rows) next[row.userId] = row
+  presence.value = next
+}
 
 onMounted(async () => {
   await messagesStore.loadConversations()
   socketService.onMessageReceived(handleNewMessage)
   socketService.onMessageSent(handleMessageSent)
   socketService.onTyping(handleTypingIndicator)
+  socketService.onPresenceStatus(handlePresenceStatus)
+  refreshPresence()
 })
 
 onUnmounted(() => {
   socketService.offMessageReceived(handleNewMessage)
   socketService.offMessageSent(handleMessageSent)
   socketService.offTyping(handleTypingIndicator)
+  socketService.offPresenceStatus(handlePresenceStatus)
   messagesStore.clearCurrentConversation()
 })
+
+watch(
+  () => conversations.value.length,
+  () => refreshPresence(),
+)
 
 async function selectConversation(conversation: Conversation) {
   selectedConversation.value = conversation
@@ -131,11 +174,16 @@ watch(
         </p>
       </div>
 
-      <!-- Search Box placeholder -->
+      <!-- Search Box -->
       <div class="px-6 mb-4">
         <div class="bg-background-secondary rounded-xl px-4 py-2.5 flex items-center gap-3 border border-glass-border">
           <span class="text-text-dim text-sm">🔍</span>
-          <input type="text" placeholder="Search conversations..." class="bg-transparent border-none outline-none text-sm w-full" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search conversations..."
+            class="bg-transparent border-none outline-none text-sm w-full"
+          />
         </div>
       </div>
 
@@ -148,15 +196,26 @@ watch(
           <EmptyState title="No messages" description="Connect with other foodies!" icon="💬" />
         </div>
 
+        <div v-else-if="filteredConversations.length === 0" class="p-12 text-center">
+          <p class="text-text-dim text-sm">No conversations match "{{ searchQuery }}"</p>
+        </div>
+
         <div v-else class="space-y-1 px-3">
           <div
-            v-for="conversation in conversations"
+            v-for="conversation in filteredConversations"
             :key="conversation.id"
             @click="selectConversation(conversation)"
             class="p-4 rounded-2xl cursor-pointer transition-all duration-300 flex gap-4 items-center group"
             :class="selectedConversation?.id === conversation.id ? 'bg-orange-soft border-1.5 border-orange/20' : 'hover:bg-background-secondary'"
           >
-            <UserAvatar :user="conversation.otherUser" size="md" :class="selectedConversation?.id === conversation.id ? 'ring-2 ring-orange' : ''" />
+            <div class="relative shrink-0">
+              <UserAvatar :user="conversation.otherUser" size="md" :class="selectedConversation?.id === conversation.id ? 'ring-2 ring-orange' : ''" />
+              <span
+                v-if="presence[conversation.otherUser.id]?.isOnline"
+                class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-surface"
+                aria-label="Online"
+              ></span>
+            </div>
 
             <div class="flex-1 min-w-0">
               <div class="flex justify-between items-center mb-0.5">
@@ -192,24 +251,27 @@ watch(
         <header class="h-16 lg:h-20 border-b border-glass-border bg-surface/80 backdrop-blur-xl px-6 flex items-center justify-between sticky top-0 z-10">
           <div class="flex items-center gap-3">
             <button @click="selectedConversation = null" class="md:hidden w-8 h-8 rounded-full bg-background-secondary flex items-center justify-center text-lg">‹</button>
-            <UserAvatar :user="selectedConversation.otherUser" size="sm" class="border-2 border-orange" />
+            <div class="relative">
+              <UserAvatar :user="selectedConversation.otherUser" size="sm" class="border-2 border-orange" />
+              <span
+                v-if="selectedPresence?.isOnline"
+                class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-surface"
+              ></span>
+            </div>
             <div>
               <h2 class="font-bold text-sm">{{ selectedConversation.otherUser.displayName }}</h2>
               <div class="flex items-center gap-1.5">
-                <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                <span class="text-[10px] text-text-dim font-bold uppercase tracking-wider">Online</span>
+                <div :class="['w-1.5 h-1.5 rounded-full', selectedPresence?.isOnline ? 'bg-green-500' : 'bg-text-dim']"></div>
+                <span class="text-[10px] text-text-dim font-bold uppercase tracking-wider">
+                  {{ selectedPresence?.isOnline ? 'Online' : selectedPresence?.lastSeenAt ? `Last seen ${formatTime(selectedPresence.lastSeenAt)}` : 'Offline' }}
+                </span>
               </div>
             </div>
-          </div>
-
-          <div class="flex gap-2">
-            <button class="w-9 h-9 rounded-xl bg-background-secondary flex items-center justify-center text-text-muted hover:text-orange transition-colors">📞</button>
-            <button class="w-9 h-9 rounded-xl bg-background-secondary flex items-center justify-center text-text-muted hover:text-orange transition-colors">ℹ️</button>
           </div>
         </header>
 
         <!-- Messages container -->
-        <div ref="messagesContainer" class="flex-1 overflow-y-auto p-6 space-y-4 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-95">
+        <div ref="messagesContainer" class="flex-1 overflow-y-auto p-6 space-y-4 messages-bg">
           <div v-if="isLoadingMessages" class="flex justify-center py-10">
             <LoadingSpinner />
           </div>
@@ -254,7 +316,6 @@ watch(
         <!-- Input Area -->
         <footer class="p-6 bg-surface/80 backdrop-blur-xl border-t border-glass-border">
           <form @submit.prevent="sendMessage" class="flex items-center gap-3">
-            <button type="button" class="w-10 h-10 shrink-0 rounded-full bg-background-secondary text-lg flex items-center justify-center hover:bg-orange-soft hover:text-orange transition-all">📎</button>
             <div class="flex-1 relative">
               <input
                 v-model="messageText"
@@ -263,7 +324,6 @@ watch(
                 placeholder="Message..."
                 class="w-full px-5 py-3 bg-background-secondary border-1.5 border-glass-border rounded-2xl text-sm outline-none focus:border-orange transition-all"
               />
-              <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-lg">😊</button>
             </div>
             <button
               type="submit"
@@ -276,7 +336,7 @@ watch(
         </footer>
       </template>
 
-      <div v-else class="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+      <div v-else class="flex-1 flex flex-col items-center justify-center p-12 text-center messages-bg">
         <div class="w-24 h-24 rounded-full bg-orange-soft flex items-center justify-center text-4xl mb-6 shadow-inner animate-pulse">💬</div>
         <h2 class="font-montserrat font-extrabold text-2xl mb-2">Your conversations</h2>
         <p class="text-text-dim max-w-xs mx-auto text-sm leading-relaxed">
@@ -294,5 +354,13 @@ watch(
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+.messages-bg {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(255, 107, 53, 0.06) 1px,
+    transparent 0
+  );
+  background-size: 24px 24px;
 }
 </style>

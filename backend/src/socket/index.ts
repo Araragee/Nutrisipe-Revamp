@@ -367,4 +367,10 @@ export function emitNewPost(post: any) {
   }
 }
 
+export function emitNotificationNew(userId: string, notification: any) {
+  if (socketInstance) {
+    socketInstance.to(`user:${userId}`).emit('notification:new', notification)
+  }
+}
+
 export { SocketIOServer }

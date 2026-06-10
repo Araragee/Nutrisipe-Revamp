@@ -14,6 +14,11 @@ export const usersApi = {
       params: { limit },
     }),
 
+  getPopular: (limit = 12) =>
+    httpClient.get<ApiResponse<Array<User & { postCount?: number }>>>('/users/popular', {
+      params: { limit },
+    }),
+
   getById: (id: string) => httpClient.get<ApiResponse<User>>(`/users/${id}`),
 
   getFollowers: (id: string, page = 1, limit = 20) =>
@@ -43,4 +48,9 @@ export const usersApi = {
     httpClient.get<PaginatedResponse<any>>(`/users/${id}/liked`, {
       params: { page, limit },
     }),
+
+  deleteMe: () =>
+    httpClient.delete<ApiResponse<{ scheduledAt: string; gracePeriodDays: number }>>('/users/me'),
+
+  cancelDelete: () => httpClient.post<ApiResponse<void>>('/users/me/cancel-deletion'),
 }

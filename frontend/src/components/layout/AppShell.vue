@@ -4,6 +4,9 @@ import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { socketService } from '@/services/socket'
+import { usersApi } from '@/http/endpoints/users'
+import { socialApi } from '@/http/endpoints/social'
+import { resolveImage } from '@/utils/imageUrl'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import NotificationDropdown from '@/components/notifications/NotificationDropdown.vue'
 
@@ -41,6 +44,8 @@ const ICONS: Record<string, string> = {
   home: '<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
   compass: '<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>',
   bookmark: '<path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  basket: '<path d="M3 6h18l-2 13a2 2 0 01-2 2H7a2 2 0 01-2-2L3 6z"/><path d="M8 6V4a4 4 0 018 0v2"/>',
   users: '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
   user: '<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>',
   shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>',
@@ -48,13 +53,19 @@ const ICONS: Record<string, string> = {
   bell: '<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>',
   plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
   logout: '<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  more: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
 }
+
+const MOBILE_PRIMARY_IDS = ['home', 'saved', 'plan', 'profile'] as const
+const showMoreDrawer = ref(false)
 
 const navItems = computed(() => {
   const items: { id: string; icon: string; label: string; path: string }[] = [
     { id: 'home', icon: 'home', label: 'Discover', path: '/' },
     { id: 'explore', icon: 'compass', label: 'Explore', path: '/explore' },
     { id: 'saved', icon: 'bookmark', label: 'Saved', path: '/saved' },
+    { id: 'plan', icon: 'calendar', label: 'Plan', path: '/plan' },
+    { id: 'groceries', icon: 'basket', label: 'Groceries', path: '/groceries' },
     { id: 'following', icon: 'users', label: 'Feed', path: '/following' },
     { id: 'profile', icon: 'user', label: 'Profile', path: `/profile/${authStore.user?.id}` },
   ]
@@ -63,18 +74,48 @@ const navItems = computed(() => {
   return items
 })
 
+const mobilePrimary = computed(() =>
+  MOBILE_PRIMARY_IDS.map((id) => navItems.value.find((n) => n.id === id)).filter(
+    (x): x is NonNullable<typeof x> => !!x,
+  ),
+)
+
+const mobileSecondary = computed(() =>
+  navItems.value.filter((n) => !MOBILE_PRIMARY_IDS.includes(n.id as any)),
+)
+
 interface SuggestedCreator { id: string; name: string; handle: string; avatar: string; why: string }
-const suggestedCreators = ref<SuggestedCreator[]>([
-  { id: 's1', name: 'James Rivera',  handle: '@jamesgrills', avatar: 'https://picsum.photos/80/80?random=12', why: 'You liked his salmon recipe' },
-  { id: 's2', name: 'Yuki Tanaka',   handle: '@yukikitchen', avatar: 'https://picsum.photos/80/80?random=14', why: 'Popular in Plant-Based' },
-  { id: 's3', name: 'Sofia Reyes',   handle: '@sofiafit',    avatar: 'https://picsum.photos/80/80?random=15', why: 'Trending in Smoothies' },
-  { id: 's4', name: 'Marco Bruno',   handle: '@chefmarco',   avatar: 'https://picsum.photos/80/80?random=16', why: 'Top Keto creator' },
-])
+const suggestedCreators = ref<SuggestedCreator[]>([])
 const followedSet = ref<Set<string>>(new Set())
-const toggleFollow = (id: string) => {
+
+async function loadSuggestions() {
+  try {
+    const response = await usersApi.getSuggestions(4)
+    suggestedCreators.value = response.data.data.map((u) => ({
+      id: u.id,
+      name: u.displayName,
+      handle: `@${u.username}`,
+      avatar: resolveImage(u.avatarUrl, u.id),
+      why: u.followerCount > 0 ? `${u.followerCount} followers` : 'New creator',
+    }))
+  } catch (error) {
+    console.error('Load suggestions error:', error)
+  }
+}
+
+async function toggleFollow(id: string) {
+  const wasFollowed = followedSet.value.has(id)
   const next = new Set(followedSet.value)
-  next.has(id) ? next.delete(id) : next.add(id)
+  wasFollowed ? next.delete(id) : next.add(id)
   followedSet.value = next
+  try {
+    if (wasFollowed) await socialApi.unfollowUser(id)
+    else await socialApi.followUser(id)
+  } catch (error) {
+    const revert = new Set(followedSet.value)
+    wasFollowed ? revert.add(id) : revert.delete(id)
+    followedSet.value = revert
+  }
 }
 
 function handleLogout() {
@@ -91,6 +132,7 @@ onMounted(() => {
   if (authStore.isAuthenticated) {
     notificationsStore.fetchNotifications()
     socketService.onNotificationNew(handleNewNotification)
+    loadSuggestions()
   }
 })
 
@@ -132,7 +174,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Card 2: Suggested creators -->
-      <div class="ls-card overflow-hidden rounded-[20px] px-3 py-3">
+      <div v-if="suggestedCreators.length > 0" class="ls-card overflow-hidden rounded-[20px] px-3 py-3">
         <div class="font-montserrat font-extrabold text-[11px] text-text mb-2.5 tracking-wider">Suggested for You</div>
         <div>
           <div v-for="c in suggestedCreators" :key="c.id" class="flex items-center gap-2 py-2 border-b border-glass-border last:border-0 last:pb-0">
@@ -265,7 +307,7 @@ onUnmounted(() => {
     <div class="md:hidden fixed bottom-0 left-0 right-0 p-4 pb-8 z-40 pointer-events-none">
       <div class="bg-surface/90 backdrop-blur-2xl border-1.5 border-glass-border rounded-3xl flex items-center justify-around p-2 shadow-modal pointer-events-auto">
         <RouterLink
-          v-for="item in navItems.slice(0, 2)" :key="item.id"
+          v-for="item in mobilePrimary.slice(0, 2)" :key="item.id"
           :to="item.path"
           class="flex flex-col items-center gap-1 p-2 text-text-dim"
           active-class="text-orange"
@@ -281,7 +323,7 @@ onUnmounted(() => {
         </button>
 
         <RouterLink
-          v-for="item in navItems.slice(2, 4)" :key="item.id"
+          v-for="item in mobilePrimary.slice(2, 4)" :key="item.id"
           :to="item.path"
           class="flex flex-col items-center gap-1 p-2 text-text-dim"
           active-class="text-orange"
@@ -291,8 +333,49 @@ onUnmounted(() => {
           </span>
           <span class="text-[10px] font-bold">{{ item.label }}</span>
         </RouterLink>
+
+        <button
+          @click="showMoreDrawer = true"
+          class="flex flex-col items-center gap-1 p-2 text-text-dim hover:text-orange transition-all"
+          aria-label="More"
+        >
+          <span class="w-[22px] h-[22px] inline-flex items-center justify-center">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" v-html="ICONS.more"></svg>
+          </span>
+          <span class="text-[10px] font-bold">More</span>
+        </button>
       </div>
     </div>
+
+    <!-- Mobile More drawer -->
+    <Transition name="more-drawer">
+      <div
+        v-if="showMoreDrawer"
+        class="md:hidden fixed inset-0 z-50 flex items-end"
+        @click.self="showMoreDrawer = false"
+      >
+        <div class="absolute inset-0 bg-black/55 backdrop-blur-sm"></div>
+        <div class="relative w-full bg-surface border-t-1.5 border-glass-border rounded-t-3xl p-6 pb-10 shadow-modal">
+          <div class="w-10 h-1 rounded-full bg-glass-border mx-auto mb-6"></div>
+          <h3 class="font-montserrat font-extrabold text-lg mb-4">More</h3>
+          <div class="grid grid-cols-3 gap-3">
+            <RouterLink
+              v-for="item in mobileSecondary"
+              :key="item.id"
+              :to="item.path"
+              @click="showMoreDrawer = false"
+              class="flex flex-col items-center gap-2 p-4 rounded-2xl border-1.5 border-glass-border bg-background-secondary/60 hover:border-orange hover:text-orange transition-all"
+              active-class="border-orange text-orange bg-orange/5"
+            >
+              <span class="w-7 h-7 inline-flex items-center justify-center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" v-html="ICONS[item.icon]"></svg>
+              </span>
+              <span class="text-[11px] font-bold">{{ item.label }}</span>
+            </RouterLink>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
   <div v-else class="h-full">
     <slot />
@@ -336,5 +419,22 @@ onUnmounted(() => {
   animation:
     drawN 1.2s cubic-bezier(0.4,0,0.2,1) 0.3s forwards,
     rewriteN 7s ease-in-out 1.5s infinite;
+}
+
+.more-drawer-enter-active,
+.more-drawer-leave-active {
+  transition: opacity 0.25s ease;
+}
+.more-drawer-enter-from,
+.more-drawer-leave-to {
+  opacity: 0;
+}
+.more-drawer-enter-active > div:last-child,
+.more-drawer-leave-active > div:last-child {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.more-drawer-enter-from > div:last-child,
+.more-drawer-leave-to > div:last-child {
+  transform: translateY(100%);
 }
 </style>

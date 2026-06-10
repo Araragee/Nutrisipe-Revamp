@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import prisma from '../lib/prisma';
 import { authenticate, AuthRequest } from '../middleware/auth';
+import { createNotification } from '../services/notificationService';
 
 const router = Router();
 
@@ -64,15 +65,13 @@ export async function processMentions(
         }
       });
 
-      // Create notification for the mentioned user
-      await prisma.notification.create({
-        data: {
-          userId: user.id,
-          actorId: mentionedById,
-          type: 'MENTION',
-          postId,
-          commentId
-        }
+      // Notification (fires socket emit via createNotification)
+      await createNotification({
+        userId: user.id,
+        actorId: mentionedById,
+        type: 'mention',
+        postId,
+        commentId,
       });
 
       return mention;

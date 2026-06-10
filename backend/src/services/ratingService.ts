@@ -128,7 +128,7 @@ export async function getPostRatings(
       orderBy = { createdAt: 'desc' }
   }
 
-  const [ratings, total, post] = await Promise.all([
+  const [ratings, total, post, grouped] = await Promise.all([
     prisma.rating.findMany({
       where: { postId },
       include: {
@@ -154,13 +154,25 @@ export async function getPostRatings(
         averageRating: true,
         ratingCount: true
       }
+    }),
+    prisma.rating.groupBy({
+      by: ['rating'],
+      where: { postId },
+      _count: { rating: true }
     })
   ])
+
+  const distribution: Record<1 | 2 | 3 | 4 | 5, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+  for (const row of grouped) {
+    const star = row.rating as 1 | 2 | 3 | 4 | 5
+    if (star >= 1 && star <= 5) distribution[star] = row._count.rating
+  }
 
   return {
     ratings,
     averageRating: post?.averageRating || 0,
     totalRatings: post?.ratingCount || 0,
+    distribution,
     pagination: {
       page,
       limit,

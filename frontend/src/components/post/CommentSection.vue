@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 import { commentsApi } from '@/http/endpoints/comments'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import CommentItem from './CommentItem.vue'
+import MentionInput from '@/components/common/MentionInput.vue'
 import type { Comment } from '@/typescript/interface/Comment'
 
 const props = defineProps<{
@@ -85,14 +86,14 @@ onMounted(() => {
     <div v-if="authStore.isAuthenticated" class="mb-10 flex gap-4">
       <UserAvatar v-if="authStore.user" :user="authStore.user" size="md" class="shrink-0" />
       <div class="flex-1 relative group">
-        <textarea
+        <MentionInput
           v-model="newCommentText"
-          placeholder="Add a comment..."
-          class="w-full bg-background-secondary border-1.5 border-glass-border rounded-2xl p-5 text-sm focus:border-orange outline-none resize-none transition-all duration-300 min-h-[100px] group-hover:border-white/20"
-          @keyup.enter.ctrl="handleSubmitComment"
-        ></textarea>
+          placeholder="Add a comment… use @ to mention"
+          :rows="4"
+          class="comment-mention-input"
+        />
         <div class="flex items-center justify-between mt-3 px-1">
-          <p class="text-[10px] text-text-dim italic">Press Ctrl+Enter to post</p>
+          <p class="text-[10px] text-text-dim italic">Type @ to mention</p>
           <button
             @click="handleSubmitComment"
             :disabled="!canComment || isSubmitting"
@@ -145,5 +146,35 @@ onMounted(() => {
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.comment-mention-input :deep(.mention-textarea) {
+  background: var(--background-secondary, rgb(245 245 247 / 0.5));
+  border: 1.5px solid var(--glass-border, rgb(255 255 255 / 0.1));
+  border-radius: 16px;
+  padding: 20px;
+  font-size: 14px;
+  color: inherit;
+  min-height: 100px;
+  transition: border-color 0.3s;
+}
+.comment-mention-input :deep(.mention-textarea:focus) {
+  border-color: var(--orange, #ff6b35);
+}
+.comment-mention-input :deep(.mention-suggestions) {
+  background: var(--surface, #fff);
+  border-color: var(--glass-border, rgb(255 255 255 / 0.1));
+  border-radius: 12px;
+  margin-top: 4px;
+}
+.comment-mention-input :deep(.mention-suggestion-item:hover),
+.comment-mention-input :deep(.mention-suggestion-item.selected) {
+  background-color: var(--orange-soft, rgb(255 107 53 / 0.1));
+}
+.comment-mention-input :deep(.suggestion-username) {
+  color: var(--orange, #ff6b35);
+}
+.comment-mention-input :deep(.suggestion-display-name) {
+  color: var(--text-dim, #888);
 }
 </style>

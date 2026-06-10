@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useNotificationsStore } from '@/stores/notifications'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import { formatTimeAgo } from '@/utils/format'
+import { resolveImage } from '@/utils/imageUrl'
 
 const emit = defineEmits<{
   close: []
@@ -149,7 +150,7 @@ const getActionBg = (type: string) => {
             <p class="text-[13px] leading-snug text-text">
               <span class="font-extrabold">{{ n.actor.displayName }}</span>
               <span class="text-text-muted mx-1">
-                {{ n.type === 'like' ? 'liked your recipe' : n.type === 'comment' ? 'commented on' : n.type === 'follow' ? 'started following you' : 'interacted with' }}
+                {{ n.type === 'like' ? 'liked your recipe' : n.type === 'comment' ? 'commented on' : n.type === 'follow' ? 'started following you' : n.type === 'mention' ? 'mentioned you in' : n.type === 'rating' ? 'rated your recipe' : n.type === 'variation' ? 'forked your recipe' : 'interacted with' }}
               </span>
               <span v-if="n.post" class="font-extrabold">{{ n.post.title }}</span>
             </p>
@@ -158,7 +159,7 @@ const getActionBg = (type: string) => {
 
           <!-- Post Thumbnail -->
           <div v-if="n.post" class="shrink-0 w-12 h-12 rounded-xl overflow-hidden border border-glass-border">
-            <img :src="n.post.imageUrl || 'https://picsum.photos/100/100'" class="w-full h-full object-cover" />
+            <img :src="resolveImage(n.post.imageUrl, n.post.id)" class="w-full h-full object-cover" />
           </div>
         </div>
       </div>

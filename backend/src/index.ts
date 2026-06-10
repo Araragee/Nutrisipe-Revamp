@@ -20,6 +20,12 @@ import mentionsRoutes from './routes/mentions'
 import ratingsRoutes from './routes/ratings'
 import variationsRoutes from './routes/variations'
 import uploadRoutes from './routes/upload'
+import ingredientsRoutes from './routes/ingredients'
+import mealPlansRoutes from './routes/mealPlans'
+import storiesRoutes from './routes/stories'
+import ogRoutes from './routes/og'
+import { purgeExpired as purgeExpiredStories } from './services/storyService'
+import { purgeScheduledDeletions } from './services/userService'
 
 const app = express()
 const httpServer = createServer(app)
@@ -29,13 +35,16 @@ app.use(cors({
   credentials: true,
 }))
 
+// Global rate limiter — raised to 500 req/15min to accommodate SPA page loads,
+// socket handshakes, and realtime polling without false positives.
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  windowMs: 15 * 60 * 1000,
+  max: 500,
+  standardHeaders: true,
+  legacyHeaders: false,
   message: 'Too many requests from this IP, please try again after 15 minutes',
 })
+
 
 // Apply the rate limiting middleware to all requests
 app.use(limiter)
@@ -77,6 +86,10 @@ app.use('/api/mentions', mentionsRoutes)
 app.use('/api/ratings', ratingsRoutes)
 app.use('/api/variations', variationsRoutes)
 app.use('/api/upload', uploadRoutes)
+app.use('/api/ingredients', ingredientsRoutes)
+app.use('/api/meal-plans', mealPlansRoutes)
+app.use('/api/stories', storiesRoutes)
+app.use('/og', ogRoutes)
 
 app.use(errorHandler)
 
@@ -92,3 +105,24 @@ httpServer.listen(env.PORT, () => {
   console.log(`🌐 CORS enabled for: ${env.CORS_ORIGIN}`)
   console.log(`⚡ WebSocket server initialized`)
 })
+
+// ── Background jobs ────────────────────────────────────────────────────────
+// Purge expired stories every hour
+setInterval(async () => {
+  try {
+    const { deleted } = await purgeExpiredStories()
+    if (deleted > 0) console.log(`🗑  Purged ${deleted} expired stories`)
+  } catch (e) {
+    console.error('Story purge error:', e)
+  }
+}, 60 * 60 * 1000)
+
+// Purge grace-period-expired account deletions every 6 hours
+setInterval(async () => {
+  try {
+    const { purged } = await purgeScheduledDeletions()
+    if (purged > 0) console.log(`🗑  Purged ${purged} scheduled account deletions`)
+  } catch (e) {
+    console.error('Account deletion purge error:', e)
+  }
+}, 6 * 60 * 60 * 1000)

@@ -367,4 +367,45 @@ router.get('/tag/:tag', auth, async (req: AuthRequest, res) => {
   }
 })
 
+// Trending tags aggregated from recent public posts
+router.get('/trending-tags', async (req: AuthRequest, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 50)
+    const days = parseInt(req.query.days as string) || 14
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+
+    const posts = await prisma.post.findMany({
+      where: { isPublic: true, createdAt: { gte: since } },
+      select: { tags: true },
+      take: 1000,
+    })
+
+    const counts: Record<string, number> = {}
+    for (const p of posts) {
+      try {
+        const arr = JSON.parse(p.tags)
+        if (!Array.isArray(arr)) continue
+        for (const raw of arr) {
+          const tag = String(raw ?? '').trim()
+          if (!tag) continue
+          const key = tag.toLowerCase()
+          counts[key] = (counts[key] || 0) + 1
+        }
+      } catch {
+        // ignore malformed JSON
+      }
+    }
+
+    const top = Object.entries(counts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, limit)
+      .map(([name, count]) => ({ name, count }))
+
+    res.json({ data: top })
+  } catch (error) {
+    console.error('Trending tags error:', error)
+    res.status(500).json({ error: 'Failed to fetch trending tags' })
+  }
+})
+
 export default router

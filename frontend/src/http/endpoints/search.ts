@@ -16,4 +16,9 @@ export const searchApi = {
 
   getCategories: () =>
     httpClient.get<ApiResponse<any[]>>('/search/categories'),
+
+  getTrendingTags: (limit = 20) =>
+    httpClient.get<ApiResponse<Array<{ name: string; count: number }>>>('/search/trending-tags', {
+      params: { limit },
+    }),
 }

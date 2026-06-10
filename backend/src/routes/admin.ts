@@ -6,8 +6,33 @@ import { prisma } from '../lib/prisma'
 const router = Router()
 
 // Admin dashboard statistics
-router.get('/stats', auth, adminOnly, async (_req, res) => {
+router.get('/stats', auth, adminOnly, async (req, res) => {
   try {
+    const period = (req.query.period as string) || 'today'
+    const now = new Date()
+    const startOfToday = new Date(now)
+    startOfToday.setHours(0, 0, 0, 0)
+
+    let periodStart: Date | null
+    switch (period) {
+      case '7days':
+        periodStart = new Date(now)
+        periodStart.setDate(now.getDate() - 7)
+        break
+      case '30days':
+        periodStart = new Date(now)
+        periodStart.setDate(now.getDate() - 30)
+        break
+      case 'all':
+        periodStart = null
+        break
+      case 'today':
+      default:
+        periodStart = startOfToday
+    }
+
+    const periodFilter = periodStart ? { createdAt: { gte: periodStart } } : {}
+
     const [
       totalUsers,
       activeUsers,
@@ -17,6 +42,9 @@ router.get('/stats', auth, adminOnly, async (_req, res) => {
       pendingReports,
       newUsersToday,
       newPostsToday,
+      newUsersInPeriod,
+      newPostsInPeriod,
+      newCommentsInPeriod,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { isActive: true, isBanned: false } }),
@@ -24,33 +52,28 @@ router.get('/stats', auth, adminOnly, async (_req, res) => {
       prisma.post.count(),
       prisma.comment.count(),
       prisma.report.count({ where: { status: 'PENDING' } }),
-      prisma.user.count({
-        where: {
-          createdAt: {
-            gte: new Date(new Date().setHours(0, 0, 0, 0)),
-          },
-        },
-      }),
-      prisma.post.count({
-        where: {
-          createdAt: {
-            gte: new Date(new Date().setHours(0, 0, 0, 0)),
-          },
-        },
-      }),
+      prisma.user.count({ where: { createdAt: { gte: startOfToday } } }),
+      prisma.post.count({ where: { createdAt: { gte: startOfToday } } }),
+      prisma.user.count({ where: periodFilter }),
+      prisma.post.count({ where: periodFilter }),
+      prisma.comment.count({ where: periodFilter }),
     ])
 
     const stats = {
+      period,
       users: {
         total: totalUsers,
         active: activeUsers,
         banned: bannedUsers,
         newToday: newUsersToday,
+        newInPeriod: newUsersInPeriod,
       },
       content: {
         posts: totalPosts,
         comments: totalComments,
         newPostsToday: newPostsToday,
+        newPostsInPeriod: newPostsInPeriod,
+        newCommentsInPeriod: newCommentsInPeriod,
       },
       moderation: {
         pendingReports: pendingReports,

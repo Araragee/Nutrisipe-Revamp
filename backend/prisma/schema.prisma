@@ -20,6 +20,7 @@ model User {
   isBanned        Boolean   @default(false) @map("is_banned")
   bannedAt        DateTime? @map("banned_at")
   banReason       String?   @map("ban_reason")
+  deletionScheduledAt DateTime? @map("deletion_scheduled_at")
   followerCount   Int       @default(0) @map("follower_count")
   followingCount  Int       @default(0) @map("following_count")
   createdAt       DateTime  @default(now()) @map("created_at")
@@ -46,6 +47,8 @@ model User {
   ratings              Rating[]
   recipeVariations     RecipeVariation[]
   preferences          UserPreference?
+  mealPlans            MealPlan[]
+  stories              Story[]
 
   @@map("users")
   @@index([username])
@@ -85,6 +88,7 @@ model Post {
   ratings            Rating[]
   originalVariations RecipeVariation[] @relation("OriginalPost")
   variationOf        RecipeVariation?  @relation("VariationPost")
+  mealPlans          MealPlan[]
 
   @@map("posts")
   @@index([userId])
@@ -379,15 +383,81 @@ model RecipeVariation {
 }
 
 model UserPreference {
-  id        String   @id @default(uuid())
-  userId    String   @unique @map("user_id")
-  cuisines  String   @default("[]")
-  allergies String   @default("[]")
-  dietary   String   @default("[]")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  cuisines      String   @default("[]")
+  allergies     String   @default("[]")
+  dietary       String   @default("[]")
+  notifications String   @default("{}")
+  privacy       String   @default("{}")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_preferences")
+}
+
+model Story {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  imageUrl  String   @map("image_url")
+  caption   String?
+  postId    String?  @map("post_id")
+  views     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("stories")
+  @@index([userId, expiresAt])
+  @@index([expiresAt])
+  @@index([postId])
+}
+
+model MealPlan {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  postId    String   @map("post_id")
+  date      DateTime
+  slot      String   @default("dinner")
+  servings  Int      @default(2)
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("meal_plans")
+  @@index([userId, date])
+  @@index([postId])
+}
+
+model Ingredient {
+  id             String   @id @default(uuid())
+  food_item      String
+  alt_name       String?
+  category       String?
+  edible_portion Float    @default(100)
+  energy         Float    @default(0)
+  protein        Float    @default(0)
+  fat            Float    @default(0)
+  carb           Float    @default(0)
+  calcium        Float    @default(0)
+  phos           Float    @default(0)
+  iron           Float    @default(0)
+  vit_a          Float    @default(0)
+  thia           Float    @default(0)
+  ribo           Float    @default(0)
+  nia            Float    @default(0)
+  vit_c          Float    @default(0)
+  source         String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("ingredients")
+  @@index([food_item])
+  @@index([category])
 }

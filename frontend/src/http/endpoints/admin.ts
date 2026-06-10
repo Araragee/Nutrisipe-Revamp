@@ -2,24 +2,33 @@ import { httpClient } from '../client'
 import type { ApiResponse } from '@/types'
 
 interface AdminStats {
+  period?: string
   users: {
     total: number
     active: number
     banned: number
     newToday: number
+    newInPeriod?: number
   }
   content: {
     posts: number
     comments: number
     newPostsToday: number
+    newPostsInPeriod?: number
+    newCommentsInPeriod?: number
   }
   moderation: {
     pendingReports: number
   }
 }
 
+export type AdminStatsPeriod = 'today' | '7days' | '30days' | 'all'
+
 export const adminApi = {
-  getStats: () => httpClient.get<ApiResponse<AdminStats>>('/admin/stats'),
+  getStats: (period?: AdminStatsPeriod) =>
+    httpClient.get<ApiResponse<AdminStats>>('/admin/stats', {
+      params: period ? { period } : {},
+    }),
 
   getUsers: (params: {
     page?: number

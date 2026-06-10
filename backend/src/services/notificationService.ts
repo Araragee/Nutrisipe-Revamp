@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma'
+import { emitNotificationNew } from '../socket'
 
 export type NotificationType = 'like' | 'comment' | 'follow' | 'mention' | 'rating' | 'variation'
 
@@ -53,6 +54,16 @@ export async function createNotification(data: CreateNotificationData) {
       },
     },
   })
+
+  let post = null
+  if (notification.postId) {
+    post = await prisma.post.findUnique({
+      where: { id: notification.postId },
+      select: { id: true, title: true, imageUrl: true },
+    })
+  }
+
+  emitNotificationNew(data.userId, { ...notification, post })
 
   return notification
 }

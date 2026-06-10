@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import BrandMeshBackground from '@/components/common/BrandMeshBackground.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -80,9 +81,7 @@ async function handleGoogleLogin() {
 
 <template>
   <div class="auth-page h-screen flex items-center justify-center relative overflow-hidden bg-background">
-    <div class="auth-bg absolute inset-0 bg-gradient-to-br from-[oklch(90%_0.05_60)] to-[oklch(80%_0.12_55)] dark:from-[oklch(14%_0.015_240)] dark:to-[oklch(18%_0.02_55)]">
-       <div class="auth-bg-img absolute inset-0 opacity-18 bg-[url('https://picsum.photos/1200/800?random=99')] bg-cover bg-center blur-[2px]"></div>
-    </div>
+    <BrandMeshBackground variant="sunset" :intensity="0.9" />
 
     <div class="auth-card relative z-[2] bg-glass backdrop-blur-2xl rounded-3xl p-12 px-11 w-[420px] shadow-[0_24px_64px_rgba(20,10,0,0.18)] dark:bg-[rgba(24,22,30,0.95)]">
       <div class="auth-logo font-montserrat font-extrabold text-xl mb-8">Nutri<span class="text-orange">sipe</span></div>

@@ -8,6 +8,7 @@ import { postsApi } from '@/http/endpoints/posts'
 import PinGrid from '@/components/feed/PinGrid.vue'
 import PinSkeleton from '@/components/feed/PinSkeleton.vue'
 import RecipeModal from '@/components/feed/RecipeModal.vue'
+import StoriesRail from '@/components/feed/StoriesRail.vue'
 import type { Post } from '@/typescript/interface/Post'
 
 const router = useRouter()
@@ -126,12 +127,14 @@ watch(isNearBottom, (near) => {
   <div class="home-view min-h-screen pt-8">
 
     <div class="px-8 py-6">
-      <div v-if="!isSearchMode" class="mb-8">
+      <div v-if="!isSearchMode" class="mb-6">
         <h2 class="font-montserrat font-extrabold text-2xl tracking-tight mb-1">
           Welcome back, {{ authStore.user?.displayName?.split(' ')[0] || 'Cook' }}! 👋
         </h2>
         <p class="text-text-dim text-sm">Here's what's trending in your community today.</p>
       </div>
+
+      <StoriesRail v-if="!isSearchMode" class="mb-6" />
 
       <div v-if="isSearchMode" class="mb-8">
         <h2 class="font-montserrat font-extrabold text-2xl tracking-tight mb-1">
