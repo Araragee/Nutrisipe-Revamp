@@ -1,5 +1,25 @@
+import { logger } from '@/utils/logger'
 import { io, Socket } from "socket.io-client";
 import { useAuthStore } from "@/stores/auth";
+import { API_URL } from "@/utils/constants";
+import type { Message } from "@/http/endpoints/messages";
+import type { Post } from "@/typescript/interface/Post";
+import type { Notification } from "@/typescript/interface/Notification";
+
+interface PresenceStatus {
+  userId: string;
+  isOnline: boolean;
+  lastSeenAt: string;
+}
+
+interface PostLikePayload { postId: string; userId: string; likeCount: number }
+interface PostCommentPayload { postId: string; commentId: string; userId: string; commentCount: number }
+interface PostSavePayload { postId: string; userId: string; saveCount: number }
+interface NotificationUpdatePayload { notificationId: string; isRead: boolean }
+interface MessageErrorPayload { error: string }
+
+// Derive socket origin from the same env var used by the HTTP client.
+const SOCKET_URL = API_URL.replace(/\/api\/?$/, '')
 
 class SocketService {
   private socket: Socket | null = null;
@@ -11,18 +31,15 @@ class SocketService {
     const token = authStore.token;
 
     if (!token) {
-      console.warn("Cannot connect to socket: No auth token");
+      logger.warn("Cannot connect to socket: No auth token");
       return;
     }
 
     if (this.socket?.connected) {
-      console.log("Socket already connected");
       return;
     }
 
-    const serverUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
-
-    this.socket = io(serverUrl, {
+    this.socket = io(SOCKET_URL, {
       auth: {
         token,
       },
@@ -40,25 +57,25 @@ class SocketService {
     if (!this.socket) return;
 
     this.socket.on("connect", () => {
-      console.log("✅ Socket connected:", this.socket?.id);
+      logger.log("✅ Socket connected:", this.socket?.id);
       this.reconnectAttempts = 0;
     });
 
     this.socket.on("disconnect", (reason) => {
-      console.log("❌ Socket disconnected:", reason);
+      logger.log("❌ Socket disconnected:", reason);
     });
 
     this.socket.on("connect_error", (error) => {
-      console.error("Socket connection error:", error.message);
+      logger.error("Socket connection error:", error.message);
       this.reconnectAttempts++;
 
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.error("Max reconnection attempts reached");
+        logger.error("Max reconnection attempts reached");
       }
     });
 
     this.socket.on("error", (error) => {
-      console.error("Socket error:", error);
+      logger.error("Socket error:", error);
     });
   }
 
@@ -66,7 +83,7 @@ class SocketService {
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
-      console.log("Socket disconnected manually");
+      logger.log("Socket disconnected manually");
     }
   }
 
@@ -109,11 +126,11 @@ class SocketService {
   }
 
   // Event listeners
-  onMessageReceived(callback: (message: any) => void) {
+  onMessageReceived(callback: (message: Message) => void) {
     this.socket?.on("message:new", callback);
   }
 
-  onMessageSent(callback: (message: any) => void) {
+  onMessageSent(callback: (message: Message) => void) {
     this.socket?.on("message:sent", callback);
   }
 
@@ -125,19 +142,19 @@ class SocketService {
     this.socket?.on("message:typing", callback);
   }
 
-  onMessageError(callback: (error: any) => void) {
+  onMessageError(callback: (error: MessageErrorPayload) => void) {
     this.socket?.on("message:error", callback);
   }
 
-  onNotificationUpdate(callback: (data: any) => void) {
+  onNotificationUpdate(callback: (data: NotificationUpdatePayload) => void) {
     this.socket?.on("notification:updated", callback);
   }
 
-  onNotificationNew(callback: (data: any) => void) {
+  onNotificationNew(callback: (data: Notification) => void) {
     this.socket?.on("notification:new", callback);
   }
 
-  onPresenceStatus(callback: (presences: any[]) => void) {
+  onPresenceStatus(callback: (presences: PresenceStatus[]) => void) {
     this.socket?.on("presence:status", callback);
   }
 
@@ -193,64 +210,64 @@ class SocketService {
     this.socket?.on("post:unsaved", callback);
   }
 
-  onNewPost(callback: (post: any) => void) {
+  onNewPost(callback: (post: Post) => void) {
     this.socket?.on("feed:new-post", callback);
   }
 
   // Remove event listeners
-  offMessageReceived(callback: (message: any) => void) {
+  offMessageReceived(callback: (message: Message) => void) {
     this.socket?.off("message:new", callback);
   }
 
-  offMessageSent(callback: (message: any) => void) {
+  offMessageSent(callback: (message: Message) => void) {
     this.socket?.off("message:sent", callback);
   }
 
-  offMessageRead(callback: (data: any) => void) {
+  offMessageRead(callback: (data: { messageId: string; readAt: Date }) => void) {
     this.socket?.off("message:read", callback);
   }
 
-  offTyping(callback: (data: any) => void) {
+  offTyping(callback: (data: { userId: string; isTyping: boolean }) => void) {
     this.socket?.off("message:typing", callback);
   }
 
-  offMessageError(callback: (error: any) => void) {
+  offMessageError(callback: (error: MessageErrorPayload) => void) {
     this.socket?.off("message:error", callback);
   }
 
-  offNotificationUpdate(callback: (data: any) => void) {
+  offNotificationUpdate(callback: (data: NotificationUpdatePayload) => void) {
     this.socket?.off("notification:updated", callback);
   }
 
-  offNotificationNew(callback: (data: any) => void) {
+  offNotificationNew(callback: (data: Notification) => void) {
     this.socket?.off("notification:new", callback);
   }
 
-  offPresenceStatus(callback: (presences: any[]) => void) {
+  offPresenceStatus(callback: (presences: PresenceStatus[]) => void) {
     this.socket?.off("presence:status", callback);
   }
 
-  offPostLiked(callback: (data: any) => void) {
+  offPostLiked(callback: (data: PostLikePayload) => void) {
     this.socket?.off("post:liked", callback);
   }
 
-  offPostUnliked(callback: (data: any) => void) {
+  offPostUnliked(callback: (data: PostLikePayload) => void) {
     this.socket?.off("post:unliked", callback);
   }
 
-  offPostCommented(callback: (data: any) => void) {
+  offPostCommented(callback: (data: PostCommentPayload) => void) {
     this.socket?.off("post:commented", callback);
   }
 
-  offPostSaved(callback: (data: any) => void) {
+  offPostSaved(callback: (data: PostSavePayload) => void) {
     this.socket?.off("post:saved", callback);
   }
 
-  offPostUnsaved(callback: (data: any) => void) {
+  offPostUnsaved(callback: (data: PostSavePayload) => void) {
     this.socket?.off("post:unsaved", callback);
   }
 
-  offNewPost(callback: (post: any) => void) {
+  offNewPost(callback: (post: Post) => void) {
     this.socket?.off("feed:new-post", callback);
   }
 

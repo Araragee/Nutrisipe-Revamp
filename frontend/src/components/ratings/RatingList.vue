@@ -67,6 +67,7 @@
 </template>
 
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, watch } from 'vue'
 import StarRating from '@/components/common/StarRating.vue'
 import { useAuthStore } from '@/stores/auth'
@@ -99,7 +100,7 @@ async function fetchRatings() {
     averageRating.value = data.averageRating
     totalRatings.value = data.totalRatings
   } catch (error) {
-    console.error('Failed to fetch ratings:', error)
+    logger.error('Failed to fetch ratings:', error)
   } finally {
     isLoading.value = false
   }
@@ -115,7 +116,7 @@ async function handleDeleteRating(ratingId: string) {
     await ratingsApi.deleteRating(ratingId)
     await fetchRatings() // Refresh
   } catch (error) {
-    console.error('Failed to delete rating:', error)
+    logger.error('Failed to delete rating:', error)
   }
 }
 

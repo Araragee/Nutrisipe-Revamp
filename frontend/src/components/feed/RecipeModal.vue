@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, onMounted, computed, watch } from "vue";
 import { socialApi } from "@/http/endpoints/social";
 import { postsApi } from "@/http/endpoints/posts";
@@ -83,7 +84,7 @@ async function forkRecipe() {
     emit("close");
     router.push(`/recipes/${response.data.data.variationPost.id}/edit`);
   } catch (error) {
-    console.error("Failed to fork recipe:", error);
+    logger.error("Failed to fork recipe:", error);
     uiStore.showToast("Failed to fork recipe", "error");
   } finally {
     isForking.value = false;
@@ -97,7 +98,7 @@ async function fetchPost() {
     const response = await postsApi.getById(props.postId);
     post.value = response.data.data;
   } catch (error) {
-    console.error("Fetch post error:", error);
+    logger.error("Fetch post error:", error);
     uiStore.showToast("Failed to load recipe", "error");
     emit("close");
   } finally {
@@ -116,7 +117,7 @@ async function handleRatingSubmit(data: { rating: number; review?: string }) {
     post.value = response.data.data;
     ratingListRef.value?.refresh();
   } catch (error) {
-    console.error("Failed to submit rating:", error);
+    logger.error("Failed to submit rating:", error);
     uiStore.showToast("Failed to submit rating", "error");
   }
 }

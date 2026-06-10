@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { prisma } from '../lib/prisma'
 import { env } from '../config/env'
+import { logger } from '../utils/logger'
 
 const router = Router()
 
@@ -167,7 +168,7 @@ router.get('/post/:id', async (req: Request, res: Response) => {
     res.setHeader('Cache-Control', 'public, max-age=300')
     res.send(html)
   } catch (error) {
-    console.error('OG render error:', error)
+    logger.error('OG render error:', error)
     res.status(500).send('Failed to render preview')
   }
 })

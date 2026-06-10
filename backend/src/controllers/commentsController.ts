@@ -3,6 +3,7 @@ import { z } from 'zod'
 import * as commentService from '../services/commentService'
 import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
+import { parsePagination } from '../utils/pagination'
 
 const createCommentSchema = z.object({
   postId: z.string().uuid(),
@@ -47,8 +48,7 @@ export async function getCommentsByPostHandler(
 ) {
   try {
     const { postId } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
     const parentId = req.query.parentId as string | undefined
 
     const result = await commentService.getCommentsByPost(postId, page, limit, parentId)

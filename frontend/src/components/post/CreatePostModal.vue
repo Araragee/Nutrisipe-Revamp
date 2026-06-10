@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { createPost, type CreatePostData } from '@/http/posts'
+import { postsApi } from '@/http/endpoints/posts'
+import type { Post } from '@/typescript/interface/Post'
+
+interface CreatePostData {
+  title: string
+  description?: string
+  imageUrl: string
+  category: string
+  tags: string[]
+  isPublic?: boolean
+}
 import { useFeedStore } from '@/stores/feed'
 import { useModal } from '@/composables/useModal'
 import BaseButton from '@/components/base/BaseButton.vue'
@@ -66,7 +76,7 @@ async function handleSubmit() {
       isPublic: true,
     }
 
-    const newPost = await createPost(data)
+    const newPost = (await postsApi.create(data as Partial<Post>)).data.data
 
     // Add to feed store
     feedStore.addPost(newPost)

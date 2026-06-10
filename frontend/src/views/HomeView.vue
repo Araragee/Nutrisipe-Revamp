@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFeedStore } from '@/stores/feed'
@@ -66,7 +67,7 @@ async function handleSearch(query?: string) {
     }
     searchResults.value = response.data.data
   } catch (error) {
-    console.error('Search failed:', error)
+    logger.error('Search failed:', error)
     searchResults.value = []
   } finally {
     isSearching.value = false

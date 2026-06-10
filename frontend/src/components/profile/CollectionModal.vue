@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, onMounted } from 'vue'
 import { collectionsApi, type Collection } from '@/http/endpoints/collections'
 import { useAuthStore } from '@/stores/auth'
@@ -28,7 +29,7 @@ async function loadCollections() {
     const response = await collectionsApi.getUserCollections(authStore.user.id)
     collections.value = response.data.data
   } catch (error) {
-    console.error('Failed to load collections:', error)
+    logger.error('Failed to load collections:', error)
   } finally {
     loading.value = false
   }

@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express'
 import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
 import * as variationService from '../services/variationService'
+import { parsePagination } from '../utils/pagination'
 
 export async function forkRecipeHandler(
   req: AuthRequest,
@@ -40,8 +41,7 @@ export async function getVariationsHandler(
 ) {
   try {
     const { postId } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const result = await variationService.getVariations(postId, page, limit)
 

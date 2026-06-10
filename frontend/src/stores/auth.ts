@@ -1,3 +1,4 @@
+import { logger } from '@/utils/logger'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authApi } from '@/http/endpoints/auth'
@@ -6,6 +7,7 @@ import type { User } from '@/typescript/interface/User'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
+  // TODO(audit:F-03) [HIGH] JWT in localStorage is readable by any XSS payload — move auth to httpOnly cookies (backend change required) or document the accepted risk.
   const token = ref<string | null>(localStorage.getItem('auth_token'))
   const isLoading = ref(false)
   const isInitialized = ref(false)
@@ -116,7 +118,7 @@ export const useAuthStore = defineStore('auth', () => {
         await authApi.logout()
       }
     } catch (err) {
-      console.error('Logout error:', err)
+      logger.error('Logout error:', err)
     } finally {
       user.value = null
       token.value = null
@@ -131,7 +133,7 @@ export const useAuthStore = defineStore('auth', () => {
         await authApi.logoutAll()
       }
     } catch (err) {
-      console.error('Logout all error:', err)
+      logger.error('Logout all error:', err)
     } finally {
       user.value = null
       token.value = null

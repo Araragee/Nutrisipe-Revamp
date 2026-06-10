@@ -41,17 +41,14 @@ export async function registerHandler(req: Request, res: Response, next: NextFun
 
 export async function loginHandler(req: Request, res: Response, next: NextFunction) {
   try {
-    console.log('Login attempt for email:', req.body.email)
     const validated = loginSchema.parse(req.body)
     const result = await authService.login(validated.email, validated.password)
 
-    console.log('Login successful for user ID:', result.user.id)
     res.json({
       success: true,
       data: result,
     })
   } catch (error) {
-    console.error('Login Error:', error)
     if (error instanceof z.ZodError) {
       next(new AppError(400, error.errors[0].message))
     } else {
@@ -62,21 +59,17 @@ export async function loginHandler(req: Request, res: Response, next: NextFuncti
 
 export async function meHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
-    console.log('Fetching current user for ID:', req.userId)
     if (!req.userId) {
-      console.warn('meHandler called without req.userId')
       throw new AppError(401, 'Unauthorized')
     }
 
     const user = await authService.getCurrentUser(req.userId)
-    console.log('Current user found:', user.username)
 
     res.json({
       success: true,
       data: user,
     })
   } catch (error) {
-    console.error('meHandler Error:', error)
     next(error)
   }
 }

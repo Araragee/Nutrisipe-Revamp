@@ -17,42 +17,39 @@ export async function createNotification(data: CreateNotificationData) {
     return null
   }
 
-  // Check if similar notification already exists (to avoid spam)
-  const existingNotification = await prisma.notification.findFirst({
-    where: {
-      userId: data.userId,
-      actorId: data.actorId,
-      type: data.type,
-      postId: data.postId || undefined,
-      commentId: data.commentId || undefined,
-      createdAt: {
-        gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+  // Dedup check + create inside a transaction to close the check-then-create race (B-07).
+  const notification = await prisma.$transaction(async (tx) => {
+    const existing = await tx.notification.findFirst({
+      where: {
+        userId: data.userId,
+        actorId: data.actorId,
+        type: data.type,
+        postId: data.postId || undefined,
+        commentId: data.commentId || undefined,
+        createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
       },
-    },
-  })
+    })
+    if (existing) return existing
 
-  if (existingNotification) {
-    return existingNotification
-  }
-
-  const notification = await prisma.notification.create({
-    data: {
-      userId: data.userId,
-      actorId: data.actorId,
-      type: data.type,
-      postId: data.postId,
-      commentId: data.commentId,
-    },
-    include: {
-      actor: {
-        select: {
-          id: true,
-          username: true,
-          displayName: true,
-          avatarUrl: true,
+    return tx.notification.create({
+      data: {
+        userId: data.userId,
+        actorId: data.actorId,
+        type: data.type,
+        postId: data.postId,
+        commentId: data.commentId,
+      },
+      include: {
+        actor: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+          },
         },
       },
-    },
+    })
   })
 
   let post = null

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, watch } from 'vue'
 import { ratingsApi, type RatingDistribution } from '@/http/endpoints/ratings'
 
@@ -33,7 +34,7 @@ async function load() {
       distribution.value = res.distribution
     }
   } catch (error) {
-    console.error('Failed to load rating distribution:', error)
+    logger.error('Failed to load rating distribution:', error)
   } finally {
     isLoading.value = false
   }

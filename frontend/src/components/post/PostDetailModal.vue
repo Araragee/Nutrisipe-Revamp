@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, watch } from 'vue'
-import { getPostById } from '@/http/posts'
+import { postsApi } from '@/http/endpoints/posts'
 import { socialApi } from '@/http/endpoints/social'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import CommentSection from '@/components/post/CommentSection.vue'
@@ -31,9 +32,9 @@ async function loadPost() {
 
   isLoading.value = true
   try {
-    post.value = await getPostById(props.postId)
+    post.value = (await postsApi.getById(props.postId)).data.data
   } catch (error) {
-    console.error('Failed to load post:', error)
+    logger.error('Failed to load post:', error)
   } finally {
     isLoading.value = false
   }
@@ -107,7 +108,7 @@ async function handleShare() {
       alert('Link copied to clipboard!')
     }
   } catch (error) {
-    console.error('Failed to share:', error)
+    logger.error('Failed to share:', error)
   }
 }
 

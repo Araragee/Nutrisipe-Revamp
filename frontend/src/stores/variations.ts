@@ -88,10 +88,7 @@ export const useVariationsStore = defineStore('variations', () => {
     error.value = null
 
     try {
-      // Need to add delete to variationsApi if needed, but for now just stub
-      // await variationsApi.deleteVariation(variationId)
-
-      // Clear cached data
+      await variationsApi.delete(variationId)
       variations.value.delete(originalPostId)
 
       return true

@@ -271,6 +271,8 @@ export async function getFeed(userId: string, page: number = 1, limit: number = 
     },
   } as const
 
+  const notBanned = { user: { is: { isBanned: false } } }
+
   let followedPosts: any[] = []
   if (followedUserIds.length > 0) {
     followedPosts = await prisma.post.findMany({
@@ -278,6 +280,7 @@ export async function getFeed(userId: string, page: number = 1, limit: number = 
         userId: { in: followedUserIds },
         isPublic: true,
         ...(allergyFilter ?? {}),
+        ...notBanned,
       },
       take: followedQuota,
       skip: Math.floor(skip * 0.6),
@@ -300,6 +303,7 @@ export async function getFeed(userId: string, page: number = 1, limit: number = 
         id: { notIn: excludeIds },
         ...(tagFilter ?? {}),
         ...(allergyFilter ?? {}),
+        ...notBanned,
       },
       take: preferenceQuota,
       skip: Math.floor(skip * 0.25),
@@ -321,6 +325,7 @@ export async function getFeed(userId: string, page: number = 1, limit: number = 
         createdAt: { gte: sevenDaysAgo },
         id: { notIn: [...excludeIds, ...preferencePosts.map(p => p.id)] },
         ...(allergyFilter ?? {}),
+        ...notBanned,
       },
       take: fillNeeded,
       skip: Math.floor(skip * 0.15),
@@ -365,9 +370,24 @@ export async function getFeed(userId: string, page: number = 1, limit: number = 
     }
   })
 
-  const total = await prisma.post.count({
-    where: { isPublic: true },
-  })
+  // Count the actual pools that make up the feed so pagination metadata is accurate.
+  const sevenDaysAgoForCount = new Date()
+  sevenDaysAgoForCount.setDate(sevenDaysAgoForCount.getDate() - 7)
+
+  const [followedTotal, popularTotal] = await Promise.all([
+    followedUserIds.length > 0
+      ? prisma.post.count({ where: { userId: { in: followedUserIds }, isPublic: true, ...notBanned } })
+      : Promise.resolve(0),
+    prisma.post.count({
+      where: {
+        isPublic: true,
+        createdAt: { gte: sevenDaysAgoForCount },
+        NOT: { userId: { in: followedUserIds } },
+        ...notBanned,
+      },
+    }),
+  ])
+  const total = followedTotal + popularTotal
 
   return {
     posts: postsWithEngagement,

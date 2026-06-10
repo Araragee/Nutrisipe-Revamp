@@ -3,6 +3,7 @@ import { z } from 'zod'
 import * as postService from '../services/postService'
 import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
+import { parsePagination } from '../utils/pagination'
 
 const createPostSchema = z.object({
   title: z.string().min(1).max(255),
@@ -43,9 +44,7 @@ export async function getFeedHandler(req: AuthRequest, res: Response, next: Next
       throw new AppError(401, 'Unauthorized')
     }
 
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
-
+    const { page, limit } = parsePagination(req)
     const result = await postService.getFeed(req.userId, page, limit)
 
     res.json({
@@ -75,8 +74,7 @@ export async function getPostByIdHandler(req: AuthRequest, res: Response, next: 
 export async function getPostsByUserHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const { userId } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const result = await postService.getPostsByUser(userId, req.userId, page, limit)
 
@@ -159,8 +157,7 @@ export async function getFollowingFeedHandler(req: AuthRequest, res: Response, n
       throw new AppError(401, 'Unauthorized')
     }
 
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const result = await postService.getFollowingFeed(req.userId, page, limit)
 
@@ -192,8 +189,7 @@ export async function searchPostsHandler(req: AuthRequest, res: Response, next: 
   try {
     const query = req.query.q as string
     const category = req.query.category as string | undefined
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     if (!query && !category) {
       return res.json({
@@ -229,8 +225,7 @@ export async function getAllIngredientsHandler(_req: Request, res: Response, nex
 export async function getPostsByTagHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const { tag } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const result = await postService.getPostsByTag(tag, req.userId, page, limit)
     res.json({
@@ -249,8 +244,7 @@ export async function getRecommendationsHandler(req: AuthRequest, res: Response,
       throw new AppError(401, 'Unauthorized')
     }
 
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const result = await postService.getRecommendations(req.userId, page, limit)
     res.json({

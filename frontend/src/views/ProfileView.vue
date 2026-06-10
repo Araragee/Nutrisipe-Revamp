@@ -25,6 +25,7 @@ const posts = ref<Post[]>([])
 const savedPosts = ref<Post[]>([])
 const likedPosts = ref<Post[]>([])
 const isLoading = ref(true)
+const profileError = ref<string | null>(null)
 const showEditModal = ref(false)
 const selectedPostId = ref<string | null>(null)
 const showPostModal = ref(false)
@@ -49,6 +50,7 @@ async function loadProfile() {
   if (!userId) return
 
   isLoading.value = true
+  profileError.value = null
   try {
     user.value = await usersStore.getUserById(userId)
     const [postsRes, activityRes] = await Promise.all([
@@ -70,8 +72,8 @@ async function loadProfile() {
       const likedRes = await usersApi.getLikedPosts(userId, 1, 50)
       likedPosts.value = likedRes.data.data
     }
-  } catch (error) {
-    console.error('Failed to load profile:', error)
+  } catch (error: any) {
+    profileError.value = error?.response?.data?.message || 'Failed to load profile. Please try again.'
   } finally {
     isLoading.value = false
   }
@@ -92,6 +94,13 @@ const displayPosts = computed(() => {
   <div class="profile-view min-h-screen bg-background pb-20">
     <div v-if="isLoading" class="flex items-center justify-center py-20">
        <div class="w-12 h-12 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <div v-else-if="profileError" class="flex items-center justify-center py-20">
+      <div class="text-center p-8 rounded-2xl bg-red-500/10 border border-red-500/20 max-w-md">
+        <p class="text-red-500 font-semibold mb-4">{{ profileError }}</p>
+        <button @click="loadProfile" class="btn-primary">Try Again</button>
+      </div>
     </div>
 
     <div v-else-if="user">

@@ -29,4 +29,7 @@ export const variationsApi = {
     
   getChain: (postId: string) =>
     httpClient.get<ApiResponse<{ chain: any[]; depth: number }>>(`/variations/${postId}/chain`),
+
+  delete: (variationId: string) =>
+    httpClient.delete<ApiResponse<void>>(`/variations/${variationId}`),
 }

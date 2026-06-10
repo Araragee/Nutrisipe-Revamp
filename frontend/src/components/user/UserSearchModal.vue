@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { usersApi } from '@/http/endpoints/users'
@@ -43,7 +44,7 @@ const performSearch = debounce(async () => {
     const response = await usersApi.search(searchQuery.value.trim())
     searchResults.value = response.data.data
   } catch (error) {
-    console.error('Search failed:', error)
+    logger.error('Search failed:', error)
     searchResults.value = []
   } finally {
     isSearching.value = false

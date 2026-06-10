@@ -86,6 +86,7 @@
 </template>
 
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 
 interface Props {
@@ -209,7 +210,7 @@ const toggleFullscreen = async () => {
       }
     }
   } catch (err) {
-    console.error('Fullscreen error:', err)
+    logger.error('Fullscreen error:', err)
   }
 }
 

@@ -7,6 +7,7 @@ export const useUiStore = defineStore('ui', () => {
   const sidebarCollapsed = ref(false)
   const toastMessage = ref<string | null>(null)
   const toastType = ref<'success' | 'error' | 'info'>('info')
+  let toastTimer: ReturnType<typeof setTimeout> | null = null
 
   function openPinModal(postId: string) {
     selectedPostId.value = postId
@@ -26,8 +27,10 @@ export const useUiStore = defineStore('ui', () => {
     toastMessage.value = message
     toastType.value = type
 
-    setTimeout(() => {
+    if (toastTimer !== null) clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => {
       toastMessage.value = null
+      toastTimer = null
     }, 3000)
   }
 

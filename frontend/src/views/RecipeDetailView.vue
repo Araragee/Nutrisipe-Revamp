@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { postsApi } from '@/http/endpoints/posts'
@@ -90,7 +91,7 @@ async function forkRecipe() {
     uiStore.showToast('Recipe forked! Redirecting to edit...', 'success')
     router.push(`/recipes/${response.data.data.variationPost.id}/edit`)
   } catch (error) {
-    console.error('Failed to fork recipe:', error)
+    logger.error('Failed to fork recipe:', error)
     uiStore.showToast('Failed to fork recipe', 'error')
   } finally {
     isForking.value = false
@@ -109,7 +110,7 @@ async function loadPost() {
     const relatedRes = await postsApi.getRelated(postId.value)
     relatedPosts.value = relatedRes.data.data
   } catch (error) {
-    console.error('Failed to load post:', error)
+    logger.error('Failed to load post:', error)
     uiStore.showToast('Post not found', 'error')
     router.push('/')
   } finally {
@@ -129,7 +130,7 @@ async function handleRatingSubmit(data: { rating: number; review?: string }) {
     ratingListRef.value?.refresh()
     histogramRef.value?.refresh()
   } catch (error) {
-    console.error('Failed to submit rating:', error)
+    logger.error('Failed to submit rating:', error)
     uiStore.showToast('Failed to submit rating', 'error')
   }
 }

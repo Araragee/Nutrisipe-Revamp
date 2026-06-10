@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express'
 import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
 import * as ratingService from '../services/ratingService'
+import { parsePagination } from '../utils/pagination'
 
 export async function createOrUpdateRatingHandler(
   req: AuthRequest,
@@ -46,8 +47,7 @@ export async function getPostRatingsHandler(
 ) {
   try {
     const { postId } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
     const sortBy = (req.query.sortBy as string) || 'newest' // newest, oldest, highest, lowest
 
     const result = await ratingService.getPostRatings(postId, page, limit, sortBy)
@@ -68,8 +68,7 @@ export async function getUserRatingsHandler(
 ) {
   try {
     const { userId } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const result = await ratingService.getUserRatings(userId, page, limit)
 

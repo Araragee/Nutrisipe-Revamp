@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, onMounted, computed } from 'vue'
 import { ingredientsApi } from '@/http/endpoints/ingredients'
 import type { Ingredient } from '@/typescript/interface/Ingredient'
@@ -36,7 +37,7 @@ async function fetchIngredients() {
     const payload = (response.data as any)?.data ?? response.data
     allIngredients.value = Array.isArray(payload) ? payload : []
   } catch (error) {
-    console.error('Failed to fetch ingredients:', error)
+    logger.error('Failed to fetch ingredients:', error)
   }
 }
 

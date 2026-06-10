@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, onMounted } from 'vue'
 import { variationsApi, type Variation } from '@/http/endpoints/variations'
 import { useRouter } from 'vue-router'
@@ -16,7 +17,7 @@ async function loadVariations() {
     const response = await variationsApi.getVariations(props.postId)
     variations.value = response.data.data
   } catch (error) {
-    console.error('Failed to load variations:', error)
+    logger.error('Failed to load variations:', error)
   } finally {
     loading.value = false
   }

@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express'
 import * as notificationService from '../services/notificationService'
 import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
+import { parsePagination } from '../utils/pagination'
 
 export async function getNotificationsHandler(
   req: AuthRequest,
@@ -13,8 +14,7 @@ export async function getNotificationsHandler(
       throw new AppError(401, 'Unauthorized')
     }
 
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const result = await notificationService.getNotifications(req.userId, page, limit)
 

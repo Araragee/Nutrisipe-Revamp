@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { env } from '../config/env'
+import { logger } from '../utils/logger'
 
 export class AppError extends Error {
   constructor(
@@ -18,7 +19,7 @@ export function errorHandler(
   _next: NextFunction
 ) {
   if (env.NODE_ENV === 'development') {
-    console.error('Error:', err)
+    logger.error('Error:', err)
   }
 
   if (err instanceof AppError) {

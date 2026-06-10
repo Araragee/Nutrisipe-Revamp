@@ -13,12 +13,6 @@ const password = ref('')
 const error = ref<string | null>(null)
 const isLoading = ref(false)
 
-const demoAccounts = [
-  { email: 'jackroberts@nutrisipe.com', label: 'Demo 1' },
-  { email: 'wyattmitchell1@nutrisipe.com', label: 'Demo 2' },
-  { email: 'wyattmitchell2@nutrisipe.com', label: 'Demo 3' },
-]
-
 async function handleLogin() {
   if (!email.value || !password.value) {
     error.value = 'Please enter email and password'
@@ -34,22 +28,6 @@ async function handleLogin() {
     router.push(redirect)
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Login failed'
-  } finally {
-    isLoading.value = false
-  }
-}
-
-async function loginWithDemo(demoEmail: string) {
-  isLoading.value = true
-  error.value = null
-  try {
-    const success = await authStore.loginWithDev(demoEmail)
-    if (success) {
-      const redirect = route.query.redirect as string || '/'
-      router.push(redirect)
-    }
-  } catch (err: any) {
-    error.value = 'Demo login failed'
   } finally {
     isLoading.value = false
   }

@@ -1,7 +1,9 @@
+import { logger } from '../utils/logger'
 import { Server as HTTPServer } from 'http'
 import { Server as SocketIOServer, Socket } from 'socket.io'
 import { verifyToken } from '../utils/jwt'
 import { prisma } from '../lib/prisma'
+import { env } from '../config/env'
 
 interface AuthenticatedSocket extends Socket {
   userId?: string
@@ -10,7 +12,7 @@ interface AuthenticatedSocket extends Socket {
 export function initializeSocketServer(httpServer: HTTPServer) {
   const io = new SocketIOServer(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:5173',
+      origin: env.CORS_ORIGIN,
       credentials: true
     }
   })
@@ -39,7 +41,7 @@ export function initializeSocketServer(httpServer: HTTPServer) {
   // Connection handler
   io.on('connection', async (socket: AuthenticatedSocket) => {
     const userId = socket.userId!
-    console.log(`User connected: ${userId}`)
+    logger.log(`User connected: ${userId}`)
 
     // Update user presence to online
     await updateUserPresence(userId, true, socket.id)
@@ -49,7 +51,7 @@ export function initializeSocketServer(httpServer: HTTPServer) {
 
     // Handle disconnection
     socket.on('disconnect', async () => {
-      console.log(`User disconnected: ${userId}`)
+      logger.log(`User disconnected: ${userId}`)
       await updateUserPresence(userId, false)
     })
 
@@ -122,7 +124,7 @@ async function updateUserPresence(
       }
     })
   } catch (error) {
-    console.error('Error updating user presence:', error)
+    logger.error('Error updating user presence:', error)
   }
 }
 
@@ -141,7 +143,7 @@ async function getUsersPresence(userIds: string[]) {
 
     return presences
   } catch (error) {
-    console.error('Error fetching user presence:', error)
+    logger.error('Error fetching user presence:', error)
     return []
   }
 }
@@ -213,7 +215,7 @@ async function handleSendMessage(
     // Emit to sender (for multi-device sync)
     socket.emit('message:sent', message)
   } catch (error) {
-    console.error('Error sending message:', error)
+    logger.error('Error sending message:', error)
     socket.emit('message:error', { error: 'Failed to send message' })
   }
 }
@@ -262,7 +264,7 @@ async function handleMarkMessageRead(
       readAt: message.readAt
     })
   } catch (error) {
-    console.error('Error marking message as read:', error)
+    logger.error('Error marking message as read:', error)
   }
 }
 
@@ -293,7 +295,7 @@ async function handleNotificationRead(
 
     socket.emit('notification:updated', { notificationId, isRead: true })
   } catch (error) {
-    console.error('Error marking notification as read:', error)
+    logger.error('Error marking notification as read:', error)
   }
 }
 
@@ -360,7 +362,7 @@ export function emitPostUnsaved(postId: string, userId: string, newSaveCount: nu
   }
 }
 
-export function emitNewPost(post: any) {
+export function emitNewPost(post: Record<string, unknown>) {
   if (socketInstance) {
     // Broadcast to all connected users (they can filter on client side)
     socketInstance.emit('feed:new-post', post)

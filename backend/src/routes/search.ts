@@ -1,7 +1,9 @@
+import { logger } from '../utils/logger'
 import { Router } from 'express'
 import { auth, AuthRequest } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
 import { transformPost } from '../utils/modelTransformer'
+import { parsePagination } from '../utils/pagination'
 
 const router = Router()
 
@@ -10,15 +12,15 @@ router.get('/', auth, async (req: AuthRequest, res) => {
   try {
     const query = req.query.q as string
     const type = req.query.type as string // 'posts', 'users', 'all'
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     if (!query || query.trim().length < 2) {
       res.status(400).json({ error: 'Search query must be at least 2 characters' })
       return
     }
 
-    const searchQuery = query.trim()
+    // Escape LIKE special characters so the query is treated as a literal string (B-09).
+    const searchQuery = query.trim().replace(/[%_\\]/g, '\\$&')
 
     let results: any = {
       posts: [],
@@ -141,7 +143,7 @@ router.get('/', auth, async (req: AuthRequest, res) => {
       counts,
     })
   } catch (error) {
-    console.error('Search error:', error)
+    logger.error('Search error:', error)
     res.status(500).json({ error: 'Search failed' })
   }
 })
@@ -150,8 +152,7 @@ router.get('/', auth, async (req: AuthRequest, res) => {
 router.get('/trending', auth, async (req: AuthRequest, res) => {
   try {
     const period = req.query.period as string || '7days' // 24h, 7days, 30days, all
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     let dateFilter: any = {}
 
@@ -212,7 +213,7 @@ router.get('/trending', auth, async (req: AuthRequest, res) => {
       },
     })
   } catch (error) {
-    console.error('Trending posts error:', error)
+    logger.error('Trending posts error:', error)
     res.status(500).json({ error: 'Failed to fetch trending posts' })
   }
 })
@@ -221,8 +222,7 @@ router.get('/trending', auth, async (req: AuthRequest, res) => {
 router.get('/category/:category', auth, async (req: AuthRequest, res) => {
   try {
     const { category } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const posts = await prisma.post.findMany({
       where: {
@@ -272,7 +272,7 @@ router.get('/category/:category', auth, async (req: AuthRequest, res) => {
       },
     })
   } catch (error) {
-    console.error('Category posts error:', error)
+    logger.error('Category posts error:', error)
     res.status(500).json({ error: 'Failed to fetch category posts' })
   }
 })
@@ -302,7 +302,7 @@ router.get('/categories', auth, async (_req: AuthRequest, res) => {
       })),
     })
   } catch (error) {
-    console.error('Categories error:', error)
+    logger.error('Categories error:', error)
     res.status(500).json({ error: 'Failed to fetch categories' })
   }
 })
@@ -311,8 +311,7 @@ router.get('/categories', auth, async (_req: AuthRequest, res) => {
 router.get('/tag/:tag', auth, async (req: AuthRequest, res) => {
   try {
     const { tag } = req.params
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 20
+    const { page, limit } = parsePagination(req)
 
     const posts = await prisma.post.findMany({
       where: {
@@ -362,7 +361,7 @@ router.get('/tag/:tag', auth, async (req: AuthRequest, res) => {
       },
     })
   } catch (error) {
-    console.error('Tag posts error:', error)
+    logger.error('Tag posts error:', error)
     res.status(500).json({ error: 'Failed to fetch tag posts' })
   }
 })
@@ -370,8 +369,8 @@ router.get('/tag/:tag', auth, async (req: AuthRequest, res) => {
 // Trending tags aggregated from recent public posts
 router.get('/trending-tags', async (req: AuthRequest, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit as string) || 20, 50)
-    const days = parseInt(req.query.days as string) || 14
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20))
+    const days = Math.min(90, Math.max(1, parseInt(req.query.days as string) || 14))
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
     const posts = await prisma.post.findMany({
@@ -403,7 +402,7 @@ router.get('/trending-tags', async (req: AuthRequest, res) => {
 
     res.json({ data: top })
   } catch (error) {
-    console.error('Trending tags error:', error)
+    logger.error('Trending tags error:', error)
     res.status(500).json({ error: 'Failed to fetch trending tags' })
   }
 })

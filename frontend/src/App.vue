@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { onMounted, onErrorCaptured, computed, ref } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -24,7 +25,7 @@ const appError = ref<string | null>(null)
 const appShellKey = ref(0)
 
 onErrorCaptured((err, _vm, info) => {
-  console.error('[App error boundary]', info, err)
+  logger.error('[App error boundary]', info, err)
   if (err instanceof Error) {
     appError.value = err.message
   }

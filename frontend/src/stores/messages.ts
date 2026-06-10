@@ -1,3 +1,4 @@
+import { logger } from '@/utils/logger'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { messagesApi, type Message, type Conversation } from '@/http/endpoints/messages'
@@ -25,7 +26,7 @@ export const useMessagesStore = defineStore('messages', () => {
       conversations.value = response.data.data
     } catch (err: any) {
       error.value = err.response?.data?.error || 'Failed to load conversations'
-      console.error('Error loading conversations:', err)
+      logger.error('Error loading conversations:', err)
     } finally {
       isLoading.value = false
     }
@@ -45,7 +46,7 @@ export const useMessagesStore = defineStore('messages', () => {
       await markConversationRead(userId)
     } catch (err: any) {
       error.value = err.response?.data?.error || 'Failed to load messages'
-      console.error('Error loading messages:', err)
+      logger.error('Error loading messages:', err)
     } finally {
       isLoading.value = false
     }
@@ -76,7 +77,7 @@ export const useMessagesStore = defineStore('messages', () => {
       await loadConversations()
     } catch (err: any) {
       error.value = err.response?.data?.error || 'Failed to send message'
-      console.error('Error sending message:', err)
+      logger.error('Error sending message:', err)
     }
   }
 
@@ -91,7 +92,7 @@ export const useMessagesStore = defineStore('messages', () => {
         conv.unreadCount = 0
       }
     } catch (err: any) {
-      console.error('Error marking conversation as read:', err)
+      logger.error('Error marking conversation as read:', err)
     }
   }
 
@@ -104,7 +105,7 @@ export const useMessagesStore = defineStore('messages', () => {
       currentMessages.value = currentMessages.value.filter((m) => m.id !== messageId)
     } catch (err: any) {
       error.value = err.response?.data?.error || 'Failed to delete message'
-      console.error('Error deleting message:', err)
+      logger.error('Error deleting message:', err)
     }
   }
 
@@ -118,8 +119,10 @@ export const useMessagesStore = defineStore('messages', () => {
       currentMessages.value.push(message)
     }
 
-    // Update conversation list
-    loadConversations()
+    // Refresh conversation list; surface error in store state so UI can show it.
+    loadConversations().catch((err) => {
+      error.value = err?.message || 'Failed to refresh conversations'
+    })
   }
 
   // Handle message sent (from Socket.IO)
@@ -133,8 +136,10 @@ export const useMessagesStore = defineStore('messages', () => {
       }
     }
 
-    // Update conversation list
-    loadConversations()
+    // Refresh conversation list; surface error in store state so UI can show it.
+    loadConversations().catch((err) => {
+      error.value = err?.message || 'Failed to refresh conversations'
+    })
   }
 
   // Handle typing indicator

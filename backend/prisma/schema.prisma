@@ -94,6 +94,7 @@ model Post {
   @@index([userId])
   @@index([createdAt])
   @@index([category])
+  @@index([userId, createdAt])
 }
 
 model Recipe {
@@ -307,6 +308,7 @@ model Message {
   @@index([recipientId])
   @@index([createdAt])
   @@index([isRead])
+  @@index([conversationId, createdAt])
 }
 
 model Mention {

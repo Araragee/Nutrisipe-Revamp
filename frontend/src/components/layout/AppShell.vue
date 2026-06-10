@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -99,7 +100,7 @@ async function loadSuggestions() {
       why: u.followerCount > 0 ? `${u.followerCount} followers` : 'New creator',
     }))
   } catch (error) {
-    console.error('Load suggestions error:', error)
+    logger.error('Load suggestions error:', error)
   }
 }
 
@@ -166,6 +167,7 @@ onUnmounted(() => {
             active-class="bg-orange/10 text-orange font-bold"
           >
             <span class="w-[17px] h-[17px] inline-flex items-center justify-center shrink-0">
+              <!-- TODO(audit:F-15) [MEDIUM] v-html with dynamic ICONS[key] (repeated ~8x in this file) — safe today because ICONS is hardcoded, but a risky pattern; replace with icon components. -->
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" v-html="ICONS[item.icon]"></svg>
             </span>
             <span class="text-[13px] font-medium">{{ item.label }}</span>

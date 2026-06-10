@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { commentsApi } from '@/http/endpoints/comments'
@@ -27,7 +28,7 @@ async function loadComments() {
     const response = await commentsApi.getByPost(props.postId, 1, 20)
     comments.value = response.data.data
   } catch (error) {
-    console.error('Failed to load comments:', error)
+    logger.error('Failed to load comments:', error)
   } finally {
     isLoading.value = false
   }
@@ -45,7 +46,7 @@ async function handleSubmitComment() {
     comments.value.unshift(response.data.data)
     newCommentText.value = ''
   } catch (error) {
-    console.error('Failed to create comment:', error)
+    logger.error('Failed to create comment:', error)
   } finally {
     isSubmitting.value = false
   }
@@ -58,7 +59,7 @@ async function handleDeleteComment(commentId: string) {
     await commentsApi.delete(commentId)
     comments.value = comments.value.filter((c) => c.id !== commentId)
   } catch (error) {
-    console.error('Failed to delete comment:', error)
+    logger.error('Failed to delete comment:', error)
   }
 }
 

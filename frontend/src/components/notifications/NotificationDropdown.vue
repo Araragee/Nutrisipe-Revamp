@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNotificationsStore } from '@/stores/notifications'
@@ -55,7 +56,7 @@ async function handleMarkAllAsRead() {
   try {
     await notificationsStore.markAllAsRead()
   } catch (error) {
-    console.error('Failed to mark all as read:', error)
+    logger.error('Failed to mark all as read:', error)
   }
 }
 

@@ -1,3 +1,4 @@
+import { logger } from '@/utils/logger'
 import { ref, computed } from 'vue'
 import { mentionsApi } from '@/http/endpoints/mentions'
 
@@ -29,7 +30,7 @@ export function useMentions() {
       showSuggestions.value = response.users.length > 0
       selectedIndex.value = 0
     } catch (error) {
-      console.error('Failed to search users:', error)
+      logger.error('Failed to search users:', error)
       searchResults.value = []
       showSuggestions.value = false
     } finally {
@@ -119,9 +120,19 @@ export function useMentions() {
     }
   }
 
-  // Convert @mentions to clickable links (for display)
+  function escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+  }
+
+  // Convert @mentions to clickable links (for display).
+  // Input is escaped first so only the mention spans survive as markup.
   function renderMentions(text: string): string {
-    return text.replace(
+    return escapeHtml(text).replace(
       /@(\w+)/g,
       '<span class="mention" data-username="$1">@$1</span>'
     )
