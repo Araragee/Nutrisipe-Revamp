@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nutrisipe-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nutrisipe}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password123}
+      POSTGRES_DB: ${POSTGRES_DB:-nutrisipe_prod}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nutrisipe} -d ${POSTGRES_DB:-nutrisipe_prod}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nutrisipe-backend
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-nutrisipe}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-nutrisipe_prod}?schema=public
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      UPLOAD_DIR: uploads
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
+    container_name: nutrisipe-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+  seed:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: build
+    container_name: nutrisipe-seed
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-nutrisipe}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-nutrisipe_prod}?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - seed
+    command: npm run seed:all
+
+volumes:
+  postgres_data:
+  uploads_data:
