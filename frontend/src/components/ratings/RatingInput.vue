@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-surface border border-glass-border rounded-xl p-6 shadow-card">
+  <div class="bg-surface border border-border rounded-xl p-6 shadow-card">
     <h3 class="text-lg font-semibold text-text mb-5">{{ title }}</h3>
 
     <div class="mb-6">
@@ -20,7 +20,7 @@
         rows="5"
         maxlength="1000"
         placeholder="Share your experience with this recipe..."
-        class="w-full p-3 bg-background-secondary border border-glass-border rounded-lg text-sm text-text font-inherit resize-y transition-colors focus:outline-none focus:border-orange"
+        class="w-full p-3 bg-background-secondary border border-border rounded-lg text-sm text-text font-inherit resize-y transition-colors focus:outline-none focus:border-orange"
       ></textarea>
       <div class="text-right text-xs text-text-dim mt-1">
         {{ localReview.length }} / 1000

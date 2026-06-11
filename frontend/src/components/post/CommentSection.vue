@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
@@ -91,7 +92,7 @@ onMounted(() => {
           v-model="newCommentText"
           placeholder="Add a comment… use @ to mention"
           :rows="4"
-          textareaClass="w-full p-5 bg-background-secondary border-1.5 border-glass-border rounded-2xl text-sm text-text font-inherit resize-y transition-colors focus:outline-none focus:border-orange min-h-[100px]"
+          textareaClass="w-full p-5 bg-background-secondary border-1.5 border-border rounded-2xl text-sm text-text font-inherit resize-y transition-colors focus:outline-none focus:border-orange min-h-[100px]"
         />
         <div class="flex items-center justify-between mt-3 px-1">
           <p class="text-[10px] text-text-dim italic">Type @ to mention</p>
@@ -133,7 +134,7 @@ onMounted(() => {
     </div>
 
     <div v-else class="py-12 text-center">
-      <span class="text-4xl mb-4 block">💬</span>
+      <BaseIcons name="chat-bubble-left-right" size="xl" class="mx-auto mb-4 text-text-dim" />
       <p class="text-text-dim text-sm italic">No comments yet. Be the first to start the discussion!</p>
     </div>
   </div>

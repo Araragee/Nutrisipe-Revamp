@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -104,7 +105,7 @@ watch(() => route.params.id, load)
       </div>
 
       <div v-else class="flex flex-col items-center justify-center py-24 text-center">
-        <span class="text-5xl mb-6">📁</span>
+        <BaseIcons name="folder" size="xl" class="mx-auto mb-6 text-text-dim" />
         <h3 class="text-xl font-bold mb-2">Empty collection</h3>
         <p class="text-text-dim max-w-xs mx-auto">Save recipes here from the recipe modal.</p>
       </div>

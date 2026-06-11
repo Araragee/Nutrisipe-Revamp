@@ -291,11 +291,11 @@ onMounted(load)
           </p>
         </div>
         <div class="flex gap-2.5">
-          <button class="px-4 py-2.5 rounded-xl border-1.5 border-glass-border bg-surface dark:bg-zinc-800 text-text font-montserrat font-bold text-[13px] inline-flex items-center gap-2 transition-all hover:border-orange hover:text-orange">
+          <button class="px-4 py-2.5 rounded-xl border-1.5 border-border bg-surface dark:bg-zinc-800 text-text font-montserrat font-bold text-[13px] inline-flex items-center gap-2 transition-all hover:border-orange hover:text-orange">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             Import CSV
           </button>
-          <button @click="newItem" class="px-4 py-2.5 rounded-xl bg-gradient-to-br from-orange to-orange-light text-white font-montserrat font-bold text-[13px] inline-flex items-center gap-2 shadow-[0_6px_20px_var(--orange-glow)] hover:opacity-95 hover:-translate-y-0.5 transition-all">
+          <button @click="newItem" class="px-4 py-2.5 rounded-xl bg-orange hover:bg-orange-deep text-white font-montserrat font-bold text-[13px] inline-flex items-center gap-2 hover:opacity-95 hover:-translate-y-0.5 transition-all">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             New Ingredient
           </button>
@@ -304,7 +304,7 @@ onMounted(load)
 
       <!-- Stats -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-        <div v-for="s in statCards" :key="s.lbl" class="p-4 rounded-2xl bg-surface dark:bg-zinc-800/40 border border-glass-border relative overflow-hidden">
+        <div v-for="s in statCards" :key="s.lbl" class="p-4 rounded-2xl bg-surface dark:bg-zinc-800/40 border border-border relative overflow-hidden">
           <div class="flex items-center gap-2 mb-2 text-[11px] font-bold uppercase tracking-wider text-text-dim font-montserrat">
             <span class="w-[22px] h-[22px] rounded-lg inline-flex items-center justify-center" :style="{ background: s.color + '22', color: s.color }">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -323,8 +323,8 @@ onMounted(load)
       <!-- Master-detail -->
       <div v-else class="grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-3.5">
         <!-- LEFT: list card -->
-        <aside class="bg-surface dark:bg-zinc-800/40 border border-glass-border rounded-[22px] overflow-hidden flex flex-col min-h-[640px]">
-          <div class="p-3.5 border-b border-glass-border">
+        <aside class="bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] overflow-hidden flex flex-col min-h-[640px]">
+          <div class="p-3.5 border-b border-border">
             <div class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-background-secondary border-1.5 border-transparent focus-within:border-orange focus-within:bg-background transition-colors">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="text-text-dim shrink-0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input v-model="search" type="text" placeholder="Search ingredient or alias…" class="flex-1 bg-transparent border-none outline-none text-[13px] text-text font-inter" />
@@ -332,7 +332,7 @@ onMounted(load)
           </div>
 
           <!-- Category filter chips -->
-          <div class="flex gap-1.5 px-3.5 py-2.5 border-b border-glass-border overflow-x-auto scrollbar-hide">
+          <div class="flex gap-1.5 px-3.5 py-2.5 border-b border-border overflow-x-auto scrollbar-hide">
             <button
               v-for="c in CATEGORIES" :key="c"
               @click="cat = c"
@@ -340,7 +340,7 @@ onMounted(load)
                 'shrink-0 px-3 py-1.5 rounded-full border font-montserrat font-bold text-[11px] transition-all',
                 cat === c
                   ? 'bg-orange border-orange text-white'
-                  : 'bg-transparent border-glass-border text-text-muted hover:text-orange hover:border-orange',
+                  : 'bg-transparent border-border text-text-muted hover:text-orange hover:border-orange',
               ]"
             >{{ c }}</button>
           </div>
@@ -356,7 +356,7 @@ onMounted(load)
                   : 'border-transparent hover:bg-background-secondary',
               ]"
             >
-              <div class="w-9 h-9 rounded-[10px] bg-background-secondary border border-glass-border flex items-center justify-center text-lg shrink-0">
+              <div class="w-9 h-9 rounded-[10px] bg-background-secondary border border-border flex items-center justify-center text-lg shrink-0">
                 {{ ensureExtras(it).emoji }}
               </div>
               <div class="min-w-0">
@@ -374,10 +374,10 @@ onMounted(load)
         </aside>
 
         <!-- RIGHT: editor card -->
-        <section v-if="draft" class="bg-surface dark:bg-zinc-800/40 border border-glass-border rounded-[22px] overflow-hidden flex flex-col relative min-h-[640px]">
+        <section v-if="draft" class="bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] overflow-hidden flex flex-col relative min-h-[640px]">
           <!-- Editor head -->
-          <div class="flex items-center gap-4 p-5 border-b border-glass-border">
-            <div class="w-16 h-16 rounded-2xl bg-background-secondary border border-glass-border flex items-center justify-center text-3xl shrink-0">
+          <div class="flex items-center gap-4 p-5 border-b border-border">
+            <div class="w-16 h-16 rounded-2xl bg-background-secondary border border-border flex items-center justify-center text-3xl shrink-0">
               {{ draftExtras.emoji || draftThumbChar }}
             </div>
             <div class="flex-1 min-w-0">
@@ -398,10 +398,10 @@ onMounted(load)
               </div>
             </div>
             <div class="flex gap-2 ml-auto">
-              <button class="w-9 h-9 rounded-[10px] border-1.5 border-glass-border text-text-muted hover:border-orange hover:text-orange transition-all flex items-center justify-center" title="View as recipe ingredient">
+              <button class="w-9 h-9 rounded-[10px] border-1.5 border-border text-text-muted hover:border-orange hover:text-orange transition-all flex items-center justify-center" title="View as recipe ingredient">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
               </button>
-              <button v-if="!isCreating" @click="removeItem" class="w-9 h-9 rounded-[10px] border-1.5 border-glass-border text-text-muted hover:border-red-500 hover:text-red-500 transition-all flex items-center justify-center" title="Delete">
+              <button v-if="!isCreating" @click="removeItem" class="w-9 h-9 rounded-[10px] border-1.5 border-border text-text-muted hover:border-red-500 hover:text-red-500 transition-all flex items-center justify-center" title="Delete">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
               </button>
             </div>
@@ -478,7 +478,7 @@ onMounted(load)
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-3">
                 <div v-for="m in macroSwatches" :key="m.k"
-                  class="p-3 px-3.5 rounded-[14px] bg-background-secondary border border-glass-border focus-within:border-orange transition-colors">
+                  class="p-3 px-3.5 rounded-[14px] bg-background-secondary border border-border focus-within:border-orange transition-colors">
                   <div class="flex items-center gap-2 text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5">
                     <span class="w-2 h-2 rounded-full" :style="{ background: m.color }"></span>{{ m.lbl }}
                   </div>
@@ -491,7 +491,7 @@ onMounted(load)
               </div>
 
               <!-- Atwater cross-check -->
-              <div class="flex items-center gap-3 p-3 px-3.5 rounded-[14px] border border-glass-border" :style="{ background: 'linear-gradient(135deg, var(--orange-soft), transparent)' }">
+              <div class="flex items-center gap-3 p-3 px-3.5 rounded-[14px] border border-border" :style="{ background: 'linear-gradient(135deg, var(--orange-soft), transparent)' }">
                 <span class="w-8 h-8 rounded-[10px] bg-orange text-white flex items-center justify-center shrink-0">
                   <svg v-if="atwater.ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -529,11 +529,11 @@ onMounted(load)
                       class="w-[70px] text-right bg-transparent border-none outline-none text-xs font-bold text-text font-inter px-1.5 py-1 rounded-md focus:bg-background" />
                     <span class="text-[11px] font-bold text-text-dim">grams</span>
                   </div>
-                  <button @click="removeConv(idx)" class="w-7 h-7 rounded-[10px] border-1.5 border-glass-border text-text-muted hover:border-red-500 hover:text-red-500 transition-all flex items-center justify-center">
+                  <button @click="removeConv(idx)" class="w-7 h-7 rounded-[10px] border-1.5 border-border text-text-muted hover:border-red-500 hover:text-red-500 transition-all flex items-center justify-center">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
                 </div>
-                <button @click="addConv" class="px-3 py-2.5 rounded-[11px] border-1.5 border-dashed border-glass-border bg-transparent text-text-muted text-xs font-bold font-montserrat inline-flex items-center justify-center gap-1.5 hover:border-orange hover:border-solid hover:text-orange transition-all">
+                <button @click="addConv" class="px-3 py-2.5 rounded-[11px] border-1.5 border-dashed border-border bg-transparent text-text-muted text-xs font-bold font-montserrat inline-flex items-center justify-center gap-1.5 hover:border-orange hover:border-solid hover:text-orange transition-all">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   Add conversion
                 </button>
@@ -549,7 +549,7 @@ onMounted(load)
                     'px-3 py-1.5 rounded-full border-1.5 font-montserrat font-semibold text-[11px] transition-all',
                     draftExtras.allergens.includes(a)
                       ? 'bg-red-500/10 border-red-500 text-red-600 dark:text-red-400'
-                      : 'bg-transparent border-glass-border text-text-muted hover:border-red-500 hover:text-red-500',
+                      : 'bg-transparent border-border text-text-muted hover:border-red-500 hover:text-red-500',
                   ]">{{ a }}</button>
               </div>
             </div>
@@ -575,7 +575,7 @@ onMounted(load)
                 </div>
               </div>
               <div class="mt-3.5">
-                <div v-for="a in auditLog" :key="a.who + a.time" class="flex items-center gap-2.5 py-2.5 border-b border-dashed border-glass-border last:border-0 text-xs">
+                <div v-for="a in auditLog" :key="a.who + a.time" class="flex items-center gap-2.5 py-2.5 border-b border-dashed border-border last:border-0 text-xs">
                   <div class="w-6 h-6 rounded-full overflow-hidden bg-orange/10 shrink-0">
                     <img :src="a.avatar" alt="" class="w-full h-full object-cover" />
                   </div>
@@ -589,7 +589,7 @@ onMounted(load)
             <div>
               <div class="font-montserrat font-extrabold text-[12px] uppercase tracking-wider text-text mb-3.5">Micronutrients per 100g</div>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                <div v-for="m in micros" :key="m.k" class="p-2.5 rounded-[11px] bg-background-secondary border border-glass-border focus-within:border-orange transition-colors">
+                <div v-for="m in micros" :key="m.k" class="p-2.5 rounded-[11px] bg-background-secondary border border-border focus-within:border-orange transition-colors">
                   <label class="block text-[9.5px] font-bold uppercase tracking-wider text-text-dim mb-1">{{ m.lbl }}</label>
                   <div class="flex items-baseline gap-1.5">
                     <input type="number" step="0.01" min="0" :value="(draft as any)[m.k]" @input="setNum(m.k as keyof Ingredient, ($event.target as HTMLInputElement).value)"
@@ -609,13 +609,13 @@ onMounted(load)
             leave-to-class="opacity-0 translate-y-2"
           >
             <div v-if="dirty"
-              class="absolute left-0 right-0 bottom-0 z-10 flex items-center gap-3 px-6 py-3.5 border-t border-glass-border backdrop-blur-md"
+              class="absolute left-0 right-0 bottom-0 z-10 flex items-center gap-3 px-6 py-3.5 border-t border-border"
               :style="{ background: 'color-mix(in oklch, var(--bg) 75%, transparent)' }">
               <div class="flex-1 text-[13px] text-text-muted">
                 You have <strong class="text-text font-montserrat">unsaved changes</strong>{{ draft.food_item ? ` on ${draft.food_item}` : '' }}.
               </div>
-              <button @click="discard" class="px-4 py-2.5 rounded-[11px] border-1.5 border-glass-border bg-transparent text-text font-montserrat font-bold text-xs hover:border-orange hover:text-orange transition-all">Discard</button>
-              <button @click="save" class="px-4 py-2.5 rounded-xl bg-gradient-to-br from-orange to-orange-light text-white font-montserrat font-bold text-[13px] inline-flex items-center gap-1.5 shadow-[0_4px_14px_var(--orange-glow)] hover:opacity-95 transition-all">
+              <button @click="discard" class="px-4 py-2.5 rounded-[11px] border-1.5 border-border bg-transparent text-text font-montserrat font-bold text-xs hover:border-orange hover:text-orange transition-all">Discard</button>
+              <button @click="save" class="px-4 py-2.5 rounded-xl bg-orange hover:bg-orange-deep text-white font-montserrat font-bold text-[13px] inline-flex items-center gap-1.5 hover:opacity-95 transition-all">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 {{ isCreating ? 'Create' : `Save & ${draftExtras.status === 'verified' ? 'keep verified' : 'submit'}` }}
               </button>
@@ -623,7 +623,7 @@ onMounted(load)
           </transition>
         </section>
 
-        <section v-else class="bg-surface dark:bg-zinc-800/40 border border-glass-border rounded-[22px] p-12 text-center text-text-dim">
+        <section v-else class="bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] p-12 text-center text-text-dim">
           Pick an ingredient to begin editing.
         </section>
       </div>

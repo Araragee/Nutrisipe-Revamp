@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -145,7 +146,7 @@ onMounted(() => {
       </header>
 
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div class="flex gap-2 bg-background-secondary p-1 rounded-2xl border border-glass-border">
+        <div class="flex gap-2 bg-background-secondary p-1 rounded-2xl border border-border">
           <button
             v-for="opt in RANGE_OPTS"
             :key="opt.days"
@@ -157,22 +158,22 @@ onMounted(() => {
           >{{ opt.label }}</button>
         </div>
         <div class="flex gap-2">
-          <button @click="copyToClipboard" :disabled="!grocery?.items.length" class="px-4 py-2 rounded-xl border-1.5 border-glass-border bg-surface/70 text-xs font-bold hover:border-orange hover:text-orange disabled:opacity-40 transition-all">📋 Copy</button>
-          <button @click="printList" :disabled="!grocery?.items.length" class="px-4 py-2 rounded-xl border-1.5 border-glass-border bg-surface/70 text-xs font-bold hover:border-orange hover:text-orange disabled:opacity-40 transition-all">🖨️ Print</button>
+          <button @click="copyToClipboard" :disabled="!grocery?.items.length" class="px-4 py-2 rounded-xl border-1.5 border-border bg-surface/70 text-xs font-bold hover:border-orange hover:text-orange disabled:opacity-40 transition-all">📋 Copy</button>
+          <button @click="printList" :disabled="!grocery?.items.length" class="px-4 py-2 rounded-xl border-1.5 border-border bg-surface/70 text-xs font-bold hover:border-orange hover:text-orange disabled:opacity-40 transition-all">🖨️ Print</button>
         </div>
       </div>
 
       <div v-if="isLoading" class="text-center py-12 text-text-dim text-sm">Crunching ingredients…</div>
 
-      <div v-else-if="!grocery || grocery.items.length === 0" class="text-center py-20 bg-background-secondary/40 rounded-3xl border-1.5 border-dashed border-glass-border">
-        <span class="text-5xl mb-4 block">🛒</span>
+      <div v-else-if="!grocery || grocery.items.length === 0" class="text-center py-20 bg-background-secondary/40 rounded-3xl border-1.5 border-dashed border-border">
+        <BaseIcons name="shopping-cart" size="xl" class="mx-auto mb-4 text-text-dim" />
         <h3 class="text-xl font-bold mb-2">Empty list</h3>
         <p class="text-text-dim mb-6 max-w-sm mx-auto">Add recipes to your meal plan to fill this up.</p>
         <RouterLink to="/plan" class="btn-primary px-8">Open Meal Plan →</RouterLink>
       </div>
 
       <div v-else>
-        <div class="mb-6 p-4 rounded-2xl bg-background-secondary/40 border border-glass-border flex items-center justify-between">
+        <div class="mb-6 p-4 rounded-2xl bg-background-secondary/40 border border-border flex items-center justify-between">
           <div>
             <p class="font-bold text-sm">{{ totalItems }} items across {{ grocery.planCount }} planned meals</p>
             <p class="text-xs text-text-dim">{{ checkedCount }} checked off</p>
@@ -191,12 +192,12 @@ onMounted(() => {
               v-for="item in group.items"
               :key="`${item.name}|${item.unit}`"
               :class="[
-                'flex items-center gap-3 p-4 rounded-2xl border border-glass-border bg-surface/60 transition-all cursor-pointer hover:border-orange',
+                'flex items-center gap-3 p-4 rounded-2xl border border-border bg-surface/60 transition-all cursor-pointer hover:border-orange',
                 checked.has(`${item.name}|${item.unit}`) ? 'opacity-50 line-through' : '',
               ]"
               @click="toggleItem(`${item.name}|${item.unit}`)"
             >
-              <div :class="['w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all', checked.has(`${item.name}|${item.unit}`) ? 'bg-orange border-orange text-white text-xs' : 'border-glass-border']">
+              <div :class="['w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all', checked.has(`${item.name}|${item.unit}`) ? 'bg-orange border-orange text-white text-xs' : 'border-border']">
                 {{ checked.has(`${item.name}|${item.unit}`) ? '✓' : '' }}
               </div>
               <div class="flex-1 min-w-0">

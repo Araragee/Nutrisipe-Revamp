@@ -2,10 +2,11 @@
 import { ref, computed } from "vue";
 import { socialApi } from "@/http/endpoints/social";
 import { useFeedStore } from "@/stores/feed";
-import { useUsersStore } from "@/stores/users";
 import { useAuthStore } from "@/stores/auth";
 import { useUiStore } from "@/stores/ui";
 import UserAvatar from "@/components/user/UserAvatar.vue";
+import BaseIcons from "@/components/base/BaseIcons.vue";
+import MacroPills from "@/components/recipe/MacroPills.vue";
 import { formatNumber } from "@/utils/format";
 import { resolveSrcset } from "@/utils/imageUrl";
 import type { Post } from "@/typescript/interface/Post";
@@ -21,9 +22,50 @@ const emit = defineEmits<{
 }>();
 
 const feedStore = useFeedStore();
-const usersStore = useUsersStore();
 const authStore = useAuthStore();
 const uiStore = useUiStore();
+
+const aspectVariants = [
+  { class: "aspect-[3/4]", ratio: 3 / 4 },
+  { class: "aspect-[4/5]", ratio: 4 / 5 },
+  { class: "aspect-[2/3]", ratio: 2 / 3 },
+  { class: "aspect-square", ratio: 1 },
+  { class: "aspect-[3/5]", ratio: 3 / 5 },
+  { class: "aspect-[5/6]", ratio: 5 / 6 },
+] as const;
+
+const imageLoaded = ref(false);
+
+const aspectVariant = computed(() => {
+  let hash = 0;
+  for (let i = 0; i < props.post.id.length; i++) {
+    hash = (hash << 5) - hash + props.post.id.charCodeAt(i);
+    hash |= 0;
+  }
+  return aspectVariants[Math.abs(hash) % aspectVariants.length];
+});
+
+const recipeImage = computed(() =>
+  resolveSrcset(props.post.imageUrl, props.post.id, [400, 800, 1200]),
+);
+
+const nutriScoreClass = computed(() => {
+  const score = props.post.recipe?.nutriScore?.toLowerCase();
+  switch (score) {
+    case "a":
+      return "bg-nutriscore-a";
+    case "b":
+      return "bg-nutriscore-b";
+    case "c":
+      return "bg-nutriscore-c";
+    case "d":
+      return "bg-nutriscore-d";
+    case "e":
+      return "bg-nutriscore-e";
+    default:
+      return "bg-gray-500";
+  }
+});
 
 async function toggleLike(event: Event) {
   event.stopPropagation();
@@ -51,142 +93,86 @@ async function toggleLike(event: Event) {
     uiStore.showToast("Failed to update like", "error");
   }
 }
-
-const aspectVariants = [
-  { class: "aspect-[3/4]", ratio: 3 / 4 },
-  { class: "aspect-[4/5]", ratio: 4 / 5 },
-  { class: "aspect-[2/3]", ratio: 2 / 3 },
-  { class: "aspect-square", ratio: 1 },
-  { class: "aspect-[3/5]", ratio: 3 / 5 },
-  { class: "aspect-[5/6]", ratio: 5 / 6 },
-] as const;
-
-const aspectVariant = computed(() => {
-  let hash = 0;
-  for (let i = 0; i < props.post.id.length; i++) {
-    hash = (hash << 5) - hash + props.post.id.charCodeAt(i);
-    hash |= 0;
-  }
-  return aspectVariants[Math.abs(hash) % aspectVariants.length];
-});
-
-const recipeImage = computed(() =>
-  resolveSrcset(props.post.imageUrl, props.post.id, [400, 800, 1200]),
-);
-
-const imageLoaded = ref(false);
-
-const tags = computed(() => {
-  return props.post.tags || ["Healthy", "Nutrisipe"];
-});
-
-const nutriScoreClass = computed(() => {
-  const score = props.post.recipe?.nutriScore?.toLowerCase();
-  switch (score) {
-    case "a":
-      return "bg-nutriscore-a";
-    case "b":
-      return "bg-nutriscore-b";
-    case "c":
-      return "bg-nutriscore-c";
-    case "d":
-      return "bg-nutriscore-d";
-    case "e":
-      return "bg-nutriscore-e";
-    default:
-      return "bg-gray-500";
-  }
-});
 </script>
 
 <template>
   <div
-    class="recipe-card group relative rounded-card overflow-hidden cursor-pointer shadow-card transition-all duration-revamp border-1.5 border-glass-border bg-neutral-900 w-full"
-    :class="aspectVariant.class"
+    class="recipe-card group cursor-pointer overflow-hidden rounded-card bg-surface dark:bg-surface border border-border shadow-card hover:shadow-card-hover transition-all duration-revamp w-full"
     @click="emit('click', post.id)"
   >
-    <!-- Background Image -->
-    <img
-      :src="recipeImage.src"
-      :srcset="recipeImage.srcset"
-      sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
-      :alt="post.title"
-      loading="lazy"
-      decoding="async"
-      @load="imageLoaded = true"
-      :class="[
-        'recipe-img w-full h-full object-cover transition-all duration-500 group-hover:scale-105 will-change-transform',
-        imageLoaded ? 'opacity-100' : 'opacity-0 blur-sm',
-      ]"
-    />
-    <div
-      v-if="!imageLoaded"
-      class="absolute inset-0 bg-background-secondary animate-pulse"
-      aria-hidden="true"
-    ></div>
+    <!-- Image -->
+    <div :class="['relative overflow-hidden', aspectVariant.class]">
+      <img
+        :src="recipeImage.src"
+        :srcset="recipeImage.srcset"
+        sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
+        :alt="post.title"
+        loading="lazy"
+        decoding="async"
+        @load="imageLoaded = true"
+        :class="[
+          'w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.03] will-change-transform',
+          imageLoaded ? 'opacity-100' : 'opacity-0',
+        ]"
+      />
+      <div
+        v-if="!imageLoaded"
+        class="absolute inset-0 bg-background-secondary dark:bg-background-secondary animate-pulse"
+        aria-hidden="true"
+      ></div>
 
-    <!-- Top Actions -->
-    <button
-      @click="toggleLike"
-      class="card-heart-btn absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-black/10 backdrop-blur-[3px] border border-white/20 flex items-center justify-center cursor-pointer transition-all duration-revamp delay-150 group-hover:opacity-100 group-hover:translate-y-0 opacity-0 -translate-y-1 scale-90"
-      :class="{
-        'liked bg-orange/85 !opacity-100 !translate-y-0 !scale-100':
-          post.isLiked,
-      }"
-    >
-      <span class="text-white text-base">{{ post.isLiked ? "❤️" : "🤍" }}</span>
-    </button>
-
-    <div
-      class="card-like-count absolute top-3 right-14 z-10 bg-black/10 backdrop-blur-[3px] border border-white/20 rounded-full w-10 h-10 items-center flex justify-center font-montserrat font-bold text-xs text-white transition-all duration-revamp delay-150 group-hover:opacity-100 group-hover:translate-y-0 opacity-0 -translate-y-1 scale-90"
-      :class="{ '!opacity-100 !translate-y-0 !scale-100': post.isLiked }"
-    >
-      {{ formatNumber(post.likeCount) }}
-    </div>
-
-    <!-- Nutri-Score -->
-    <div
-      v-if="post.recipe?.nutriScore"
-      class="absolute top-3 left-3 z-10 px-2 py-1 rounded-md font-montserrat font-extrabold text-[10px] text-white shadow-lg backdrop-blur-md border border-white/20"
-      :class="nutriScoreClass"
-    >
-      Nutri-Score {{ post.recipe.nutriScore }}
-    </div>
-
-    <!-- Bottom Overlay -->
-    <div
-      class="card-overlay absolute bottom-0 left-0 right-0 p-4 pt-12 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none"
-    >
-      <div class="card-tags flex gap-1.5 flex-wrap mb-2">
-        <span
-          v-for="tag in tags.slice(0, 2)"
-          :key="tag"
-          class="card-tag px-2.5 py-0.5 rounded-full bg-orange/75 backdrop-blur-sm text-white text-[10px] font-bold tracking-wider uppercase"
-        >
-          {{ tag }}
-        </span>
+      <!-- Nutri-Score -->
+      <div
+        v-if="post.recipe?.nutriScore"
+        class="absolute top-3 left-3 z-10 px-2 py-0.5 rounded-md font-bold text-[11px] text-white"
+        :class="nutriScoreClass"
+      >
+        {{ post.recipe.nutriScore }}
       </div>
 
-      <h3
-        class="card-title font-montserrat font-extrabold text-sm leading-snug text-white drop-shadow-md mb-2.5"
+      <!-- Like -->
+      <button
+        @click="toggleLike"
+        class="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/95 dark:bg-zinc-900/95 flex items-center justify-center transition-all duration-revamp opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0"
+        :class="{ '!opacity-100 !translate-y-0': post.isLiked }"
+        :aria-label="post.isLiked ? 'Unlike recipe' : 'Like recipe'"
       >
+        <BaseIcons
+          name="heart"
+          :solid="post.isLiked"
+          size="sm"
+          :class="post.isLiked ? 'text-orange' : 'text-text-muted dark:text-text-muted'"
+        />
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="p-3.5 flex flex-col gap-2">
+      <MacroPills :nutrition="post.recipe?.nutrition" size="sm" />
+
+      <h3 class="font-semibold text-[14px] leading-snug text-text dark:text-text line-clamp-2">
         {{ post.title }}
       </h3>
 
-      <div class="card-author-row flex items-center gap-2 pointer-events-auto">
-        <UserAvatar
-          :user="post.user"
-          size="sm"
-          class="!w-6.5 !h-6.5 border-1.5 border-white/50"
-        />
-        <span
-          class="card-author-name text-xs font-semibold text-white/90 truncate"
-        >
+      <div class="flex items-center gap-2">
+        <UserAvatar :user="post.user" size="sm" class="!w-6 !h-6 shrink-0" />
+        <span class="text-xs text-text-muted dark:text-text-muted truncate">
           {{ post.user.displayName }}
         </span>
-        <span class="card-time ml-auto text-[11px] font-medium text-white/65">
-          {{ post.category }}
-        </span>
+
+        <div class="ml-auto flex items-center gap-2.5 text-text-dim dark:text-text-dim shrink-0">
+          <span class="inline-flex items-center gap-1 text-[11px] tabular-nums">
+            <BaseIcons name="heart" :solid="post.isLiked" size="xs" :class="post.isLiked ? 'text-orange' : ''" />
+            {{ formatNumber(post.likeCount) }}
+          </span>
+          <span
+            v-if="post.variationCount > 0"
+            class="inline-flex items-center gap-1 text-[11px] tabular-nums"
+          >
+            <BaseIcons name="arrow-path-rounded-square" size="xs" />
+            {{ formatNumber(post.variationCount) }}
+          </span>
+        </div>
       </div>
     </div>
   </div>
@@ -194,7 +180,6 @@ const nutriScoreClass = computed(() => {
 
 <style scoped>
 .recipe-card:hover {
-  transform: translateY(-7px) scale(1.015);
-  box-shadow: 0 20px 56px rgba(20, 10, 0, 0.2);
+  transform: translateY(-3px);
 }
 </style>

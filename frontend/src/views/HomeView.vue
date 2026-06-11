@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -163,7 +164,7 @@ watch(isNearBottom, (near) => {
         v-if="!feedStore.isLoading && displayPosts.length === 0"
         class="flex flex-col items-center justify-center py-24 text-center"
       >
-        <span class="text-5xl mb-6">🍳</span>
+        <BaseIcons name="fire" size="xl" class="mx-auto mb-6 text-text-dim" />
         <h3 class="text-xl font-bold mb-2">No recipes found</h3>
         <p class="text-text-dim max-w-xs mx-auto">
           {{ isSearchMode ? 'Try adjusting your filters or search terms.' : 'Start following users to see their content!' }}

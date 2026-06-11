@@ -45,10 +45,10 @@ onMounted(loadVariations)
        <div 
          v-for="v in variations" 
          :key="v.id"
-         class="bg-background-secondary border border-glass-border rounded-2xl p-4 flex gap-4 hover:border-orange transition-all cursor-pointer group"
+         class="bg-background-secondary border border-border rounded-2xl p-4 flex gap-4 hover:border-orange transition-all cursor-pointer group"
          @click="compare(v.variationPost.id)"
        >
-          <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-glass-border">
+          <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-border">
              <img :src="v.variationPost.imageUrl" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
           </div>
           <div class="flex-1 min-w-0">
@@ -63,7 +63,7 @@ onMounted(loadVariations)
        </div>
     </div>
 
-    <div v-else class="text-center py-10 bg-background-tertiary rounded-3xl border border-dashed border-glass-border">
+    <div v-else class="text-center py-10 bg-background-tertiary rounded-3xl border border-dashed border-border">
        <p class="text-xs text-text-dim">No variations yet. Be the first to fork this recipe!</p>
     </div>
   </div>

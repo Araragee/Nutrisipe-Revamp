@@ -37,9 +37,11 @@ module.exports = {
         orange: {
           DEFAULT: 'var(--orange)',
           light: 'var(--orange-light)',
+          deep: 'var(--orange-deep)',
           glow: 'var(--orange-glow)',
           soft: 'var(--orange-soft)',
         },
+        border: 'var(--border)',
         background: {
           DEFAULT: 'var(--bg)',
           secondary: 'var(--bg2)',
@@ -64,6 +66,7 @@ module.exports = {
       },
       boxShadow: {
         'card': 'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
         'modal': 'var(--shadow-modal)',
       },
       transitionTimingFunction: {

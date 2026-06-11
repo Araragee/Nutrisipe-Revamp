@@ -115,7 +115,7 @@ function formatDate(dateString: string) {
       <UserAvatar :user="comment.user" size="sm" class="shrink-0" />
       
       <div class="flex-1 min-w-0">
-        <div class="bg-background-secondary rounded-2xl p-4 border border-glass-border">
+        <div class="bg-background-secondary rounded-2xl p-4 border border-border">
           <div class="flex items-center justify-between mb-1">
             <span class="font-bold text-sm">{{ comment.user.displayName }}</span>
             <span class="text-[10px] text-text-dim">{{ formatDate(comment.createdAt) }}</span>
@@ -162,7 +162,7 @@ function formatDate(dateString: string) {
             <textarea
               v-model="replyText"
               placeholder="Write a reply..."
-              class="w-full bg-background-secondary border border-glass-border rounded-xl p-3 text-sm focus:border-orange outline-none resize-none"
+              class="w-full bg-background-secondary border border-border rounded-xl p-3 text-sm focus:border-orange outline-none resize-none"
               rows="2"
               @keyup.enter.ctrl="handleReply"
             ></textarea>
@@ -180,7 +180,7 @@ function formatDate(dateString: string) {
         </div>
         
         <!-- Replies List -->
-        <div v-if="showReplies" class="mt-4 space-y-4 border-l-2 border-glass-border ml-2 pl-4">
+        <div v-if="showReplies" class="mt-4 space-y-4 border-l-2 border-border ml-2 pl-4">
           <div v-if="isLoadingReplies" class="flex justify-center py-2">
              <div class="w-4 h-4 border-2 border-orange border-t-transparent rounded-full animate-spin"></div>
           </div>

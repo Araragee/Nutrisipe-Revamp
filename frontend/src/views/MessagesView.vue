@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useMessagesStore } from '@/stores/messages'
@@ -164,7 +165,7 @@ watch(
   <div class="messages-view flex h-screen overflow-hidden bg-background">
     <!-- Sidebar: Conversations -->
     <div
-      class="w-full md:w-80 lg:w-96 border-r border-glass-border flex flex-col bg-surface/50 backdrop-blur-xl"
+      class="w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-surface/50"
       :class="{ 'hidden md:flex': selectedConversation }"
     >
       <div class="p-6 pb-4">
@@ -176,8 +177,8 @@ watch(
 
       <!-- Search Box -->
       <div class="px-6 mb-4">
-        <div class="bg-background-secondary rounded-xl px-4 py-2.5 flex items-center gap-3 border border-glass-border">
-          <span class="text-text-dim text-sm">🔍</span>
+        <div class="bg-background-secondary rounded-xl px-4 py-2.5 flex items-center gap-3 border border-border">
+          <BaseIcons name="magnifying-glass" size="sm" class="text-text-dim" />
           <input
             v-model="searchQuery"
             type="text"
@@ -193,7 +194,7 @@ watch(
         </div>
 
         <div v-else-if="conversations.length === 0" class="p-12 text-center">
-          <EmptyState title="No messages" description="Connect with other foodies!" icon="💬" />
+          <EmptyState title="No messages" description="Connect with other foodies!" icon="chat-bubble-left-right" />
         </div>
 
         <div v-else-if="filteredConversations.length === 0" class="p-12 text-center">
@@ -248,7 +249,7 @@ watch(
     >
       <template v-if="selectedConversation">
         <!-- Chat Header -->
-        <header class="h-16 lg:h-20 border-b border-glass-border bg-surface/80 backdrop-blur-xl px-6 flex items-center justify-between sticky top-0 z-10">
+        <header class="h-16 lg:h-20 border-b border-border bg-surface/80 px-6 flex items-center justify-between sticky top-0 z-10">
           <div class="flex items-center gap-3">
             <button @click="selectedConversation = null" class="md:hidden w-8 h-8 rounded-full bg-background-secondary flex items-center justify-center text-lg">‹</button>
             <div class="relative">
@@ -287,7 +288,7 @@ watch(
                 class="max-w-[80%] md:max-w-[70%] px-4 py-3 rounded-2xl text-sm shadow-sm"
                 :class="message.senderId === authStore.user?.id
                     ? 'bg-orange text-white rounded-tr-none'
-                    : 'bg-surface-solid border border-glass-border text-text rounded-tl-none'"
+                    : 'bg-surface-solid border border-border text-text rounded-tl-none'"
               >
                 <p class="leading-relaxed">{{ message.content }}</p>
                 <p
@@ -305,7 +306,7 @@ watch(
             v-if="messagesStore.isUserTyping(selectedConversation.otherUser.id)"
             class="flex justify-start animate-revamp"
           >
-            <div class="bg-surface-solid border border-glass-border rounded-2xl rounded-tl-none px-4 py-2 flex gap-1 items-center">
+            <div class="bg-surface-solid border border-border rounded-2xl rounded-tl-none px-4 py-2 flex gap-1 items-center">
               <div class="w-1 h-1 rounded-full bg-text-dim animate-bounce"></div>
               <div class="w-1 h-1 rounded-full bg-text-dim animate-bounce [animation-delay:0.2s]"></div>
               <div class="w-1 h-1 rounded-full bg-text-dim animate-bounce [animation-delay:0.4s]"></div>
@@ -314,7 +315,7 @@ watch(
         </div>
 
         <!-- Input Area -->
-        <footer class="p-6 bg-surface/80 backdrop-blur-xl border-t border-glass-border">
+        <footer class="p-6 bg-surface/80 border-t border-border">
           <form @submit.prevent="sendMessage" class="flex items-center gap-3">
             <div class="flex-1 relative">
               <input
@@ -322,7 +323,7 @@ watch(
                 @input="handleTyping"
                 type="text"
                 placeholder="Message..."
-                class="w-full px-5 py-3 bg-background-secondary border-1.5 border-glass-border rounded-2xl text-sm outline-none focus:border-orange transition-all"
+                class="w-full px-5 py-3 bg-background-secondary border-1.5 border-border rounded-2xl text-sm outline-none focus:border-orange transition-all"
               />
             </div>
             <button
@@ -330,14 +331,14 @@ watch(
               :disabled="!messageText.trim()"
               class="w-10 h-10 shrink-0 rounded-full bg-orange text-white flex items-center justify-center shadow-lg shadow-orange/30 disabled:opacity-50 disabled:scale-95 transition-all active:scale-90"
             >
-              🚀
+              <BaseIcons name="paper-airplane" size="sm" />
             </button>
           </form>
         </footer>
       </template>
 
       <div v-else class="flex-1 flex flex-col items-center justify-center p-12 text-center messages-bg">
-        <div class="w-24 h-24 rounded-full bg-orange-soft flex items-center justify-center text-4xl mb-6 shadow-inner animate-pulse">💬</div>
+        <div class="w-24 h-24 rounded-full bg-orange-soft flex items-center justify-center mb-6"><BaseIcons name="chat-bubble-left-right" size="xl" class="text-orange" /></div>
         <h2 class="font-montserrat font-extrabold text-2xl mb-2">Your conversations</h2>
         <p class="text-text-dim max-w-xs mx-auto text-sm leading-relaxed">
           Select a chat from the sidebar to start messaging with your favorite creators and followers.

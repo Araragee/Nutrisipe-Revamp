@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -105,9 +106,11 @@ const displayPosts = computed(() => {
 
     <div v-else-if="user">
       <!-- Profile Header Hero -->
-      <div class="relative h-64 md:h-80 overflow-hidden bg-background-secondary">
-         <RecipeMosaicBackground :posts="posts" :count="12" :intensity="0.55" fallback-variant="warm" :blur="30" />
-         <div class="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent pointer-events-none"></div>
+      <div class="relative">
+         <div class="relative h-64 md:h-80 overflow-hidden bg-background-secondary dark:bg-background-secondary">
+            <RecipeMosaicBackground :posts="posts" :count="12" :intensity="0.55" fallback-variant="warm" :blur="30" />
+            <div class="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent pointer-events-none"></div>
+         </div>
 
          <div class="absolute -bottom-16 left-8 md:left-12 flex items-end gap-6">
             <div class="relative group">
@@ -116,8 +119,8 @@ const displayPosts = computed(() => {
             </div>
 
             <div class="pb-4 hidden md:block">
-               <h1 class="font-montserrat font-extrabold text-4xl tracking-tight mb-1">{{ user.displayName }}</h1>
-               <p class="text-text-dim font-bold text-sm tracking-wider uppercase">@{{ user.username }}</p>
+               <h1 class="font-montserrat font-bold text-4xl tracking-tight mb-1 text-text dark:text-text">{{ user.displayName }}</h1>
+               <p class="text-text-dim dark:text-text-dim font-semibold text-sm">@{{ user.username }}</p>
             </div>
          </div>
       </div>
@@ -135,15 +138,15 @@ const displayPosts = computed(() => {
                <p v-else class="text-text-dim italic mb-8">No bio yet. This cook prefers to let their recipes do the talking.</p>
 
                <div class="flex flex-col gap-4 mb-8">
-                  <div class="flex items-center justify-between p-4 bg-background-secondary rounded-2xl border border-glass-border">
+                  <div class="flex items-center justify-between p-4 bg-background-secondary rounded-2xl border border-border">
                      <span class="text-xs font-bold uppercase tracking-widest text-text-dim">Followers</span>
                      <span class="font-montserrat font-extrabold text-xl">{{ formatNumber(user.followerCount) }}</span>
                   </div>
-                  <div class="flex items-center justify-between p-4 bg-background-secondary rounded-2xl border border-glass-border">
+                  <div class="flex items-center justify-between p-4 bg-background-secondary rounded-2xl border border-border">
                      <span class="text-xs font-bold uppercase tracking-widest text-text-dim">Following</span>
                      <span class="font-montserrat font-extrabold text-xl">{{ formatNumber(user.followingCount) }}</span>
                   </div>
-                  <div class="flex items-center justify-between p-4 bg-background-secondary rounded-2xl border border-glass-border">
+                  <div class="flex items-center justify-between p-4 bg-background-secondary rounded-2xl border border-border">
                      <span class="text-xs font-bold uppercase tracking-widest text-text-dim">Recipes</span>
                      <span class="font-montserrat font-extrabold text-xl">{{ formatNumber(posts.length) }}</span>
                   </div>
@@ -151,14 +154,14 @@ const displayPosts = computed(() => {
 
                <div v-if="!isCurrentUser" class="flex gap-3">
                   <FollowButton :user-id="user.id" :is-following="user.isFollowing" class="flex-1" />
-                  <button @click="router.push('/messages')" class="w-12 h-12 rounded-xl bg-background-secondary border border-glass-border flex items-center justify-center text-xl hover:bg-orange-soft hover:text-orange transition-all">💬</button>
+                  <button @click="router.push('/messages')" class="w-12 h-12 rounded-xl bg-background-secondary border border-border flex items-center justify-center text-xl hover:bg-orange-soft hover:text-orange transition-all"><BaseIcons name="chat-bubble-left" size="md" /></button>
                </div>
                <button v-else @click="showEditModal = true" class="w-full btn-secondary">Edit Profile</button>
             </div>
 
             <!-- Right: Content Tabs -->
             <div class="flex-1">
-               <div class="flex gap-10 border-b border-glass-border mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
+               <div class="flex gap-10 border-b border-border mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
                   <button
                     v-for="t in ['posts', 'saved', 'liked', 'activity'].filter(tab => tab !== 'saved' || isCurrentUser)"
                     :key="t"
@@ -175,8 +178,8 @@ const displayPosts = computed(() => {
                   <div v-if="displayPosts.length > 0">
                     <PinGrid :posts="displayPosts" @post-click="handlePostClick" />
                   </div>
-                  <div v-else class="py-20 text-center bg-background-secondary rounded-[32px] border-2 border-dashed border-glass-border">
-                    <span class="text-4xl mb-4 block">🍳</span>
+                  <div v-else class="py-20 text-center bg-background-secondary rounded-[32px] border-2 border-dashed border-border">
+                    <BaseIcons name="fire" size="xl" class="mx-auto mb-4 text-text-dim" />
                     <h3 class="font-bold text-lg mb-1">Nothing to show here</h3>
                     <p class="text-text-dim text-sm">Explore and start building your collection!</p>
                   </div>
@@ -184,13 +187,13 @@ const displayPosts = computed(() => {
 
                <!-- Activity Tab -->
                <div v-else class="space-y-4 max-w-2xl">
-                  <div v-if="activities.length > 0" v-for="item in activities" :key="item.id" class="p-6 bg-background-secondary rounded-2xl border border-glass-border group hover:border-orange/20 transition-all">
+                  <div v-if="activities.length > 0" v-for="item in activities" :key="item.id" class="p-6 bg-background-secondary rounded-2xl border border-border group hover:border-orange/20 transition-all">
                      <div class="flex items-start gap-4">
                         <div class="w-10 h-10 rounded-full bg-orange-soft flex items-center justify-center text-xl shrink-0">
-                           <span v-if="item.type === 'like'">❤️</span>
-                           <span v-else-if="item.type === 'comment'">💬</span>
-                           <span v-else-if="item.type === 'follow'">👤</span>
-                           <span v-else-if="item.type === 'rating'">⭐</span>
+                           <BaseIcons v-if="item.type === 'like'" name="heart" size="sm" class="text-orange" />
+                           <BaseIcons v-else-if="item.type === 'comment'" name="chat-bubble-left" size="sm" class="text-orange" />
+                           <BaseIcons v-else-if="item.type === 'follow'" name="user-plus" size="sm" class="text-orange" />
+                           <BaseIcons v-else-if="item.type === 'rating'" name="star" size="sm" class="text-orange" />
                         </div>
                         <div class="flex-1">
                            <div class="flex items-center justify-between mb-1">

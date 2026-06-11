@@ -69,10 +69,10 @@ onMounted(loadSaved)
 <template>
   <Teleport to="body">
     <div
-      class="fixed inset-0 z-[180] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
+      class="fixed inset-0 z-[180] flex items-center justify-center p-6 bg-black/60"
       @click.self="emit('close')"
     >
-      <div class="bg-surface border-1.5 border-glass-border rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-modal">
+      <div class="bg-surface border-1.5 border-border rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-modal">
         <div class="flex items-center justify-between mb-6">
           <div>
             <h3 class="font-montserrat font-extrabold text-xl">Share a story</h3>
@@ -102,7 +102,7 @@ onMounted(loadSaved)
           maxlength="280"
           rows="2"
           placeholder="Say something…"
-          class="w-full px-4 py-3 bg-background-secondary border-1.5 border-glass-border rounded-xl text-sm outline-none focus:border-orange resize-none"
+          class="w-full px-4 py-3 bg-background-secondary border-1.5 border-border rounded-xl text-sm outline-none focus:border-orange resize-none"
         ></textarea>
 
         <div v-if="savedPosts.length > 0" class="mt-5">

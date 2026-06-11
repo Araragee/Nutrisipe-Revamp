@@ -39,7 +39,7 @@ function handleBackdropClick() {
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 dark:bg-black/70"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 dark:bg-black/70"
     @click.self="handleBackdropClick"
   >
     <div

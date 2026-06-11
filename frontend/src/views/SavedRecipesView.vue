@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -146,7 +147,7 @@ watch(isNearBottom, (near) => {
         >+ New Collection</button>
       </div>
 
-      <div class="flex gap-8 border-b border-glass-border mb-8">
+      <div class="flex gap-8 border-b border-border mb-8">
         <button
           v-for="t in (['collections', 'all'] as const)"
           :key="t"
@@ -168,7 +169,7 @@ watch(isNearBottom, (near) => {
             v-for="(col, idx) in collections"
             :key="col.id"
             @click="router.push(`/collections/${col.id}`)"
-            class="group relative h-56 rounded-3xl overflow-hidden cursor-pointer shadow-card transition-all hover:-translate-y-1 border-1.5 border-glass-border"
+            class="group relative h-56 rounded-3xl overflow-hidden cursor-pointer shadow-card transition-all hover:-translate-y-1 border-1.5 border-border"
           >
             <img :src="resolveImage(col.thumbnailUrl, col.id)" :alt="col.name" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
             <div :class="['absolute inset-0 bg-gradient-to-t opacity-60', collectionGradients[idx % collectionGradients.length]]"></div>
@@ -179,7 +180,7 @@ watch(isNearBottom, (near) => {
           </div>
         </div>
         <div v-else class="flex flex-col items-center justify-center py-24 text-center">
-          <span class="text-5xl mb-6">📁</span>
+          <BaseIcons name="folder" size="xl" class="mx-auto mb-6 text-text-dim" />
           <h3 class="text-xl font-bold mb-2">No collections yet</h3>
           <p class="text-text-dim max-w-xs mx-auto mb-6">Group saved recipes into boards — meal plans, holidays, anything.</p>
           <button @click="showNewModal = true" class="btn-primary px-8">+ Create Collection</button>
@@ -203,7 +204,7 @@ watch(isNearBottom, (near) => {
           v-if="!isLoadingPosts && posts.length === 0"
           class="flex flex-col items-center justify-center py-24 text-center"
         >
-          <span class="text-5xl mb-6">🔖</span>
+          <BaseIcons name="bookmark" size="xl" class="mx-auto mb-6 text-text-dim" />
           <h3 class="text-xl font-bold mb-2">No saved recipes yet</h3>
           <p class="text-text-dim max-w-xs mx-auto">Tap the heart on any recipe you love to save it.</p>
           <RouterLink to="/" class="mt-6 btn-primary px-8">Discover Recipes</RouterLink>
@@ -214,24 +215,24 @@ watch(isNearBottom, (near) => {
     <!-- New collection modal -->
     <div
       v-if="showNewModal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60"
       @click.self="showNewModal = false"
     >
-      <div class="bg-surface border-1.5 border-glass-border rounded-3xl p-8 max-w-md w-full shadow-modal">
+      <div class="bg-surface border-1.5 border-border rounded-3xl p-8 max-w-md w-full shadow-modal">
         <h3 class="font-montserrat font-extrabold text-2xl mb-6">New Collection</h3>
         <label class="block text-xs font-bold uppercase tracking-widest text-text-dim mb-2">Name</label>
         <input
           v-model="newName"
           type="text"
           placeholder="Sunday Brunch"
-          class="w-full px-4 py-3 bg-background-secondary border-1.5 border-glass-border rounded-xl text-sm outline-none focus:border-orange transition-all mb-4"
+          class="w-full px-4 py-3 bg-background-secondary border-1.5 border-border rounded-xl text-sm outline-none focus:border-orange transition-all mb-4"
         />
         <label class="block text-xs font-bold uppercase tracking-widest text-text-dim mb-2">Description (optional)</label>
         <textarea
           v-model="newDescription"
           rows="3"
           placeholder="Easy weekend recipes for slow mornings"
-          class="w-full px-4 py-3 bg-background-secondary border-1.5 border-glass-border rounded-xl text-sm outline-none focus:border-orange transition-all resize-none mb-4"
+          class="w-full px-4 py-3 bg-background-secondary border-1.5 border-border rounded-xl text-sm outline-none focus:border-orange transition-all resize-none mb-4"
         ></textarea>
         <label class="flex items-center gap-3 cursor-pointer mb-6">
           <input v-model="newPublic" type="checkbox" class="w-4 h-4 accent-orange" />

@@ -72,13 +72,13 @@ onMounted(fetchIngredients)
       @focus="showSuggestions = true"
       @blur="handleBlur"
       type="text"
-      class="w-full bg-background border border-glass-border rounded-xl p-3.5 text-sm outline-none focus:border-orange transition-all font-medium"
+      class="w-full bg-background border border-border rounded-xl p-3.5 text-sm outline-none focus:border-orange transition-all font-medium"
       :placeholder="placeholder"
     />
 
     <div
       v-if="showSuggestions && filteredSuggestions.length > 0"
-      class="absolute left-0 right-0 top-full mt-1 bg-background-secondary border border-glass-border rounded-xl shadow-xl z-50 overflow-hidden"
+      class="absolute left-0 right-0 top-full mt-1 bg-background-secondary border border-border rounded-xl shadow-xl z-50 overflow-hidden"
     >
       <button
         v-for="ing in filteredSuggestions"

@@ -64,7 +64,7 @@ watch(() => [props.show, props.postId], ([show, postId]) => {
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     @click.self="handleClose"
   >
     <div class="relative w-full rounded-2xl shadow-xl bg-white dark:bg-zinc-800 max-h-[90vh] overflow-hidden flex flex-col md:flex-row max-w-5xl">

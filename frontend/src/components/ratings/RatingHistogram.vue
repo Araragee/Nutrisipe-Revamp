@@ -46,7 +46,7 @@ watch(() => props.postId, load)
 </script>
 
 <template>
-  <div class="rating-histogram bg-background-secondary/40 border border-glass-border rounded-3xl p-6">
+  <div class="rating-histogram bg-background-secondary/40 border border-border rounded-3xl p-6">
     <div class="flex items-start gap-8">
       <!-- Average summary -->
       <div class="text-center shrink-0">
@@ -67,7 +67,7 @@ watch(() => props.postId, load)
           <span class="w-6 text-xs font-bold text-text-dim text-right">{{ row.star }}★</span>
           <div class="flex-1 h-2.5 bg-background-secondary rounded-full overflow-hidden">
             <div
-              class="h-full bg-gradient-to-r from-orange to-orange-light transition-all duration-500"
+              class="h-full bg-orange transition-all duration-500"
               :style="{ width: `${row.pct}%` }"
             ></div>
           </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -316,11 +317,11 @@ const weekLabel = computed(() => {
           <p class="text-text-muted mt-2">Drop saved recipes into the grid. Grocery list updates automatically.</p>
         </div>
         <div class="flex items-center gap-2">
-          <button @click="shiftWeek(-1)" class="w-10 h-10 rounded-full border-1.5 border-glass-border bg-surface/70 hover:border-orange hover:text-orange transition-all">‹</button>
-          <button @click="jumpToday" class="px-4 h-10 rounded-full border-1.5 border-glass-border bg-surface/70 text-xs font-bold hover:border-orange hover:text-orange transition-all">Today</button>
+          <button @click="shiftWeek(-1)" class="w-10 h-10 rounded-full border-1.5 border-border bg-surface/70 hover:border-orange hover:text-orange transition-all">‹</button>
+          <button @click="jumpToday" class="px-4 h-10 rounded-full border-1.5 border-border bg-surface/70 text-xs font-bold hover:border-orange hover:text-orange transition-all">Today</button>
           <span class="px-3 text-sm font-bold tabular-nums">{{ weekLabel }}</span>
-          <button @click="shiftWeek(1)" class="w-10 h-10 rounded-full border-1.5 border-glass-border bg-surface/70 hover:border-orange hover:text-orange transition-all">›</button>
-          <RouterLink to="/groceries" class="ml-4 btn-primary px-5 py-2.5 text-xs">🛒 Grocery List</RouterLink>
+          <button @click="shiftWeek(1)" class="w-10 h-10 rounded-full border-1.5 border-border bg-surface/70 hover:border-orange hover:text-orange transition-all">›</button>
+          <RouterLink to="/groceries" class="ml-4 btn-primary px-5 py-2.5 text-xs inline-flex items-center gap-1.5"><BaseIcons name="shopping-cart" size="sm" />Grocery List</RouterLink>
         </div>
       </header>
 
@@ -347,7 +348,7 @@ const weekLabel = computed(() => {
           :data-cell-key="`${fmtIso(d)}|${slot}`"
           :class="[
             'rounded-2xl border-1.5 border-dashed bg-surface/40 min-h-[110px] p-2 group transition-all',
-            dragOverCell === `${fmtIso(d)}|${slot}` ? 'border-orange bg-orange/10' : 'border-glass-border hover:border-orange',
+            dragOverCell === `${fmtIso(d)}|${slot}` ? 'border-orange bg-orange/10' : 'border-border hover:border-orange',
           ]"
           @dragover="onDragOver($event, `${fmtIso(d)}|${slot}`)"
           @dragleave="onDragLeave(`${fmtIso(d)}|${slot}`)"
@@ -378,7 +379,7 @@ const weekLabel = computed(() => {
             </div>
             <button
               @click="openPicker(d, slot)"
-              class="w-full h-6 rounded-lg border border-dashed border-glass-border text-[10px] text-text-dim font-bold hover:text-orange hover:border-orange transition-all"
+              class="w-full h-6 rounded-lg border border-dashed border-border text-[10px] text-text-dim font-bold hover:text-orange hover:border-orange transition-all"
             >+ Another</button>
           </div>
           <button
@@ -395,10 +396,10 @@ const weekLabel = computed(() => {
     <!-- Picker modal -->
     <div
       v-if="showPicker"
-      class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60"
       @click.self="showPicker = false"
     >
-      <div class="bg-surface border-1.5 border-glass-border rounded-3xl p-6 max-w-2xl w-full max-h-[80vh] flex flex-col shadow-modal">
+      <div class="bg-surface border-1.5 border-border rounded-3xl p-6 max-w-2xl w-full max-h-[80vh] flex flex-col shadow-modal">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h3 class="font-montserrat font-extrabold text-xl">Pick a recipe</h3>
@@ -426,7 +427,7 @@ const weekLabel = computed(() => {
               v-for="post in filteredPickerPosts"
               :key="post.id"
               @click="pickPost(post)"
-              class="flex gap-3 items-center p-2 rounded-2xl border border-glass-border bg-background-secondary/40 hover:border-orange hover:bg-orange/5 transition-all text-left"
+              class="flex gap-3 items-center p-2 rounded-2xl border border-border bg-background-secondary/40 hover:border-orange hover:bg-orange/5 transition-all text-left"
             >
               <img :src="resolveImage(post.imageUrl, post.id)" :alt="post.title" class="w-16 h-16 rounded-xl object-cover shrink-0" />
               <div class="min-w-0">
@@ -446,7 +447,7 @@ const weekLabel = computed(() => {
   width: 100%;
   padding: 0.75rem 1rem;
   background: var(--background-secondary, rgba(245, 245, 247, 0.5));
-  border: 1.5px solid var(--glass-border, rgba(0, 0, 0, 0.08));
+  border: 1.5px solid var(--border, rgba(0, 0, 0, 0.08));
   border-radius: 12px;
   font-size: 0.875rem;
   outline: none;

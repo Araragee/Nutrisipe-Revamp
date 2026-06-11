@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -25,12 +26,12 @@ const activeSection = ref<'profile' | 'preferences' | 'appearance' | 'notificati
   'profile',
 )
 const sections = [
-  { id: 'profile', label: 'Profile', icon: '👤' },
-  { id: 'preferences', label: 'Preferences', icon: '🥗' },
-  { id: 'appearance', label: 'Appearance', icon: '🎨' },
-  { id: 'notifications', label: 'Notifications', icon: '🔔' },
-  { id: 'privacy', label: 'Privacy', icon: '🔒' },
-  { id: 'account', label: 'Account', icon: '⚙️' },
+  { id: 'profile', label: 'Profile', icon: 'user' },
+  { id: 'preferences', label: 'Preferences', icon: 'adjustments-horizontal' },
+  { id: 'appearance', label: 'Appearance', icon: 'paint-brush' },
+  { id: 'notifications', label: 'Notifications', icon: 'bell' },
+  { id: 'privacy', label: 'Privacy', icon: 'lock-closed' },
+  { id: 'account', label: 'Account', icon: 'cog-6-tooth' },
 ] as const
 
 const displayName = ref('')
@@ -46,10 +47,10 @@ const DIETS = ['Vegan', 'Vegetarian', 'Keto', 'Paleo', 'Gluten-Free', 'Dairy-Fre
 const ALLERGENS = ['Gluten', 'Dairy', 'Egg', 'Soy', 'Sesame', 'Tree nuts', 'Peanut', 'Fish', 'Shellfish']
 const GOALS = ['lose', 'muscle', 'health', 'explore']
 const GOAL_LABELS: Record<string, { icon: string; label: string }> = {
-  lose: { icon: '🏃', label: 'Lose Weight' },
-  muscle: { icon: '💪', label: 'Build Muscle' },
-  health: { icon: '🥗', label: 'Eat Healthier' },
-  explore: { icon: '🌍', label: 'Explore Cuisines' },
+  lose: { icon: 'arrow-trending-down', label: 'Lose Weight' },
+  muscle: { icon: 'fire', label: 'Build Muscle' },
+  health: { icon: 'heart', label: 'Eat Healthier' },
+  explore: { icon: 'globe-alt', label: 'Explore Cuisines' },
 }
 
 const DEFAULT_NOTIF: Record<string, boolean> = {
@@ -201,9 +202,9 @@ async function requestDeleteAccount() {
 }
 
 const themeOptions = [
-  { value: 'light', label: 'Light', icon: '☀️' },
-  { value: 'dark', label: 'Dark', icon: '🌙' },
-  { value: 'system', label: 'System', icon: '🖥️' },
+  { value: 'light', label: 'Light', icon: 'sun' },
+  { value: 'dark', label: 'Dark', icon: 'moon' },
+  { value: 'system', label: 'System', icon: 'computer-desktop' },
 ] as const
 </script>
 
@@ -231,7 +232,7 @@ const themeOptions = [
                   : 'text-text-muted hover:bg-background-secondary hover:text-text',
               ]"
             >
-              <span>{{ s.icon }}</span>
+              <BaseIcons :name="s.icon" size="sm" />
               <span>{{ s.label }}</span>
             </button>
           </nav>
@@ -295,8 +296,8 @@ const themeOptions = [
                   :class="[
                     'px-4 py-2 rounded-full border-1.5 text-xs font-bold transition-all',
                     prefs.dietary.includes(d)
-                      ? 'bg-orange border-orange text-white shadow-[0_4px_14px_var(--orange-glow)]'
-                      : 'bg-transparent border-glass-border text-text hover:border-orange',
+                      ? 'bg-orange border-orange text-white'
+                      : 'bg-transparent border-border text-text hover:border-orange',
                   ]"
                 >{{ d }}</button>
               </div>
@@ -313,10 +314,10 @@ const themeOptions = [
                     'p-4 rounded-2xl border-1.5 text-left transition-all',
                     prefs.cuisines.includes(g)
                       ? 'border-orange bg-orange/10'
-                      : 'border-glass-border hover:border-orange',
+                      : 'border-border hover:border-orange',
                   ]"
                 >
-                  <span class="text-2xl block mb-1">{{ GOAL_LABELS[g].icon }}</span>
+                  <BaseIcons :name="GOAL_LABELS[g].icon" size="lg" class="mx-auto mb-1" />
                   <span class="font-bold text-sm" :class="prefs.cuisines.includes(g) ? 'text-orange' : 'text-text'">{{ GOAL_LABELS[g].label }}</span>
                 </button>
               </div>
@@ -333,9 +334,9 @@ const themeOptions = [
                     'px-4 py-2 rounded-full border-1.5 text-xs font-bold transition-all',
                     prefs.allergies.includes(a)
                       ? 'bg-red-500/15 border-red-500 text-red-500'
-                      : 'bg-transparent border-glass-border text-text hover:border-red-500',
+                      : 'bg-transparent border-border text-text hover:border-red-500',
                   ]"
-                >🚫 {{ a }}</button>
+                ><BaseIcons name="no-symbol" size="xs" class="inline-block mr-1 -mt-0.5" />{{ a }}</button>
               </div>
             </div>
 
@@ -359,11 +360,11 @@ const themeOptions = [
                 :class="[
                   'p-5 rounded-2xl border-1.5 text-left transition-all',
                   mode === t.value
-                    ? 'border-orange bg-orange/10 shadow-[0_4px_14px_var(--orange-glow)]'
-                    : 'border-glass-border hover:border-orange',
+                    ? 'border-orange bg-orange/10'
+                    : 'border-border hover:border-orange',
                 ]"
               >
-                <span class="text-2xl block mb-2">{{ t.icon }}</span>
+                <BaseIcons :name="t.icon" size="lg" class="mb-2" />
                 <span class="font-bold text-sm" :class="mode === t.value ? 'text-orange' : 'text-text'">{{ t.label }}</span>
               </button>
             </div>
@@ -454,18 +455,18 @@ const themeOptions = [
               </div>
             </div>
 
-            <div class="mt-8 pt-6 border-t border-glass-border space-y-3">
-              <button @click="logoutHere" class="w-full px-6 py-3 rounded-2xl border-1.5 border-glass-border bg-background-secondary text-text font-bold text-sm hover:border-orange transition-all text-left flex items-center justify-between">
+            <div class="mt-8 pt-6 border-t border-border space-y-3">
+              <button @click="logoutHere" class="w-full px-6 py-3 rounded-2xl border-1.5 border-border bg-background-secondary text-text font-bold text-sm hover:border-orange transition-all text-left flex items-center justify-between">
                 <span>Sign out of this device</span>
                 <span>→</span>
               </button>
-              <button @click="logoutEverywhere" class="w-full px-6 py-3 rounded-2xl border-1.5 border-glass-border bg-background-secondary text-text font-bold text-sm hover:border-orange transition-all text-left flex items-center justify-between">
+              <button @click="logoutEverywhere" class="w-full px-6 py-3 rounded-2xl border-1.5 border-border bg-background-secondary text-text font-bold text-sm hover:border-orange transition-all text-left flex items-center justify-between">
                 <span>Sign out everywhere</span>
                 <span>→</span>
               </button>
               <button @click="requestDeleteAccount" class="w-full px-6 py-3 rounded-2xl border-1.5 border-red-500/40 bg-red-500/5 text-red-500 font-bold text-sm hover:bg-red-500/10 transition-all text-left flex items-center justify-between">
                 <span>Delete my account</span>
-                <span>⚠</span>
+                <BaseIcons name="exclamation-triangle" size="sm" />
               </button>
             </div>
           </div>
@@ -480,7 +481,7 @@ const themeOptions = [
   background: var(--glass, rgba(255, 255, 255, 0.6));
   backdrop-filter: blur(24px) saturate(120%);
   -webkit-backdrop-filter: blur(24px) saturate(120%);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.12));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 :global(.dark) .ls-card {
@@ -489,7 +490,7 @@ const themeOptions = [
 
 .settings-card {
   background: var(--background-secondary, rgba(245, 245, 247, 0.5));
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.12));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
   border-radius: 32px;
   padding: 32px;
 }
@@ -531,7 +532,7 @@ const themeOptions = [
   width: 100%;
   padding: 0.85rem 1rem;
   background: var(--surface, rgba(255, 255, 255, 0.7));
-  border: 1.5px solid var(--glass-border, rgba(0, 0, 0, 0.08));
+  border: 1.5px solid var(--border, rgba(0, 0, 0, 0.08));
   border-radius: 14px;
   font-size: 0.9rem;
   outline: none;
@@ -555,7 +556,7 @@ const themeOptions = [
   gap: 1rem;
   padding: 1rem 1.25rem;
   background: var(--surface, rgba(255, 255, 255, 0.6));
-  border: 1px solid var(--glass-border, rgba(0, 0, 0, 0.06));
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.06));
   border-radius: 16px;
   cursor: pointer;
 }

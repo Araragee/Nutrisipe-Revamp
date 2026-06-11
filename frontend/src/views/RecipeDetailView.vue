@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -65,10 +66,10 @@ const isOwner = computed(() => authStore.user?.id === post.value?.userId)
 const nutritionFacts = computed(() => {
   const n = post.value?.recipe?.nutrition
   return [
-    { label: 'Calories', val: n?.calories || '0', unit: 'kcal', icon: '⚡' },
-    { label: 'Protein', val: n?.protein || '0', unit: 'g', icon: '💪' },
-    { label: 'Carbs', val: n?.carbs || '0', unit: 'g', icon: '🌾' },
-    { label: 'Fat', val: n?.fat || '0', unit: 'g', icon: '🥑' },
+    { label: 'Calories', val: n?.calories || '0', unit: 'kcal', icon: 'fire' },
+    { label: 'Protein', val: n?.protein || '0', unit: 'g', icon: 'bolt' },
+    { label: 'Carbs', val: n?.carbs || '0', unit: 'g', icon: 'circle-stack' },
+    { label: 'Fat', val: n?.fat || '0', unit: 'g', icon: 'beaker' },
   ]
 })
 
@@ -211,16 +212,16 @@ const recipeImage = computed(() =>
        <div class="flex flex-col lg:flex-row gap-12">
           <!-- Left: Hero Image -->
           <div class="w-full lg:w-1/2 shrink-0">
-             <div class="relative rounded-[40px] overflow-hidden shadow-2xl group border-1.5 border-glass-border">
+             <div class="relative rounded-[40px] overflow-hidden shadow-2xl group border-1.5 border-border">
                 <img :src="recipeImage.src" :srcset="recipeImage.srcset" sizes="(min-width:1024px) 45vw, 100vw" class="w-full object-cover aspect-[4/5]" />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
                 <button
                   @click="toggleLike"
-                  class="absolute top-6 right-6 w-14 h-14 rounded-full bg-surface/80 backdrop-blur-xl border border-glass-border flex items-center justify-center text-2xl transition-all active:scale-90"
+                  class="absolute top-6 right-6 w-14 h-14 rounded-full bg-surface/80 border border-border flex items-center justify-center text-2xl transition-all active:scale-90"
                   :class="post.isLiked ? 'text-orange shadow-lg shadow-orange/20' : 'text-text-dim'"
                 >
-                  {{ post.isLiked ? '❤️' : '🤍' }}
+                  <BaseIcons name="heart" :solid="post.isLiked" size="lg" />
                 </button>
              </div>
           </div>
@@ -234,7 +235,7 @@ const recipeImage = computed(() =>
 
              <h1 class="font-montserrat font-extrabold text-4xl md:text-5xl tracking-tight leading-[1.1] mb-8">{{ post.title }}</h1>
 
-             <div class="flex items-center gap-4 p-5 bg-background-secondary rounded-3xl border border-glass-border mb-10">
+             <div class="flex items-center gap-4 p-5 bg-background-secondary rounded-3xl border border-border mb-10">
                 <UserAvatar :user="post.user" size="md" class="border-2 border-orange" />
                 <div class="flex-1">
                    <p class="font-bold text-[15px]">{{ post.user.displayName }}</p>
@@ -248,15 +249,15 @@ const recipeImage = computed(() =>
 
              <!-- Nutrition Row -->
              <div class="grid grid-cols-4 gap-4 mb-10">
-                <div v-for="n in nutritionFacts" :key="n.label" class="bg-background-secondary/50 rounded-2xl p-4 text-center border border-glass-border">
-                   <span class="text-2xl mb-1.5 block">{{ n.icon }}</span>
+                <div v-for="n in nutritionFacts" :key="n.label" class="bg-background-secondary/50 rounded-2xl p-4 text-center border border-border">
+                   <BaseIcons :name="n.icon" size="md" class="mx-auto mb-1.5 text-text-dim" />
                    <span class="font-montserrat font-extrabold text-lg block leading-none mb-1">{{ n.val }}</span>
                    <span class="text-[9px] text-text-dim uppercase font-bold tracking-widest">{{ n.label }}</span>
                 </div>
              </div>
 
              <!-- Tabs -->
-             <div class="flex gap-10 border-b border-glass-border mb-8">
+             <div class="flex gap-10 border-b border-border mb-8">
                 <button
                   v-for="t in ['ingredients', 'instructions', 'reviews']"
                   :key="t"
@@ -272,19 +273,19 @@ const recipeImage = computed(() =>
 
              <div class="flex-1 mb-10">
                 <div v-if="activeTab === 'ingredients'">
-                   <div v-if="baseServings" class="flex items-center justify-between gap-3 mb-5 p-3 bg-background-secondary/40 border border-glass-border rounded-2xl">
+                   <div v-if="baseServings" class="flex items-center justify-between gap-3 mb-5 p-3 bg-background-secondary/40 border border-border rounded-2xl">
                       <span class="text-xs font-bold uppercase tracking-widest text-text-dim">Servings</span>
                       <div class="flex items-center gap-2">
-                         <button @click="adjustServings(-1)" :disabled="(targetServings ?? baseServings) <= 1" class="w-8 h-8 rounded-full bg-background-secondary border border-glass-border text-text font-bold disabled:opacity-40">−</button>
+                         <button @click="adjustServings(-1)" :disabled="(targetServings ?? baseServings) <= 1" class="w-8 h-8 rounded-full bg-background-secondary border border-border text-text font-bold disabled:opacity-40">−</button>
                          <span class="font-montserrat font-extrabold text-lg w-12 text-center tabular-nums">{{ targetServings ?? baseServings }}</span>
-                         <button @click="adjustServings(1)" class="w-8 h-8 rounded-full bg-background-secondary border border-glass-border text-text font-bold">+</button>
+                         <button @click="adjustServings(1)" class="w-8 h-8 rounded-full bg-background-secondary border border-border text-text font-bold">+</button>
                          <button v-if="scaleFactor !== 1" @click="resetServings" class="ml-2 text-[10px] font-bold uppercase tracking-widest text-orange hover:underline">Reset</button>
                       </div>
                    </div>
 
                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <template v-if="scaledIngredients.length > 0">
-                       <div v-for="(ing, idx) in scaledIngredients" :key="idx" class="flex items-center gap-4 p-4 bg-background-secondary/30 rounded-2xl border border-glass-border">
+                       <div v-for="(ing, idx) in scaledIngredients" :key="idx" class="flex items-center gap-4 p-4 bg-background-secondary/30 rounded-2xl border border-border">
                           <div class="w-2.5 h-2.5 rounded-full bg-orange"></div>
                           <span class="text-[15px] font-medium">{{ ing.name }}</span>
                           <span class="ml-auto font-bold text-orange text-sm">{{ ing.quantity }}</span>
@@ -310,7 +311,7 @@ const recipeImage = computed(() =>
                    <RatingHistogram ref="histogramRef" :post-id="post.id" />
                    <div v-if="authStore.isAuthenticated && !isOwner">
                       <RatingInput @submit="handleRatingSubmit" />
-                      <div class="my-8 border-b border-glass-border"></div>
+                      <div class="my-8 border-b border-border"></div>
                    </div>
                    <RatingList ref="ratingListRef" :post-id="post.id" />
                    <div class="my-10"></div>
@@ -321,21 +322,21 @@ const recipeImage = computed(() =>
              <!-- Actions -->
              <div class="flex flex-wrap gap-4 mb-10">
                 <button v-if="hasInstructions" @click="showCookMode = true" class="flex-1 min-w-[200px] btn-primary flex items-center justify-center gap-2 h-14">
-                  <span>🍳</span> Cook Mode
+                  <BaseIcons name="play" size="sm" /> Cook Mode
                 </button>
                 <button @click="showCollectionModal = true" class="flex-1 min-w-[160px] btn-secondary flex items-center justify-center gap-2 h-14">
-                  <span>📁</span> Save to Collection
+                  <BaseIcons name="folder-plus" size="sm" /> Save to Collection
                 </button>
                 <button @click="forkRecipe" :disabled="isForking" class="flex-1 min-w-[160px] btn-secondary flex items-center justify-center gap-2 h-14">
-                  <span>{{ isForking ? '⏳' : '🍴' }}</span> Fork
+                  <BaseIcons name="arrow-path-rounded-square" size="sm" :class="{ 'animate-spin': isForking }" /> Fork
                 </button>
                 <button @click="shareRecipe" class="flex-1 min-w-[140px] btn-secondary flex items-center justify-center gap-2 h-14">
-                  <span>📤</span> Share
+                  <BaseIcons name="share" size="sm" /> Share
                 </button>
              </div>
 
              <!-- Variations -->
-             <div class="mt-12 border-t border-glass-border pt-12">
+             <div class="mt-12 border-t border-border pt-12">
                 <VariationList :post-id="post.id" />
              </div>
           </div>

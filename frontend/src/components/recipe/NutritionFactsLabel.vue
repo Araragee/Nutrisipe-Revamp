@@ -33,7 +33,7 @@ const fmt = (n: number, d: number) => (Number.isFinite(n) ? n.toFixed(d) : '0')
 
 <template>
   <div
-    class="nutrition-label bg-background-secondary border-1.5 border-glass-border rounded-2xl"
+    class="nutrition-label bg-background-secondary border-1.5 border-border rounded-2xl"
     :class="compact ? 'p-4' : 'p-6'"
   >
     <h3
@@ -43,7 +43,7 @@ const fmt = (n: number, d: number) => (Number.isFinite(n) ? n.toFixed(d) : '0')
       Nutrition Facts
     </h3>
 
-    <div class="border-t-2 border-glass-border pt-3 space-y-2">
+    <div class="border-t-2 border-border pt-3 space-y-2">
       <div class="flex justify-between text-xs text-text-dim">
         <span>Edible portion weight</span>
         <span class="font-bold text-text">{{ fmt(data.ediblePortionWeight, 0) }} g</span>
@@ -54,12 +54,12 @@ const fmt = (n: number, d: number) => (Number.isFinite(n) ? n.toFixed(d) : '0')
       </div>
     </div>
 
-    <table class="w-full mt-3 border-t-2 border-glass-border">
+    <table class="w-full mt-3 border-t-2 border-border">
       <tbody>
         <tr
           v-for="r in rows"
           :key="r.label"
-          class="border-b border-glass-border"
+          class="border-b border-border"
         >
           <td
             class="py-2 text-sm"

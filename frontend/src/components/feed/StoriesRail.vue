@@ -162,7 +162,7 @@ defineExpose({ refresh: load })
 }
 
 .story-ring--seen {
-  background: var(--glass-border, rgba(0, 0, 0, 0.12));
+  background: var(--border, rgba(0, 0, 0, 0.12));
 }
 
 .scrollbar-hide::-webkit-scrollbar {

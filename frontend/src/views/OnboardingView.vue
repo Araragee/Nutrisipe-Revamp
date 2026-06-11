@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import BrandMeshBackground from '@/components/common/BrandMeshBackground.vue'
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -8,7 +10,6 @@ import { preferencesApi } from '@/http/endpoints/preferences'
 import { usersApi } from '@/http/endpoints/users'
 import { socialApi } from '@/http/endpoints/social'
 import { resolveImage } from '@/utils/imageUrl'
-import BrandMeshBackground from '@/components/common/BrandMeshBackground.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -35,10 +36,10 @@ const diets = [
 const selectedDiets = ref<string[]>([])
 
 const goals = [
-  { id: 'lose', icon: '🏃', label: 'Lose Weight', desc: 'Caloric deficit meals' },
-  { id: 'muscle', icon: '💪', label: 'Build Muscle', desc: 'High-protein focus' },
-  { id: 'health', icon: '🥗', label: 'Eat Healthier', desc: 'Balanced nutrition' },
-  { id: 'explore', icon: '🌍', label: 'Explore Cuisines', desc: 'Try new flavors' },
+  { id: 'lose', icon: 'arrow-trending-down', label: 'Lose Weight', desc: 'Caloric deficit meals' },
+  { id: 'muscle', icon: 'fire', label: 'Build Muscle', desc: 'High-protein focus' },
+  { id: 'health', icon: 'heart', label: 'Eat Healthier', desc: 'Balanced nutrition' },
+  { id: 'explore', icon: 'globe-alt', label: 'Explore Cuisines', desc: 'Try new flavors' },
 ]
 const selectedGoals = ref<string[]>([])
 
@@ -143,8 +144,7 @@ onMounted(() => {
 
 <template>
   <div class="onboarding-view relative min-h-screen bg-background overflow-hidden">
-    <BrandMeshBackground variant="morning" :intensity="0.85" />
-
+    <BrandMeshBackground variant="morning" :intensity="0.5" />
     <div class="relative z-10 min-h-screen flex flex-col lg:flex-row">
       <!-- Left: copy + nav -->
       <aside class="lg:w-2/5 xl:w-1/3 flex flex-col justify-between p-8 md:p-12 lg:p-16">
@@ -188,7 +188,7 @@ onMounted(() => {
                 <span
                   v-for="g in selectedGoals"
                   :key="g"
-                  class="px-3 py-1 rounded-full bg-background-secondary text-text text-xs font-bold border border-glass-border"
+                  class="px-3 py-1 rounded-full bg-background-secondary text-text text-xs font-bold border border-border"
                 >{{ goalIconMap[g] }} {{ goals.find(x => x.id === g)?.label }}</span>
               </template>
             </div>
@@ -228,10 +228,10 @@ onMounted(() => {
                 :key="diet"
                 @click="toggleArr(selectedDiets, diet)"
                 :class="[
-                  'px-5 py-3 rounded-full border-1.5 text-sm font-bold transition-all backdrop-blur-sm',
+                  'px-5 py-3 rounded-full border-1.5 text-sm font-bold transition-all',
                   selectedDiets.includes(diet)
-                    ? 'bg-orange border-orange text-white shadow-[0_4px_18px_var(--orange-glow)] scale-105'
-                    : 'bg-surface/60 border-glass-border text-text hover:border-orange',
+                    ? 'bg-orange border-orange text-white scale-105'
+                    : 'bg-surface/60 border-border text-text hover:border-orange',
                 ]"
               >{{ diet }}</button>
             </div>
@@ -245,13 +245,13 @@ onMounted(() => {
                 :key="g.id"
                 @click="toggleArr(selectedGoals, g.id)"
                 :class="[
-                  'group p-7 rounded-3xl border-1.5 text-left transition-all backdrop-blur-sm',
+                  'group p-7 rounded-3xl border-1.5 text-left transition-all',
                   selectedGoals.includes(g.id)
-                    ? 'border-orange bg-orange/15 shadow-[0_8px_30px_var(--orange-glow)]'
-                    : 'border-glass-border bg-surface/60 hover:border-orange hover:-translate-y-0.5',
+                    ? 'border-orange bg-orange/15'
+                    : 'border-border bg-surface/60 hover:border-orange hover:-translate-y-0.5',
                 ]"
               >
-                <span class="text-3xl mb-3 block">{{ g.icon }}</span>
+                <BaseIcons :name="g.icon" size="lg" class="mx-auto mb-3 text-orange" />
                 <div
                   class="font-montserrat font-extrabold text-lg mb-1"
                   :class="selectedGoals.includes(g.id) ? 'text-orange' : 'text-text'"
@@ -280,8 +280,8 @@ onMounted(() => {
                   :class="[
                     'creator-tile relative aspect-[3/4] rounded-2xl overflow-hidden group transition-all',
                     selectedCreators.has(c.id)
-                      ? 'ring-[3px] ring-orange scale-[1.03] shadow-[0_10px_30px_var(--orange-glow)]'
-                      : 'ring-1 ring-glass-border hover:-translate-y-0.5',
+                      ? 'ring-[3px] ring-orange scale-[1.03]'
+                      : 'ring-1 ring-border hover:-translate-y-0.5',
                   ]"
                 >
                   <img
@@ -298,7 +298,7 @@ onMounted(() => {
 
                   <div
                     v-if="c.followerCount > 0"
-                    class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/55 backdrop-blur-sm text-white text-[10px] font-bold tracking-wider"
+                    class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/55 text-white text-[10px] font-bold tracking-wider"
                   >{{ c.followerCount }} ★</div>
 
                   <div class="absolute inset-x-0 bottom-0 p-3 text-left">
@@ -325,12 +325,12 @@ onMounted(() => {
           <button
             v-if="step > 0"
             @click="step--"
-            class="flex-1 sm:flex-none sm:px-10 py-4 rounded-2xl border-1.5 border-glass-border bg-surface/60 backdrop-blur font-montserrat font-bold text-sm text-text hover:border-orange hover:text-orange transition-all"
+            class="flex-1 sm:flex-none sm:px-10 py-4 rounded-2xl border-1.5 border-border bg-surface/60 font-montserrat font-bold text-sm text-text hover:border-orange hover:text-orange transition-all"
           >← Back</button>
           <button
             @click="next"
             :disabled="isSaving || !canContinue"
-            class="flex-1 px-8 py-4 rounded-2xl bg-gradient-to-br from-orange to-orange-light text-white font-montserrat font-bold text-sm shadow-[0_8px_28px_var(--orange-glow)] hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:cursor-not-allowed"
+            class="flex-1 px-8 py-4 rounded-2xl bg-orange hover:bg-orange-deep text-white font-montserrat font-bold text-sm hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:cursor-not-allowed"
           >{{ isSaving ? 'Saving…' : ctaLabel }}</button>
         </div>
       </section>

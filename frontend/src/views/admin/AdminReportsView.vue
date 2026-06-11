@@ -92,13 +92,13 @@ function formatDate(date: string) {
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-        <select v-model="filters.status" @change="loadReports(1)" class="bg-background-secondary border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none appearance-none font-bold">
+        <select v-model="filters.status" @change="loadReports(1)" class="bg-background-secondary border border-border rounded-2xl px-6 py-4 focus:border-orange outline-none appearance-none font-bold">
            <option value="">All Status</option>
            <option value="PENDING">Pending</option>
            <option value="REVIEWING">Reviewing</option>
            <option value="RESOLVED">Resolved</option>
         </select>
-        <select v-model="filters.type" @change="loadReports(1)" class="bg-background-secondary border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none appearance-none font-bold">
+        <select v-model="filters.type" @change="loadReports(1)" class="bg-background-secondary border border-border rounded-2xl px-6 py-4 focus:border-orange outline-none appearance-none font-bold">
            <option value="">All Types</option>
            <option value="POST">Post</option>
            <option value="COMMENT">Comment</option>
@@ -112,7 +112,7 @@ function formatDate(date: string) {
       </div>
 
       <div v-else class="space-y-6">
-        <div v-for="report in reports" :key="report.id" class="bg-background-secondary border border-glass-border rounded-[32px] p-8 shadow-xl">
+        <div v-for="report in reports" :key="report.id" class="bg-background-secondary border border-border rounded-[32px] p-8 shadow-xl">
            <div class="flex flex-col md:flex-row justify-between gap-6">
               <div class="flex-1">
                  <div class="flex items-center gap-3 mb-4">
@@ -141,7 +141,7 @@ function formatDate(date: string) {
            </div>
         </div>
 
-        <div v-if="reports.length === 0" class="py-20 text-center bg-background-secondary rounded-[40px] border-2 border-dashed border-glass-border">
+        <div v-if="reports.length === 0" class="py-20 text-center bg-background-secondary rounded-[40px] border-2 border-dashed border-border">
            <p class="text-text-dim font-bold uppercase tracking-widest">Clear Skies! No reports found.</p>
         </div>
       </div>
@@ -149,10 +149,10 @@ function formatDate(date: string) {
 
     <!-- Resolution Modal -->
     <div v-if="showResolutionModal" class="fixed inset-0 z-[100] flex items-center justify-center p-6">
-       <div class="absolute inset-0 bg-background/80 backdrop-blur-md" @click="showResolutionModal = false"></div>
-       <div class="relative w-full max-w-md bg-background-secondary border border-glass-border rounded-[40px] p-10 shadow-2xl">
+       <div class="absolute inset-0 bg-background/80" @click="showResolutionModal = false"></div>
+       <div class="relative w-full max-w-md bg-background-secondary border border-border rounded-[40px] p-10 shadow-2xl">
           <h2 class="font-montserrat font-extrabold text-2xl mb-4">{{ resolutionAction }} Report</h2>
-          <textarea v-model="moderatorNote" class="w-full bg-background border border-glass-border rounded-2xl p-5 mb-8 outline-none focus:border-orange" placeholder="Add moderator notes..."></textarea>
+          <textarea v-model="moderatorNote" class="w-full bg-background border border-border rounded-2xl p-5 mb-8 outline-none focus:border-orange" placeholder="Add moderator notes..."></textarea>
           <div class="flex gap-4">
              <button @click="confirmResolution" class="flex-1 btn-primary py-4">Confirm</button>
              <button @click="showResolutionModal = false" class="flex-1 btn-secondary">Cancel</button>

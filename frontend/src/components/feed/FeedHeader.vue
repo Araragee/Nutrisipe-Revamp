@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { ref, watch } from 'vue'
 import { debounce } from '@/utils/performance'
 
@@ -37,10 +38,10 @@ function selectCategory(cat: string) {
 </script>
 
 <template>
-  <header class="feed-header sticky top-0 z-20 bg-background/90 backdrop-blur-2xl border-b border-glass-border px-8 py-5 flex items-center gap-4">
+  <header class="feed-header sticky top-0 z-20 bg-background/90 border-b border-border px-8 py-5 flex items-center gap-4">
     <!-- Search Bar -->
-    <div class="search-bar flex-1 flex items-center gap-3 bg-surface border-1.5 border-glass-border rounded-xl px-4.5 py-3 transition-all focus-within:border-orange">
-      <span class="search-icon text-text-dim text-base">🔍</span>
+    <div class="search-bar flex-1 flex items-center gap-3 bg-surface border-1.5 border-border rounded-xl px-4.5 py-3 transition-all focus-within:border-orange">
+      <BaseIcons name="magnifying-glass" size="sm" class="search-icon text-text-dim" />
       <input
         v-model="searchQuery"
         type="text"
@@ -58,7 +59,7 @@ function selectCategory(cat: string) {
           :key="cat"
           @click="selectCategory(cat)"
           :class="[
-            'filter-chip px-4 py-2 rounded-full border-1.5 border-glass-border text-[13px] font-medium whitespace-nowrap transition-all flex-shrink-0',
+            'filter-chip px-4 py-2 rounded-full border-1.5 border-border text-[13px] font-medium whitespace-nowrap transition-all flex-shrink-0',
             activeCategory === cat ? 'bg-orange border-orange text-white' : 'bg-transparent text-text-muted hover:border-orange hover:text-orange'
           ]"
         >

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { storiesApi, type StoryGroup } from '@/http/endpoints/stories'
@@ -252,7 +253,7 @@ onUnmounted(() => {
             @click="deleteCurrent"
             class="w-9 h-9 rounded-full bg-white/10 text-white text-sm flex items-center justify-center"
             aria-label="Delete"
-          >🗑</button>
+          ><BaseIcons name="trash" size="sm" /></button>
           <button
             @click="emit('close', groupIndex)"
             class="w-9 h-9 rounded-full bg-white/10 text-white text-xl flex items-center justify-center"
@@ -285,7 +286,7 @@ onUnmounted(() => {
         <button
           v-if="currentStory.postId"
           @click="openLinkedPost"
-          class="absolute inset-x-0 bottom-8 mx-auto px-6 py-3 rounded-full bg-white/15 backdrop-blur text-white text-xs font-bold uppercase tracking-widest w-fit border border-white/20"
+          class="absolute inset-x-0 bottom-8 mx-auto px-6 py-3 rounded-full bg-white/15 text-white text-xs font-bold uppercase tracking-widest w-fit border border-white/20"
         >
           View Recipe →
         </button>

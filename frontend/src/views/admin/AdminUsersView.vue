@@ -123,16 +123,16 @@ async function unbanUser(userId: string) {
           v-model="filters.search"
           type="text"
           placeholder="Search by name, email..."
-          class="bg-background-secondary border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all font-medium"
+          class="bg-background-secondary border border-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all font-medium"
           @input="debouncedSearch"
         />
-        <select v-model="filters.role" @change="loadUsers(1)" class="bg-background-secondary border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none appearance-none font-bold">
+        <select v-model="filters.role" @change="loadUsers(1)" class="bg-background-secondary border border-border rounded-2xl px-6 py-4 focus:border-orange outline-none appearance-none font-bold">
            <option value="">All Roles</option>
            <option value="USER">User</option>
            <option value="MODERATOR">Moderator</option>
            <option value="ADMIN">Admin</option>
         </select>
-        <select v-model="filters.status" @change="loadUsers(1)" class="bg-background-secondary border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none appearance-none font-bold">
+        <select v-model="filters.status" @change="loadUsers(1)" class="bg-background-secondary border border-border rounded-2xl px-6 py-4 focus:border-orange outline-none appearance-none font-bold">
            <option value="">All Status</option>
            <option value="active">Active</option>
            <option value="banned">Banned</option>
@@ -144,7 +144,7 @@ async function unbanUser(userId: string) {
          <div class="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
       </div>
 
-      <div v-else class="bg-background-secondary rounded-[40px] border border-glass-border overflow-hidden shadow-xl">
+      <div v-else class="bg-background-secondary rounded-[40px] border border-border overflow-hidden shadow-xl">
         <table class="w-full border-collapse">
            <thead>
               <tr class="bg-black/20 text-text-dim text-[10px] font-bold uppercase tracking-[0.2em]">
@@ -155,7 +155,7 @@ async function unbanUser(userId: string) {
                  <th class="px-8 py-6 text-right">Actions</th>
               </tr>
            </thead>
-           <tbody class="divide-y divide-glass-border">
+           <tbody class="divide-y divide-border">
               <tr v-for="user in users" :key="user.id" class="hover:bg-white/5 transition-colors group">
                  <td class="px-8 py-6">
                     <div class="flex items-center gap-4">
@@ -203,12 +203,12 @@ async function unbanUser(userId: string) {
 
     <!-- Ban Modal -->
     <div v-if="showBanModal" class="fixed inset-0 z-[100] flex items-center justify-center p-6">
-       <div class="absolute inset-0 bg-background/80 backdrop-blur-md" @click="showBanModal = false"></div>
-       <div class="relative w-full max-w-md bg-background-secondary border border-glass-border rounded-[40px] p-10 shadow-2xl">
+       <div class="absolute inset-0 bg-background/80" @click="showBanModal = false"></div>
+       <div class="relative w-full max-w-md bg-background-secondary border border-border rounded-[40px] p-10 shadow-2xl">
           <h2 class="font-montserrat font-extrabold text-2xl mb-4">Ban @{{ selectedUser.username }}</h2>
           <p class="text-text-muted text-sm mb-8 leading-relaxed">Suspending this citizen will restrict their access to the platform. Please provide a clear reason.</p>
 
-          <textarea v-model="banReason" class="w-full bg-background border border-glass-border rounded-2xl p-5 mb-8 outline-none focus:border-red-500" placeholder="Violating community guidelines..."></textarea>
+          <textarea v-model="banReason" class="w-full bg-background border border-border rounded-2xl p-5 mb-8 outline-none focus:border-red-500" placeholder="Violating community guidelines..."></textarea>
 
           <div class="flex gap-4">
              <button @click="confirmBan" class="flex-1 py-4 rounded-btn bg-red-500 text-white font-bold hover:bg-red-600 transition-all">Confirm Ban</button>

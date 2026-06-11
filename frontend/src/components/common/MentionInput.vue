@@ -14,7 +14,7 @@
     <!-- Mention Suggestions Dropdown -->
     <div
       v-if="showSuggestions && searchResults.length > 0"
-      class="absolute z-50 bg-surface border border-glass-border rounded-lg shadow-modal max-h-[200px] overflow-y-auto min-w-[250px]"
+      class="absolute z-50 bg-surface border border-border rounded-lg shadow-modal max-h-[200px] overflow-y-auto min-w-[250px]"
       :style="suggestionsStyle"
     >
       <div
@@ -31,7 +31,7 @@
           :alt="user.username"
           class="w-9 h-9 rounded-full object-cover"
         />
-        <div v-else class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-semibold text-base">
+        <div v-else class="w-9 h-9 rounded-full bg-orange-soft text-orange flex items-center justify-center font-semibold text-base">
           {{ user.username[0].toUpperCase() }}
         </div>
         <div class="flex-1 min-w-0">
@@ -63,7 +63,7 @@ const props = withDefaults(defineProps<Props>(), {
   placeholder: 'Write a comment...',
   rows: 3,
   maxLength: 2000,
-  textareaClass: 'w-full p-3 border border-glass-border bg-background-secondary rounded-lg text-sm text-text font-inherit resize-y transition-colors focus:outline-none focus:border-orange'
+  textareaClass: 'w-full p-3 border border-border bg-background-secondary rounded-lg text-sm text-text font-inherit resize-y transition-colors focus:outline-none focus:border-orange'
 })
 
 const emit = defineEmits<Emits>()

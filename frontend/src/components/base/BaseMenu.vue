@@ -30,7 +30,7 @@ const emit = defineEmits(['select'])
     <div>
       <slot name="trigger">
         <MenuButton
-          class="inline-flex w-full justify-center gap-x-1.5 rounded-3xl bg-background px-4 py-2.5 text-sm font-bold text-text shadow-sm border border-glass-border hover:bg-background-secondary transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          class="inline-flex w-full justify-center gap-x-1.5 rounded-3xl bg-background px-4 py-2.5 text-sm font-bold text-text shadow-sm border border-border hover:bg-background-secondary transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           {{ label }}
           <ChevronDownIcon
@@ -51,7 +51,7 @@ const emit = defineEmits(['select'])
     >
       <MenuItems
         :class="[
-          'absolute z-50 mt-2 origin-top-right rounded-[20px] bg-background border border-glass-border shadow-modal focus:outline-none overflow-hidden p-1',
+          'absolute z-50 mt-2 origin-top-right rounded-[20px] bg-background border border-border shadow-modal focus:outline-none overflow-hidden p-1',
           align === 'right' ? 'right-0' : 'left-0',
           width,
         ]"

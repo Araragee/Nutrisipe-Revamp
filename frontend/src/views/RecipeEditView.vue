@@ -122,7 +122,7 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
          <div class="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
       </div>
 
-      <div v-else-if="post" class="bg-background-secondary rounded-[40px] border border-glass-border p-8 md:p-12 shadow-2xl">
+      <div v-else-if="post" class="bg-background-secondary rounded-[40px] border border-border p-8 md:p-12 shadow-2xl">
          <h1 class="font-montserrat font-extrabold text-3xl mb-10">Edit Recipe</h1>
 
          <form @submit.prevent="handleUpdate" class="space-y-8">
@@ -131,7 +131,7 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
                <input
                  v-model="formData.title"
                  type="text"
-                 class="w-full bg-background border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all font-bold"
+                 class="w-full bg-background border border-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all font-bold"
                  placeholder="Give your recipe a name"
                />
             </div>
@@ -140,7 +140,7 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
                <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Category</label>
                <select
                  v-model="formData.category"
-                 class="w-full bg-background border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all font-bold appearance-none"
+                 class="w-full bg-background border border-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all font-bold appearance-none"
                >
                  <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
                </select>
@@ -151,7 +151,7 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
                <textarea
                  v-model="formData.description"
                  rows="4"
-                 class="w-full bg-background border border-glass-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all leading-relaxed"
+                 class="w-full bg-background border border-border rounded-2xl px-6 py-4 focus:border-orange outline-none transition-all leading-relaxed"
                  placeholder="Share the story behind this dish..."
                ></textarea>
             </div>
@@ -166,10 +166,10 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
                <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Ingredients</label>
                <div v-for="(ing, i) in formData.recipe.ingredients" :key="i" class="flex gap-3">
                   <IngredientAutocomplete v-model="ing.name" :placeholder="`Ingredient ${i+1}`" class="flex-1" />
-                  <input v-model="ing.quantity" class="w-24 bg-background border border-glass-border rounded-xl p-3.5 text-sm outline-none focus:border-orange transition-all font-medium" placeholder="Amount" />
-                  <button type="button" @click="removeIngredient(i)" class="w-10 h-10 shrink-0 border border-glass-border rounded-full flex items-center justify-center text-text-dim hover:border-red-500 hover:text-red-500 transition-all">✕</button>
+                  <input v-model="ing.quantity" class="w-24 bg-background border border-border rounded-xl p-3.5 text-sm outline-none focus:border-orange transition-all font-medium" placeholder="Amount" />
+                  <button type="button" @click="removeIngredient(i)" class="w-10 h-10 shrink-0 border border-border rounded-full flex items-center justify-center text-text-dim hover:border-red-500 hover:text-red-500 transition-all">✕</button>
                </div>
-               <button type="button" @click="addIngredient" class="w-full py-3.5 border border-dashed border-glass-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add ingredient</button>
+               <button type="button" @click="addIngredient" class="w-full py-3.5 border border-dashed border-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add ingredient</button>
             </div>
 
             <!-- Instructions -->
@@ -177,10 +177,10 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
                <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Method</label>
                <div v-for="(s, i) in formData.recipe.instructions" :key="i" class="flex gap-4">
                   <div class="w-9 h-9 rounded-full bg-orange text-white font-montserrat font-extrabold text-sm flex items-center justify-center shrink-0 mt-1">{{ i + 1 }}</div>
-                  <textarea v-model="s.text" rows="2" class="flex-1 bg-background border border-glass-border rounded-xl p-3.5 text-sm outline-none focus:border-orange transition-all leading-relaxed" :placeholder="`Describe step ${i+1}...`"></textarea>
-                  <button type="button" @click="removeStep(i)" class="w-10 h-10 shrink-0 border border-glass-border rounded-full flex items-center justify-center text-text-dim hover:border-red-500 hover:text-red-500 transition-all">✕</button>
+                  <textarea v-model="s.text" rows="2" class="flex-1 bg-background border border-border rounded-xl p-3.5 text-sm outline-none focus:border-orange transition-all leading-relaxed" :placeholder="`Describe step ${i+1}...`"></textarea>
+                  <button type="button" @click="removeStep(i)" class="w-10 h-10 shrink-0 border border-border rounded-full flex items-center justify-center text-text-dim hover:border-red-500 hover:text-red-500 transition-all">✕</button>
                </div>
-               <button type="button" @click="addStep" class="w-full py-3.5 border border-dashed border-glass-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add step</button>
+               <button type="button" @click="addStep" class="w-full py-3.5 border border-dashed border-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add step</button>
             </div>
 
             <!-- Nutrition -->
@@ -192,7 +192,7 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
                     {k:'protein', l:'Protein', u:'g'},
                     {k:'carbs', l:'Carbs', u:'g'},
                     {k:'fat', l:'Fat', u:'g'}
-                  ]" :key="n.k" class="p-4 bg-background border border-glass-border rounded-2xl focus-within:border-orange transition-all">
+                  ]" :key="n.k" class="p-4 bg-background border border-border rounded-2xl focus-within:border-orange transition-all">
                     <label class="text-[9px] font-bold text-text-dim uppercase tracking-widest mb-1 block">{{ n.l }}</label>
                     <div class="flex items-baseline gap-1">
                       <input v-model="formData.recipe.nutrition[n.k as 'calories'|'protein'|'carbs'|'fat']" type="number" class="w-full bg-transparent border-none outline-none font-montserrat font-extrabold text-xl text-text" placeholder="0" />

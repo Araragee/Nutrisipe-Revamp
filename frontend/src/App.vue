@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { onMounted, onErrorCaptured, computed, ref } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
@@ -49,7 +50,7 @@ onMounted(async () => {
       v-if="appError"
       class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background p-8 text-center"
     >
-      <p class="text-4xl mb-4">⚠️</p>
+      <BaseIcons name="exclamation-triangle" size="xl" class="mx-auto mb-4 text-text-dim" />
       <h1 class="font-montserrat font-extrabold text-2xl mb-2">Something went wrong</h1>
       <p class="text-text-muted text-sm mb-6 max-w-sm">{{ appError }}</p>
       <button

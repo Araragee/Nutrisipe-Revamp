@@ -139,10 +139,10 @@ const recipeImage = computed(() =>
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-black/75 backdrop-blur-md animate-revamp"
+    class="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-black/75 animate-revamp"
   >
     <div
-      class="relative bg-background w-full max-w-5xl h-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-modal border-1.5 border-glass-border flex animate-modalIn"
+      class="relative bg-background w-full max-w-5xl h-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-modal border-1.5 border-border flex animate-modalIn"
       @click.stop
     >
       <div v-if="isLoading" class="flex-1 flex items-center justify-center">
@@ -155,7 +155,7 @@ const recipeImage = computed(() =>
         <!-- Close button (modal top-right, over image) -->
         <button
           @click="emit('close')"
-          class="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-black/45 hover:bg-black/70 backdrop-blur-md border border-white/15 flex items-center justify-center text-white transition-all"
+          class="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-black/45 hover:bg-black/70 border border-white/15 flex items-center justify-center text-white transition-all"
           aria-label="Close"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -164,7 +164,7 @@ const recipeImage = computed(() =>
         <!-- Toast: link copied -->
         <div
           v-if="showCopyToast"
-          class="fixed left-1/2 -translate-x-1/2 bottom-10 z-[150] flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/85 text-white text-sm font-bold shadow-2xl backdrop-blur-xl animate-toastIn"
+          class="fixed left-1/2 -translate-x-1/2 bottom-10 z-[150] flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/85 text-white text-sm font-bold shadow-2xl animate-toastIn"
         >
           <span class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -228,7 +228,7 @@ const recipeImage = computed(() =>
             </h2>
 
             <div
-              class="flex items-center gap-4 py-4 border-y border-glass-border"
+              class="flex items-center gap-4 py-4 border-y border-border"
             >
               <UserAvatar
                 :user="post.user"
@@ -252,7 +252,7 @@ const recipeImage = computed(() =>
               <div
                 v-for="n in nutritionFacts"
                 :key="n.label"
-                class="bg-background-secondary rounded-2xl p-4 text-center border border-glass-border"
+                class="bg-background-secondary rounded-2xl p-4 text-center border border-border"
               >
                 <span class="block w-7 h-7 mx-auto mb-1.5 rounded-md flex items-center justify-center" :class="[n.bgClass, n.textClass]">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -265,7 +265,7 @@ const recipeImage = computed(() =>
             </div>
 
             <!-- Tabs -->
-            <div class="flex gap-8 border-b border-glass-border mb-6">
+            <div class="flex gap-8 border-b border-border mb-6">
               <button
                 v-for="t in ['ingredients', 'instructions', 'reviews']"
                 :key="t"
@@ -290,7 +290,7 @@ const recipeImage = computed(() =>
                 <div
                   v-for="(ing, idx) in post.recipe.ingredients"
                   :key="idx"
-                  class="flex items-center gap-3 p-3.5 bg-background-secondary rounded-xl border border-glass-border"
+                  class="flex items-center gap-3 p-3.5 bg-background-secondary rounded-xl border border-border"
                 >
                   <div class="w-2 h-2 rounded-full bg-orange"></div>
                   <span class="text-sm font-medium">{{ ing.name }}</span>
@@ -342,7 +342,7 @@ const recipeImage = computed(() =>
             <div v-if="activeTab === 'reviews'" class="space-y-6">
                <div v-if="authStore.isAuthenticated && !isOwner">
                   <RatingInput @submit="handleRatingSubmit" />
-                  <div class="my-6 border-b border-glass-border"></div>
+                  <div class="my-6 border-b border-border"></div>
                </div>
                <RatingList ref="ratingListRef" :post-id="post.id" />
                <div class="my-8"></div>
@@ -351,12 +351,12 @@ const recipeImage = computed(() =>
           </div>
 
           <!-- Variations -->
-          <div class="px-8 pb-10 border-t border-glass-border pt-8">
+          <div class="px-8 pb-10 border-t border-border pt-8">
              <VariationList :post-id="post.id" />
           </div>
 
           <!-- Footer -->
-          <div class="p-6 px-8 border-t border-glass-border bg-background flex gap-3">
+          <div class="p-6 px-8 border-t border-border bg-background flex gap-3">
             <button
               @click="showCollectionModal = true"
               class="flex-1 btn-secondary py-3.5 !text-sm flex items-center justify-center gap-2"
@@ -367,7 +367,7 @@ const recipeImage = computed(() =>
             <button
               @click="forkRecipe"
               :disabled="isForking"
-              class="flex-1 py-3.5 rounded-xl border-1.5 border-glass-border font-bold text-sm text-text-muted hover:border-orange hover:text-orange flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              class="flex-1 py-3.5 rounded-xl border-1.5 border-border font-bold text-sm text-text-muted hover:border-orange hover:text-orange flex items-center justify-center gap-2 transition-all disabled:opacity-50"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v3a2 2 0 0 1-2 2H6"/><path d="M6 9v12"/></svg>
               {{ isForking ? 'Forking…' : 'Fork' }}

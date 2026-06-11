@@ -129,20 +129,20 @@ const close = () => emit('close')
 <template>
   <div
     v-if="show && post"
-    class="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/75 backdrop-blur-md"
+    class="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/75"
     @click.self="close"
   >
-    <div class="relative bg-background w-full max-w-[960px] h-full max-h-[92vh] rounded-[28px] overflow-hidden border-1.5 border-glass-border shadow-modal grid grid-cols-1 md:grid-cols-[1fr_360px] animate-modalIn">
+    <div class="relative bg-background w-full max-w-[960px] h-full max-h-[92vh] rounded-[28px] overflow-hidden border-1.5 border-border shadow-modal grid grid-cols-1 md:grid-cols-[1fr_360px] animate-modalIn">
       <button
         @click="close"
-        class="absolute top-6 right-6 z-[130] w-9 h-9 rounded-full bg-background/80 backdrop-blur-md border-1.5 border-glass-border text-text-muted hover:border-orange hover:text-orange flex items-center justify-center transition-all shadow-lg"
+        class="absolute top-6 right-6 z-[130] w-9 h-9 rounded-full bg-background/80 border-1.5 border-border text-text-muted hover:border-orange hover:text-orange flex items-center justify-center transition-all shadow-lg"
         aria-label="Close"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
 
       <!-- LEFT: ingredients editor -->
-      <div class="flex flex-col h-full overflow-hidden border-r border-glass-border">
+      <div class="flex flex-col h-full overflow-hidden border-r border-border">
         <div class="p-6 pb-4 flex items-start gap-4">
           <div class="flex-1 min-w-0">
             <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-orange/15 text-orange text-[10px] font-bold uppercase tracking-wider mb-2">
@@ -156,15 +156,15 @@ const close = () => emit('close')
           </div>
         </div>
 
-        <div class="px-6 mb-3 flex items-center justify-between p-3.5 bg-background-secondary border border-glass-border rounded-xl mx-6 -mx-0">
+        <div class="px-6 mb-3 flex items-center justify-between p-3.5 bg-background-secondary border border-border rounded-xl mx-6 -mx-0">
           <div>
             <div class="text-sm font-bold">Servings</div>
             <div class="text-[11px] text-text-dim">Macros below are per serving</div>
           </div>
-          <div class="flex items-center gap-2 bg-background border border-glass-border rounded-full px-1 py-1">
-            <button @click="servings = Math.max(1, servings - 1)" class="w-7 h-7 rounded-full border border-glass-border text-text-muted hover:text-orange hover:border-orange flex items-center justify-center text-sm">−</button>
+          <div class="flex items-center gap-2 bg-background border border-border rounded-full px-1 py-1">
+            <button @click="servings = Math.max(1, servings - 1)" class="w-7 h-7 rounded-full border border-border text-text-muted hover:text-orange hover:border-orange flex items-center justify-center text-sm">−</button>
             <span class="w-8 text-center font-bold tabular-nums">{{ servings }}</span>
-            <button @click="servings = Math.min(8, servings + 1)" class="w-7 h-7 rounded-full border border-glass-border text-text-muted hover:text-orange hover:border-orange flex items-center justify-center text-sm">+</button>
+            <button @click="servings = Math.min(8, servings + 1)" class="w-7 h-7 rounded-full border border-border text-text-muted hover:text-orange hover:border-orange flex items-center justify-center text-sm">+</button>
           </div>
         </div>
 
@@ -181,7 +181,7 @@ const close = () => emit('close')
             v-for="it in items"
             :key="it.id"
             :class="[
-              'flex items-center gap-2 p-2 bg-background-secondary border border-glass-border rounded-xl transition-all',
+              'flex items-center gap-2 p-2 bg-background-secondary border border-border rounded-xl transition-all',
               it.removed ? 'opacity-40 line-through' : '',
             ]"
           >
@@ -190,7 +190,7 @@ const close = () => emit('close')
               @input="renameItem(it.id, ($event.target as HTMLInputElement).value)"
               class="flex-1 bg-transparent outline-none text-sm font-medium px-2"
             />
-            <div class="flex items-center gap-1 bg-background border border-glass-border rounded-full px-1 py-0.5">
+            <div class="flex items-center gap-1 bg-background border border-border rounded-full px-1 py-0.5">
               <button @click="adjust(it.id, -0.25)" class="w-6 h-6 rounded-full text-text-muted hover:text-orange flex items-center justify-center text-sm">−</button>
               <span class="text-[11px] font-bold tabular-nums w-12 text-center">{{ Math.round(it.scale * 100) }}<span class="text-text-dim">%</span></span>
               <button @click="adjust(it.id, 0.25)" class="w-6 h-6 rounded-full text-text-muted hover:text-orange flex items-center justify-center text-sm">+</button>
@@ -206,16 +206,16 @@ const close = () => emit('close')
       </div>
 
       <!-- RIGHT: live nutrition -->
-      <div class="flex flex-col h-full overflow-hidden border-l border-glass-border bg-gradient-to-br from-orange/5 to-orange/10 dark:from-zinc-900/60 dark:to-zinc-900/30">
+      <div class="flex flex-col h-full overflow-hidden border-l border-border bg-background-secondary dark:from-zinc-900/60 dark:to-zinc-900/30">
         <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
-          <div class="bg-background border border-glass-border rounded-[20px] p-[18px] shadow-[0_2px_12px_rgba(20,10,0,0.05)] dark:bg-white/5">
+          <div class="bg-background border border-border rounded-[20px] p-[18px] shadow-[0_2px_12px_rgba(20,10,0,0.05)] dark:bg-white/5">
             <div class="flex items-center gap-2 font-montserrat font-extrabold text-[13px] text-text mb-1">
               <span class="w-[7px] h-[7px] rounded-full bg-green-500 shadow-[0_0_0_0_rgba(34,197,94,0.7)] animate-pulseDot"></span>
               Live Nutrition
             </div>
             <div class="text-[11px] text-text-dim mb-3.5">Updates as you tweak</div>
 
-            <div class="text-center py-[18px] px-2 pb-3 rounded-2xl bg-gradient-to-br from-orange to-orange-light text-white shadow-[0_6px_20px_var(--orange-glow)] mb-3.5 transition-transform duration-300">
+            <div class="text-center py-[18px] px-2 pb-3 rounded-2xl bg-orange text-white mb-3.5 transition-transform duration-300">
               <div class="font-montserrat font-black text-[38px] leading-none tracking-tight tabular-nums">{{ display.cals }}</div>
               <div class="text-[12px] font-semibold opacity-90 mt-1 uppercase tracking-widest">kcal / serving</div>
               <div class="text-[11px] font-bold mt-1.5 opacity-95 tabular-nums">
@@ -243,10 +243,10 @@ const close = () => emit('close')
           </div>
 
           <div class="mt-auto flex gap-2.5 pt-3.5">
-            <button @click="reset" class="flex-1 py-3 rounded-xl border-1.5 border-glass-border bg-background-secondary text-text font-montserrat font-semibold text-[13px] hover:border-orange hover:text-orange transition-all">
+            <button @click="reset" class="flex-1 py-3 rounded-xl border-1.5 border-border bg-background-secondary text-text font-montserrat font-semibold text-[13px] hover:border-orange hover:text-orange transition-all">
               Reset
             </button>
-            <button @click="close" class="flex-1 py-3 rounded-xl bg-gradient-to-br from-orange to-orange-light text-white font-montserrat font-bold text-[13px] inline-flex items-center justify-center gap-2 shadow-[0_4px_16px_var(--orange-glow)] hover:opacity-95 transition-all">
+            <button @click="close" class="flex-1 py-3 rounded-xl bg-orange hover:bg-orange-deep text-white font-montserrat font-bold text-[13px] inline-flex items-center justify-center gap-2 hover:opacity-95 transition-all">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
               Save Version
             </button>

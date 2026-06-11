@@ -9,6 +9,7 @@ import { usersApi } from '@/http/endpoints/users'
 import { socialApi } from '@/http/endpoints/social'
 import { resolveImage } from '@/utils/imageUrl'
 import UserAvatar from '@/components/user/UserAvatar.vue'
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import NotificationDropdown from '@/components/notifications/NotificationDropdown.vue'
 
 defineProps<{ showShell: boolean }>()
@@ -29,15 +30,15 @@ function handleCategoryClick(name: string) {
 }
 
 const CATEGORIES = [
-  { name: 'All Recipes', desc: 'Everything on the feed', count: '2.4K', icon: '🍽️', bg: 'bg-orange/10' },
-  { name: 'Vegan', desc: '100% plant-powered', count: '342', icon: '🥗', bg: 'bg-green-100' },
-  { name: 'High Protein', desc: 'Muscle-fuel meals', count: '189', icon: '💪', bg: 'bg-yellow-100' },
-  { name: 'Keto', desc: 'Low carb, high fat', count: '156', icon: '🥑', bg: 'bg-green-50' },
-  { name: 'Breakfast', desc: 'Start your day right', count: '98', icon: '🌅', bg: 'bg-blue-50' },
-  { name: 'Quick & Easy', desc: 'Under 15 minutes', count: '234', icon: '⚡', bg: 'bg-yellow-50' },
-  { name: 'Plant-Based', desc: 'Eco-friendly eats', count: '178', icon: '🌱', bg: 'bg-green-100' },
-  { name: 'Dessert', desc: 'Guilt-free sweets', count: '112', icon: '🍰', bg: 'bg-red-50' },
-  { name: 'Smoothie', desc: 'Blended drinks', count: '67', icon: '🥤', bg: 'bg-pink-50' },
+  { name: 'All Recipes', count: '2.4K', icon: 'squares-2x2', style: 'bg-orange-soft text-orange' },
+  { name: 'Vegan', count: '342', icon: 'sparkles', style: 'bg-green-100 text-green-600 dark:bg-green-400/10 dark:text-green-400' },
+  { name: 'High Protein', count: '189', icon: 'fire', style: 'bg-amber-100 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400' },
+  { name: 'Keto', count: '156', icon: 'scale', style: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400' },
+  { name: 'Breakfast', count: '98', icon: 'sun', style: 'bg-sky-100 text-sky-600 dark:bg-sky-400/10 dark:text-sky-400' },
+  { name: 'Quick & Easy', count: '234', icon: 'clock', style: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-400/10 dark:text-yellow-400' },
+  { name: 'Plant-Based', count: '178', icon: 'globe-alt', style: 'bg-teal-100 text-teal-600 dark:bg-teal-400/10 dark:text-teal-400' },
+  { name: 'Dessert', count: '112', icon: 'cake', style: 'bg-pink-100 text-pink-600 dark:bg-pink-400/10 dark:text-pink-400' },
+  { name: 'Smoothie', count: '67', icon: 'beaker', style: 'bg-purple-100 text-purple-600 dark:bg-purple-400/10 dark:text-purple-400' },
 ]
 
 interface NavIcon { d: string[]; fill?: string }
@@ -148,7 +149,7 @@ onUnmounted(() => {
     <aside class="left-sidebar hidden md:flex w-[220px] shrink-0 flex-col gap-3 p-3 overflow-y-auto scrollbar-hide z-40">
       <!-- Card 1: Logo + Nav -->
       <div class="ls-card overflow-hidden rounded-[20px]">
-        <div class="flex items-center gap-2.5 px-3 pt-3 pb-2.5 border-b border-glass-border">
+        <div class="flex items-center gap-2.5 px-3 pt-3 pb-2.5 border-b border-border">
           <RouterLink to="/" class="logo-mark w-9 h-9 rounded-[11px] flex items-center justify-center shrink-0 cursor-pointer" aria-label="Home">
             <svg viewBox="0 0 22 28" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-[22px] h-[26px]">
               <path class="n-path" d="M 4,25 C 4,18 4,9 5,4 C 9,10 13,19 17,25 C 17,17 17,9 18,4"
@@ -179,9 +180,9 @@ onUnmounted(() => {
       <div v-if="suggestedCreators.length > 0" class="ls-card overflow-hidden rounded-[20px] px-3 py-3">
         <div class="font-montserrat font-extrabold text-[11px] text-text mb-2.5 tracking-wider">Suggested for You</div>
         <div>
-          <div v-for="c in suggestedCreators" :key="c.id" class="flex items-center gap-2 py-2 border-b border-glass-border last:border-0 last:pb-0">
+          <div v-for="c in suggestedCreators" :key="c.id" class="flex items-center gap-2 py-2 border-b border-border last:border-0 last:pb-0">
             <RouterLink :to="`/profile/${c.id}`" class="flex items-center gap-2 flex-1 min-w-0 group">
-              <div class="w-[34px] h-[34px] rounded-full overflow-hidden border-2 border-glass-border group-hover:border-orange transition-all shrink-0">
+              <div class="w-[34px] h-[34px] rounded-full overflow-hidden border-2 border-border group-hover:border-orange transition-all shrink-0">
                 <img :src="c.avatar" :alt="c.name" class="w-full h-full object-cover" />
               </div>
               <div class="flex-1 min-w-0">
@@ -222,10 +223,10 @@ onUnmounted(() => {
 
     <!-- ── Right panel (web): actions + bell ── -->
     <aside class="right-panel hidden lg:flex w-[280px] shrink-0 flex-col gap-3 p-3 overflow-y-auto scrollbar-hide z-30">
-      <div class="ls-card rounded-[32px] p-3.5 flex items-center gap-2">
+      <div class="ls-card rounded-card p-3 flex items-center gap-2">
         <button
           @click="router.push('/recipes/create')"
-          class="flex-1 px-2.5 py-2.5 rounded-3xl bg-gradient-to-br from-orange to-orange-light text-white font-montserrat font-bold text-xs inline-flex items-center justify-center gap-1.5 shadow-[0_4px_14px_var(--orange-glow)] hover:opacity-90 hover:-translate-y-0.5 transition-all"
+          class="flex-1 px-2.5 py-2.5 rounded-btn bg-orange text-white font-semibold text-xs inline-flex items-center justify-center gap-1.5 hover:bg-orange-deep transition-colors"
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" v-html="ICONS.plus"></svg>
           Share Recipe
@@ -234,8 +235,8 @@ onUnmounted(() => {
           <button
             @click="showNotifs = !showNotifs"
             :class="[
-              'w-9 h-9 rounded-[11px] border-1.5 border-glass-border flex items-center justify-center transition-all relative',
-              showNotifs ? 'border-orange text-orange bg-orange/10' : 'text-text-muted hover:border-orange hover:text-orange hover:bg-orange/10',
+              'w-9 h-9 rounded-btn border border-border flex items-center justify-center transition-colors relative',
+              showNotifs ? 'border-orange text-orange bg-orange-soft' : 'text-text-muted hover:border-orange hover:text-orange',
             ]"
             aria-label="Notifications"
           >
@@ -250,45 +251,48 @@ onUnmounted(() => {
       </div>
 
       <!-- Categories Section -->
-      <div class="ls-card rounded-[32px] p-3 flex flex-col gap-3">
-        <h3 class="font-montserrat font-extrabold text-xl text-text">Categories</h3>
-        <div class="flex flex-col gap-1.5">
+      <div class="ls-card rounded-card p-3 flex flex-col gap-2">
+        <h3 class="font-montserrat font-bold text-sm text-text dark:text-text px-2 pt-1">Categories</h3>
+        <div class="flex flex-col gap-0.5">
           <button
             v-for="cat in CATEGORIES"
             :key="cat.name"
             @click="handleCategoryClick(cat.name)"
             :class="[
-              'flex items-center gap-3.5 p-3.5 rounded-3xl transition-all border-1.5',
+              'flex items-center gap-2.5 px-2 py-2 rounded-xl transition-colors',
               selectedCategory === cat.name
-                ? 'bg-orange/5 border-orange shadow-[0_4px_12px_rgba(255,107,53,0.12)]'
-                : 'bg-transparent border-transparent hover:bg-background-secondary'
+                ? 'bg-orange-soft text-orange'
+                : 'hover:bg-background-secondary dark:hover:bg-background-secondary'
             ]"
           >
-            <div :class="['w-11 h-11 rounded-[15px] flex items-center justify-center text-xl shadow-sm transition-transform group-hover:scale-110', cat.bg]">
-              {{ cat.icon }}
+            <div :class="['w-8 h-8 rounded-lg flex items-center justify-center shrink-0', cat.style]">
+              <BaseIcons :name="cat.icon" size="sm" />
             </div>
-            <div class="flex-1 text-left min-w-0">
-              <div class="flex gap-1.5 flex-nowrap justify-between">
-                <span class="text-[14px] font-bold text-text truncate tracking-tight break-keep">
-                  {{ cat.name }}
-                </span>
-                 <div :class="[
-              'px-2.5 py-1 rounded-full text-[10px] font-extrabold tabular-nums ',
-              selectedCategory === cat.name ? 'bg-orange/20 text-orange bg-orange-600/10' : 'bg-background-secondary text-text-dim'
-            ]">
+            <span
+              :class="[
+                'flex-1 text-left text-[13px] truncate',
+                selectedCategory === cat.name ? 'font-semibold text-orange' : 'font-medium text-text dark:text-text',
+              ]"
+            >
+              {{ cat.name }}
+            </span>
+            <span
+              :class="[
+                'px-2 py-0.5 rounded-full text-[10px] font-semibold tabular-nums shrink-0',
+                selectedCategory === cat.name
+                  ? 'bg-orange text-white'
+                  : 'bg-background-secondary text-text-dim dark:bg-background-secondary dark:text-text-dim',
+              ]"
+            >
               {{ cat.count }}
-            </div>
-              </div>
-              <div class="text-[11px] text-text-dim mt-0.5">{{ cat.desc }}</div>
-            </div>
-           
+            </span>
           </button>
         </div>
       </div>
     </aside>
 
     <!-- ── Mobile Top App Bar ── -->
-    <div class="md:hidden fixed top-0 left-0 right-0 h-16 bg-surface/80 backdrop-blur-xl border-b border-glass-border flex items-center justify-between px-5 z-40">
+    <div class="md:hidden fixed top-0 left-0 right-0 h-16 bg-surface dark:bg-surface border-b border-border flex items-center justify-between px-5 z-40">
       <RouterLink to="/" class="flex items-center gap-2">
         <span class="logo-mark w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0">
           <svg viewBox="0 0 22 28" fill="none" class="w-[20px] h-[24px]">
@@ -307,7 +311,7 @@ onUnmounted(() => {
 
     <!-- ── Mobile Bottom Nav ── -->
     <div class="md:hidden fixed bottom-0 left-0 right-0 p-4 pb-8 z-40 pointer-events-none">
-      <div class="bg-surface/90 backdrop-blur-2xl border-1.5 border-glass-border rounded-3xl flex items-center justify-around p-2 shadow-modal pointer-events-auto">
+      <div class="bg-surface dark:bg-surface border border-border rounded-card flex items-center justify-around p-2 shadow-modal pointer-events-auto">
         <RouterLink
           v-for="item in mobilePrimary.slice(0, 2)" :key="item.id"
           :to="item.path"
@@ -320,7 +324,7 @@ onUnmounted(() => {
           <span class="text-[10px] font-bold">{{ item.label }}</span>
         </RouterLink>
 
-        <button @click="router.push('/recipes/create')" class="w-14 h-14 rounded-full bg-gradient-to-br from-orange to-orange-light text-white flex items-center justify-center shadow-lg -translate-y-4 border-4 border-background transition-transform active:scale-95">
+        <button @click="router.push('/recipes/create')" class="w-14 h-14 rounded-full bg-orange text-white flex items-center justify-center shadow-card-hover -translate-y-4 border-4 border-background transition-transform active:scale-95">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" v-html="ICONS.plus"></svg>
         </button>
 
@@ -356,9 +360,9 @@ onUnmounted(() => {
         class="md:hidden fixed inset-0 z-50 flex items-end"
         @click.self="showMoreDrawer = false"
       >
-        <div class="absolute inset-0 bg-black/55 backdrop-blur-sm"></div>
-        <div class="relative w-full bg-surface border-t-1.5 border-glass-border rounded-t-3xl p-6 pb-10 shadow-modal">
-          <div class="w-10 h-1 rounded-full bg-glass-border mx-auto mb-6"></div>
+        <div class="absolute inset-0 bg-black/55"></div>
+        <div class="relative w-full bg-surface dark:bg-surface border-t border-border rounded-t-3xl p-6 pb-10 shadow-modal">
+          <div class="w-10 h-1 rounded-full bg-border mx-auto mb-6"></div>
           <h3 class="font-montserrat font-extrabold text-lg mb-4">More</h3>
           <div class="grid grid-cols-3 gap-3">
             <RouterLink
@@ -366,7 +370,7 @@ onUnmounted(() => {
               :key="item.id"
               :to="item.path"
               @click="showMoreDrawer = false"
-              class="flex flex-col items-center gap-2 p-4 rounded-2xl border-1.5 border-glass-border bg-background-secondary/60 hover:border-orange hover:text-orange transition-all"
+              class="flex flex-col items-center gap-2 p-4 rounded-2xl border-1.5 border-border bg-background-secondary/60 hover:border-orange hover:text-orange transition-all"
               active-class="border-orange text-orange bg-orange/5"
             >
               <span class="w-7 h-7 inline-flex items-center justify-center">
@@ -386,21 +390,14 @@ onUnmounted(() => {
 
 <style scoped>
 .ls-card {
-  background: var(--glass);
-  backdrop-filter: blur(24px) saturate(120%);
-  -webkit-backdrop-filter: blur(24px) saturate(120%);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
-}
-:global(.dark) .ls-card {
-  background: rgba(15,13,21,0.86);
-  border-color: rgba(255,255,255,0.10);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
 }
 
 /* Animated N logo mark */
 .logo-mark {
-  background: linear-gradient(135deg, var(--orange) 0%, var(--orange-light) 100%);
-  box-shadow: 0 4px 14px var(--orange-glow);
+  background: var(--orange);
   animation: markPop 0.5s var(--transition) forwards;
 }
 @keyframes markPop {

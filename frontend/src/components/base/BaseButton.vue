@@ -116,7 +116,7 @@ const btnClass = computed(() => {
         noPadding:
             "disabled:text-zinc-400 border-transparent text-zinc-700 dark:text-zinc-100 hover:text-primary-400  hover:text-primary-base active:text-zinc-base focus:text-zinc-400",
         glass:
-            "disabled:opacity-50 bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 active:scale-95 transition-all"
+            "disabled:opacity-50 bg-white/10 border border-white/20 text-white hover:bg-white/20 active:scale-95 transition-all"
     }[props.buttonType];
 });
 </script>

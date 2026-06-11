@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -45,7 +46,7 @@ onMounted(loadData)
 
       <div v-else-if="originalPost && variationPost" class="grid grid-cols-1 lg:grid-cols-2 gap-10 animate-revamp">
         <!-- Original -->
-        <div class="bg-background-secondary rounded-[40px] border border-glass-border p-8 shadow-xl">
+        <div class="bg-background-secondary rounded-[40px] border border-border p-8 shadow-xl">
            <div class="flex items-center gap-3 mb-6">
               <span class="px-3 py-1 bg-background-tertiary rounded-full text-[10px] font-bold uppercase tracking-widest text-text-dim">Original</span>
               <h2 class="font-montserrat font-extrabold text-xl truncate">{{ originalPost.title }}</h2>
@@ -55,7 +56,7 @@ onMounted(loadData)
               <section>
                  <h3 class="text-xs font-bold uppercase tracking-widest text-orange mb-4">Ingredients</h3>
                  <ul class="space-y-2">
-                    <li v-for="(ing, i) in originalPost.recipe?.ingredients" :key="i" class="text-sm flex justify-between border-b border-glass-border pb-2">
+                    <li v-for="(ing, i) in originalPost.recipe?.ingredients" :key="i" class="text-sm flex justify-between border-b border-border pb-2">
                        <span class="font-medium">{{ ing.name }}</span>
                        <span class="text-text-dim">{{ ing.quantity }}</span>
                     </li>
@@ -77,7 +78,7 @@ onMounted(loadData)
         <!-- Variation -->
         <div class="bg-white/5 rounded-[40px] border border-orange/30 p-8 shadow-2xl relative overflow-hidden">
            <div class="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-              <span class="text-9xl">✨</span>
+              <BaseIcons name="sparkles" size="custom" custom-size="w-24 h-24" class="text-text-dim" />
            </div>
 
            <div class="flex items-center gap-3 mb-6">

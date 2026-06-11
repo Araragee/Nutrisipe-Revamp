@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -51,10 +52,10 @@ const growthRate = computed(() => {
 })
 
 const quickActions = [
-  { path: '/admin/users', icon: '👤', title: 'Manage Users', desc: 'Control user accounts and roles' },
-  { path: '/admin/reports', icon: '📋', title: 'Review Reports', desc: 'Handle content moderation' },
-  { path: '/admin/analytics', icon: '📊', title: 'View Analytics', desc: 'Detailed platform metrics' },
-  { path: '/ingredients', icon: '🥘', title: 'Food Database', desc: 'Manage ingredient nutritional data' },
+  { path: '/admin/users', icon: 'users', title: 'Manage Users', desc: 'Control user accounts and roles' },
+  { path: '/admin/reports', icon: 'clipboard-document-list', title: 'Review Reports', desc: 'Handle content moderation' },
+  { path: '/admin/analytics', icon: 'chart-bar', title: 'View Analytics', desc: 'Detailed platform metrics' },
+  { path: '/ingredients', icon: 'circle-stack', title: 'Food Database', desc: 'Manage ingredient nutritional data' },
 ]
 </script>
 
@@ -73,23 +74,23 @@ const quickActions = [
       <div v-else-if="stats">
         <!-- Stats Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div class="bg-background-secondary border border-glass-border rounded-3xl p-5">
-             <div class="text-orange text-2xl mb-4">👥</div>
+          <div class="bg-background-secondary border border-border rounded-3xl p-5">
+             <div class="text-orange mb-4"><BaseIcons name="users" size="lg" /></div>
              <div class="font-montserrat font-extrabold text-3xl mb-1">{{ stats.users.total }}</div>
              <div class="text-[10px] font-bold uppercase tracking-widest text-text-dim">Total Citizens</div>
           </div>
-          <div class="bg-background-secondary border border-glass-border rounded-3xl p-5">
-             <div class="text-orange text-2xl mb-4">📝</div>
+          <div class="bg-background-secondary border border-border rounded-3xl p-5">
+             <div class="text-orange mb-4"><BaseIcons name="document-text" size="lg" /></div>
              <div class="font-montserrat font-extrabold text-3xl mb-1">{{ stats.content.posts }}</div>
              <div class="text-[10px] font-bold uppercase tracking-widest text-text-dim">Recipes Shared</div>
           </div>
-          <div class="bg-background-secondary border border-glass-border rounded-3xl p-5">
-             <div class="text-orange text-2xl mb-4">🔥</div>
+          <div class="bg-background-secondary border border-border rounded-3xl p-5">
+             <div class="text-orange mb-4"><BaseIcons name="fire" size="lg" /></div>
              <div class="font-montserrat font-extrabold text-3xl mb-1">+{{ stats.users.newToday }}</div>
              <div class="text-[10px] font-bold uppercase tracking-widest text-text-dim">New Today</div>
           </div>
-          <div class="bg-background-secondary border border-glass-border rounded-3xl p-5">
-             <div class="text-orange text-2xl mb-4">⚠️</div>
+          <div class="bg-background-secondary border border-border rounded-3xl p-5">
+             <div class="text-orange mb-4"><BaseIcons name="exclamation-triangle" size="lg" /></div>
              <div class="font-montserrat font-extrabold text-3xl mb-1">{{ stats.moderation.pendingReports }}</div>
              <div class="text-[10px] font-bold uppercase tracking-widest text-text-dim">Pending Reports</div>
           </div>
@@ -101,16 +102,16 @@ const quickActions = [
              v-for="action in quickActions"
              :key="action.path"
              :to="action.path"
-             class="group bg-background-secondary/50 border border-glass-border rounded-[32px] p-8 hover:bg-orange-soft/30 hover:border-orange transition-all"
+             class="group bg-background-secondary/50 border border-border rounded-[32px] p-8 hover:bg-orange-soft/30 hover:border-orange transition-all"
            >
-              <div class="text-3xl mb-4 grayscale group-hover:grayscale-0 transition-all">{{ action.icon }}</div>
+              <div class="mb-4 text-text-dim group-hover:text-orange transition-colors"><BaseIcons :name="action.icon" size="lg" /></div>
               <h3 class="font-bold text-lg mb-2">{{ action.title }}</h3>
               <p class="text-xs text-text-muted leading-relaxed">{{ action.desc }}</p>
            </RouterLink>
         </div>
 
         <!-- Activity Overview -->
-        <div class="bg-background-secondary border border-glass-border rounded-[40px] p-10 md:p-12">
+        <div class="bg-background-secondary border border-border rounded-[40px] p-10 md:p-12">
            <div class="flex items-center justify-between mb-10">
               <h2 class="font-montserrat font-extrabold text-2xl tracking-tight">Platform Health</h2>
               <button @click="loadStats" class="text-orange font-bold text-xs uppercase tracking-widest hover:underline">Refresh Data</button>

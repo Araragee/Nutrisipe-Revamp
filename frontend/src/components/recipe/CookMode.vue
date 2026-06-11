@@ -117,20 +117,20 @@ onUnmounted(() => {
       class="cook-mode fixed inset-0 z-[200] flex flex-col bg-background"
     >
       <!-- Header -->
-      <header class="px-6 py-5 flex items-center justify-between border-b border-glass-border bg-surface/80 backdrop-blur-xl">
+      <header class="px-6 py-5 flex items-center justify-between border-b border-border bg-surface/80">
         <div class="flex-1 min-w-0">
           <p class="text-text-dim text-[10px] font-bold uppercase tracking-widest mb-0.5">Cook Mode</p>
           <h2 class="font-montserrat font-extrabold text-lg truncate">{{ title }}</h2>
         </div>
         <div class="flex items-center gap-3">
           <span v-if="wakeLockActive" class="text-[10px] font-bold uppercase tracking-widest text-green-500 hidden sm:inline">● Screen on</span>
-          <button @click="close" class="w-10 h-10 rounded-full bg-background-secondary border border-glass-border text-xl flex items-center justify-center hover:text-orange">✕</button>
+          <button @click="close" class="w-10 h-10 rounded-full bg-background-secondary border border-border text-xl flex items-center justify-center hover:text-orange">✕</button>
         </div>
       </header>
 
       <!-- Progress -->
       <div class="h-1.5 bg-background-secondary">
-        <div class="h-full bg-gradient-to-r from-orange to-orange-light transition-all duration-500" :style="{ width: `${progress}%` }"></div>
+        <div class="h-full bg-orange transition-all duration-500" :style="{ width: `${progress}%` }"></div>
       </div>
 
       <!-- Step body -->
@@ -142,12 +142,12 @@ onUnmounted(() => {
       </main>
 
       <!-- Footer controls -->
-      <footer class="p-6 md:p-8 border-t border-glass-border bg-surface/80 backdrop-blur-xl">
+      <footer class="p-6 md:p-8 border-t border-border bg-surface/80">
         <div class="max-w-3xl mx-auto flex items-center gap-4">
           <button
             @click="prev"
             :disabled="isFirst"
-            class="flex-1 h-14 rounded-2xl bg-background-secondary border-1.5 border-glass-border text-sm font-bold disabled:opacity-40 hover:border-orange transition-all"
+            class="flex-1 h-14 rounded-2xl bg-background-secondary border-1.5 border-border text-sm font-bold disabled:opacity-40 hover:border-orange transition-all"
           >← Previous</button>
           <button
             v-if="!isLast"

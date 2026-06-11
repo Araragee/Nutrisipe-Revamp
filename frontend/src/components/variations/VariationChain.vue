@@ -18,7 +18,7 @@
       <p>This is an original recipe with no variations yet.</p>
     </div>
 
-    <div v-else class="bg-surface border border-glass-border rounded-xl p-6 shadow-sm">
+    <div v-else class="bg-surface border border-border rounded-xl p-6 shadow-sm">
       <div class="flex items-center gap-2 px-4 py-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-lg text-blue-800 dark:text-blue-300 mb-6 text-sm font-medium">
         <svg class="w-5 h-5 text-blue-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
@@ -42,7 +42,7 @@
           </div>
 
           <div
-            class="flex flex-col sm:flex-row gap-4 p-4 bg-background border-2 border-glass-border rounded-xl cursor-pointer transition-all hover:border-emerald-500 hover:shadow-md"
+            class="flex flex-col sm:flex-row gap-4 p-4 bg-background border-2 border-border rounded-xl cursor-pointer transition-all hover:border-emerald-500 hover:shadow-md"
             :class="{ 'bg-emerald-50/20 dark:bg-emerald-950/10 border-emerald-500': index === chain.length - 1 }"
             @click="navigateToPost(item.post.id)"
           >
@@ -56,7 +56,7 @@
             <div class="flex-1 flex flex-col gap-3">
               <div class="flex items-start justify-between gap-4">
                 <h4 class="text-lg font-semibold text-text">{{ item.post.title }}</h4>
-                <div class="px-2.5 py-1 bg-surface border border-glass-border rounded-md text-xs font-semibold text-text-muted whitespace-nowrap">Gen {{ index + 1 }}</div>
+                <div class="px-2.5 py-1 bg-surface border border-border rounded-md text-xs font-semibold text-text-muted whitespace-nowrap">Gen {{ index + 1 }}</div>
               </div>
 
               <div class="flex items-center gap-2">
@@ -94,7 +94,7 @@
         </div>
       </div>
 
-      <div class="mt-6 pt-6 border-t border-glass-border">
+      <div class="mt-6 pt-6 border-t border-border">
         <h4 class="text-base font-semibold text-text mb-2">Evolution Summary</h4>
         <p class="text-sm text-text-muted leading-relaxed mb-4">This recipe has evolved through {{ depth }} generation{{ depth === 1 ? '' : 's' }}, with each creator adding their unique twist.</p>
         <div class="flex items-center gap-3">

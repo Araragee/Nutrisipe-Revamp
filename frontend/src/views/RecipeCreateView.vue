@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { postsApi } from '@/http/endpoints/posts'
@@ -112,12 +113,12 @@ function handleClose() {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/75 backdrop-blur-md animate-revamp">
-    <div class="create-modal relative bg-background w-full max-w-[50vw] h-[800px] max-h-[90vh] rounded-[28px] border-1.5 border-glass-border shadow-modal flex flex-col overflow-hidden animate-modalIn">
-      <button @click="handleClose" class="absolute top-6 right-6 z-50 w-9 h-9 rounded-full bg-background-secondary border-1.5 border-glass-border flex items-center justify-center text-text-muted hover:border-orange hover:text-orange transition-all">✕</button>
+  <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/75 animate-revamp">
+    <div class="create-modal relative bg-background w-full max-w-[50vw] h-[800px] max-h-[90vh] rounded-[28px] border-1.5 border-border shadow-modal flex flex-col overflow-hidden animate-modalIn">
+      <button @click="handleClose" class="absolute top-6 right-6 z-50 w-9 h-9 rounded-full bg-background-secondary border-1.5 border-border flex items-center justify-center text-text-muted hover:border-orange hover:text-orange transition-all">✕</button>
 
       <!-- Header -->
-      <header class="p-5 border-b border-glass-border flex items-center gap-3">
+      <header class="p-5 border-b border-border flex items-center gap-3">
         <div class="flex gap-1.5 flex-1 pr-12">
           <div
             v-for="(s, i) in STEPS"
@@ -138,7 +139,7 @@ function handleClose() {
 
         <!-- Success Step -->
         <div v-if="step === 4" class="flex-1 flex flex-col items-center justify-center py-12 text-center animate-revamp">
-          <div class="w-20 h-20 rounded-full bg-gradient-to-br from-orange to-orange-light flex items-center justify-center text-3xl text-white shadow-lg mb-6 animate-popIn">🎉</div>
+          <div class="w-20 h-20 rounded-full bg-orange flex items-center justify-center text-white mb-6 animate-popIn"><BaseIcons name="check" size="xl" /></div>
           <h2 class="font-montserrat font-extrabold text-3xl mb-2">Recipe shared!</h2>
           <p class="text-text-muted text-sm max-w-xs mx-auto mb-8">
             <strong class="text-text">{{ form.title }}</strong> is now live. The community can't wait to try it!
@@ -162,20 +163,20 @@ function handleClose() {
             <div class="space-y-4">
               <div>
                 <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider mb-2 block">Recipe name</label>
-                <input v-model="form.title" class="w-full bg-background-secondary border-1.5 border-glass-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="e.g. Golden Turmeric Buddha Bowl" />
+                <input v-model="form.title" class="w-full bg-background-secondary border-1.5 border-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="e.g. Golden Turmeric Buddha Bowl" />
               </div>
               <div>
                 <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider mb-2 block">Description</label>
-                <textarea v-model="form.description" rows="3" class="w-full bg-background-secondary border-1.5 border-glass-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="What makes this dish special?"></textarea>
+                <textarea v-model="form.description" rows="3" class="w-full bg-background-secondary border-1.5 border-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="What makes this dish special?"></textarea>
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider mb-2 block">Cook time (min)</label>
-                  <input v-model="form.time" type="number" class="w-full bg-background-secondary border-1.5 border-glass-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="e.g. 25" />
+                  <input v-model="form.time" type="number" class="w-full bg-background-secondary border-1.5 border-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="e.g. 25" />
                 </div>
                 <div>
                   <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider mb-2 block">Servings</label>
-                  <input v-model="form.servings" type="number" class="w-full bg-background-secondary border-1.5 border-glass-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="e.g. 2" />
+                  <input v-model="form.servings" type="number" class="w-full bg-background-secondary border-1.5 border-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="e.g. 2" />
                 </div>
               </div>
             </div>
@@ -192,26 +193,26 @@ function handleClose() {
                     @select-ingredient="onSelectIngredient(i, $event)"
                     @clear-ingredient="onClearIngredient(i)"
                   />
-                  <input v-model="ing.quantity" type="number" min="0" class="w-32 bg-background-secondary border border-glass-border rounded-xl p-4 text-sm outline-none focus:border-orange font-bold" placeholder="Grams" />
-                  <button @click="removeIngredient(i)" class="w-13 h-13 shrink-0 border border-glass-border rounded-full flex items-center justify-center text-text-dim hover:text-red-500">✕</button>
+                  <input v-model="ing.quantity" type="number" min="0" class="w-32 bg-background-secondary border border-border rounded-xl p-4 text-sm outline-none focus:border-orange font-bold" placeholder="Grams" />
+                  <button @click="removeIngredient(i)" class="w-13 h-13 shrink-0 border border-border rounded-full flex items-center justify-center text-text-dim hover:text-red-500">✕</button>
                </div>
             </div>
-            <button @click="addIngredient" class="w-full py-3.5 border-1.5 border-dashed border-glass-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add ingredient</button>
+            <button @click="addIngredient" class="w-full py-3.5 border-1.5 border-dashed border-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add ingredient</button>
           </div>
 
           <!-- Step 2: Method -->
           <div v-if="step === 2" class="space-y-4">
             <div v-for="(s, i) in form.steps" :key="i" class="flex gap-4">
               <div class="w-9 h-9 rounded-full bg-orange text-white font-montserrat font-extrabold text-sm flex items-center justify-center shrink-0 mt-1">{{ i + 1 }}</div>
-              <textarea v-model="s.text" rows="2" class="flex-1 bg-background-secondary border-1.5 border-glass-border rounded-xl p-3.5 text-sm outline-none focus:border-orange" :placeholder="`Describe step ${i+1}...`"></textarea>
-              <button @click="removeStep(i)" class="w-10 h-10 shrink-0 border-1.5 border-glass-border rounded-full flex items-center justify-center text-text-dim hover:border-red-500 hover:text-red-500 transition-all">✕</button>
+              <textarea v-model="s.text" rows="2" class="flex-1 bg-background-secondary border-1.5 border-border rounded-xl p-3.5 text-sm outline-none focus:border-orange" :placeholder="`Describe step ${i+1}...`"></textarea>
+              <button @click="removeStep(i)" class="w-10 h-10 shrink-0 border-1.5 border-border rounded-full flex items-center justify-center text-text-dim hover:border-red-500 hover:text-red-500 transition-all">✕</button>
             </div>
-            <button @click="addStep" class="w-full py-3.5 border-1.5 border-dashed border-glass-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add step</button>
+            <button @click="addStep" class="w-full py-3.5 border-1.5 border-dashed border-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add step</button>
           </div>
 
           <!-- Step 3: Nutrition (auto-calculated from ingredients) -->
           <div v-if="step === 3" class="space-y-6">
-            <div v-if="!hasData" class="p-6 bg-background-secondary border-1.5 border-dashed border-glass-border rounded-2xl text-center">
+            <div v-if="!hasData" class="p-6 bg-background-secondary border-1.5 border-dashed border-border rounded-2xl text-center">
               <p class="text-sm text-text-dim">
                 Pick ingredients from suggestions and enter grams in step 2 to auto-calculate nutrition.
               </p>
@@ -225,12 +226,12 @@ function handleClose() {
 
             <div class="grid grid-cols-4 gap-3">
               <div v-for="n in [
-                {v: perServing.energy, l: 'Calories', u: 'kcal', d: 0, i: '⚡'},
-                {v: perServing.protein, l: 'Protein', u: 'g', d: 1, i: '💪'},
-                {v: perServing.carb, l: 'Carbs', u: 'g', d: 1, i: '🌾'},
-                {v: perServing.fat, l: 'Fat', u: 'g', d: 1, i: '🥑'},
-              ]" :key="n.l" class="p-3 bg-background-secondary border-1.5 border-glass-border rounded-xl text-center">
-                <span class="text-lg block">{{ n.i }}</span>
+                {v: perServing.energy, l: 'Calories', u: 'kcal', d: 0, i: 'fire'},
+                {v: perServing.protein, l: 'Protein', u: 'g', d: 1, i: 'bolt'},
+                {v: perServing.carb, l: 'Carbs', u: 'g', d: 1, i: 'circle-stack'},
+                {v: perServing.fat, l: 'Fat', u: 'g', d: 1, i: 'beaker'},
+              ]" :key="n.l" class="p-3 bg-background-secondary border-1.5 border-border rounded-xl text-center">
+                <BaseIcons :name="n.i" size="md" class="mx-auto text-text-dim" />
                 <div class="font-montserrat font-extrabold text-lg text-text">{{ n.v.toFixed(n.d) }}</div>
                 <div class="text-[10px] font-bold text-text-dim uppercase tracking-wider">{{ n.l }} ({{ n.u }})</div>
               </div>
@@ -240,8 +241,8 @@ function handleClose() {
       </div>
 
       <!-- Footer -->
-      <footer v-if="step < 4" class="p-6 px-8 border-t border-glass-border flex gap-4">
-        <button v-if="step > 0" @click="step--" class="px-8 py-3.5 rounded-xl border-1.5 border-glass-border font-bold text-sm text-text-muted hover:bg-background-secondary">Back</button>
+      <footer v-if="step < 4" class="p-6 px-8 border-t border-border flex gap-4">
+        <button v-if="step > 0" @click="step--" class="px-8 py-3.5 rounded-xl border-1.5 border-border font-bold text-sm text-text-muted hover:bg-background-secondary">Back</button>
         <button
           @click="step < 3 ? step++ : handleSubmit()"
           class="flex-1 btn-primary py-3.5 !text-sm"

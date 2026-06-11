@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -62,11 +63,11 @@ async function handleMarkAllAsRead() {
 
 const getActionIcon = (type: string) => {
   switch (type) {
-    case 'like': return '❤️'
-    case 'comment': return '💬'
-    case 'follow': return '👤'
-    case 'save': return '🔖'
-    default: return '🔔'
+    case 'like': return 'heart'
+    case 'comment': return 'chat-bubble-left'
+    case 'follow': return 'user-plus'
+    case 'save': return 'bookmark'
+    default: return 'bell'
   }
 }
 
@@ -82,7 +83,7 @@ const getActionBg = (type: string) => {
 </script>
 
 <template>
-  <div class="notification-dropdown absolute right-0 mt-2 w-[420px] bg-white/95 dark:bg-background-secondary/95 backdrop-blur-xl rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-glass-border z-50 overflow-hidden animate-revamp">
+  <div class="notification-dropdown absolute right-0 mt-2 w-[420px] bg-white/95 dark:bg-background-secondary/95 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-border z-50 overflow-hidden animate-revamp">
     <!-- Header -->
     <div class="p-6 pb-4 flex items-center justify-between">
       <h3 class="font-montserrat font-extrabold text-2xl text-text">Notifications</h3>
@@ -95,7 +96,7 @@ const getActionBg = (type: string) => {
     </div>
 
     <!-- Tabs -->
-    <div class="px-6 flex gap-6 border-b border-glass-border">
+    <div class="px-6 flex gap-6 border-b border-border">
       <button 
         @click="activeTab = 'all'"
         :class="['pb-3 text-sm font-bold transition-all relative', activeTab === 'all' ? 'text-text' : 'text-text-dim hover:text-text']"
@@ -123,7 +124,7 @@ const getActionBg = (type: string) => {
       </div>
 
       <div v-else-if="filteredNotifications.length === 0" class="p-16 text-center">
-        <div class="text-4xl mb-4 opacity-20">🔔</div>
+        <BaseIcons name="bell" size="xl" class="mx-auto mb-4 opacity-30 text-text-dim" />
         <p class="text-text-dim font-bold">All caught up!</p>
         <p class="text-text-dim/60 text-xs mt-1">No new notifications for you right now.</p>
       </div>
@@ -133,16 +134,16 @@ const getActionBg = (type: string) => {
           v-for="n in filteredNotifications" 
           :key="n.id"
           @click="handleNotificationClick(n)"
-          class="group flex items-start gap-4 p-5 hover:bg-orange/5 cursor-pointer transition-all border-b border-glass-border/50 last:border-0 relative"
+          class="group flex items-start gap-4 p-5 hover:bg-orange/5 cursor-pointer transition-all border-b border-border/50 last:border-0 relative"
         >
           <!-- Unread Dot -->
           <div v-if="!n.isRead" class="absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-orange rounded-full"></div>
 
           <!-- Avatar + Icon -->
           <div class="relative shrink-0">
-            <UserAvatar :user="n.actor" size="md" class="border-2 border-glass-border shadow-sm" />
+            <UserAvatar :user="n.actor" size="md" class="border-2 border-border shadow-sm" />
             <div :class="['absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] shadow-md border-2 border-white dark:border-background-secondary', getActionBg(n.type)]">
-              {{ getActionIcon(n.type) }}
+              <BaseIcons :name="getActionIcon(n.type)" size="xs" class="text-white" />
             </div>
           </div>
 
@@ -159,7 +160,7 @@ const getActionBg = (type: string) => {
           </div>
 
           <!-- Post Thumbnail -->
-          <div v-if="n.post" class="shrink-0 w-12 h-12 rounded-xl overflow-hidden border border-glass-border">
+          <div v-if="n.post" class="shrink-0 w-12 h-12 rounded-xl overflow-hidden border border-border">
             <img :src="resolveImage(n.post.imageUrl, n.post.id)" class="w-full h-full object-cover" />
           </div>
         </div>
@@ -167,7 +168,7 @@ const getActionBg = (type: string) => {
     </div>
 
     <!-- Footer -->
-    <div class="p-4 bg-background-secondary/50 text-center border-t border-glass-border">
+    <div class="p-4 bg-background-secondary/50 text-center border-t border-border">
       <button @click="emit('close')" class="text-xs font-bold text-text-dim hover:text-orange transition-all">Close</button>
     </div>
   </div>

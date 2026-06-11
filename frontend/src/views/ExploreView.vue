@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -179,7 +180,7 @@ onMounted(() => {
             @input="!searchQuery && clearResults()"
             type="text"
             placeholder="Try ‘miso soup’, ‘chef’, or a tag…"
-            class="w-full h-16 pl-14 pr-32 bg-surface/80 backdrop-blur-xl border-1.5 border-glass-border rounded-2xl text-[15px] font-medium outline-none focus:border-orange focus:ring-4 focus:ring-orange/10 shadow-lg transition-all"
+            class="w-full h-16 pl-14 pr-32 bg-surface/80 border-1.5 border-border rounded-2xl text-[15px] font-medium outline-none focus:border-orange focus:ring-4 focus:ring-orange/10 shadow-lg transition-all"
           />
           <button
             @click="runSearch"
@@ -194,10 +195,10 @@ onMounted(() => {
             :key="chip.value"
             @click="setFilter(chip.value)"
             :class="[
-              'px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border-1.5 backdrop-blur',
+              'px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border-1.5',
               searchType === chip.value
-                ? 'bg-orange border-orange text-white shadow-[0_4px_18px_var(--orange-glow)]'
-                : 'bg-surface/70 border-glass-border text-text-muted hover:border-orange hover:text-orange',
+                ? 'bg-orange border-orange text-white'
+                : 'bg-surface/70 border-border text-text-muted hover:border-orange hover:text-orange',
             ]"
           >{{ chip.label }}</button>
         </div>
@@ -208,7 +209,7 @@ onMounted(() => {
       <!-- Trending tags rail -->
       <div v-if="trendingTags.length > 0 && !hasResults" class="mt-10 mb-12">
         <div class="flex items-baseline justify-between mb-4">
-          <h2 class="font-montserrat font-extrabold text-lg tracking-tight">🔥 Trending Tags</h2>
+          <h2 class="font-montserrat font-extrabold text-lg tracking-tight flex items-center gap-2"><BaseIcons name="fire" size="md" class="text-orange" /> Trending Tags</h2>
           <span class="text-text-dim text-[10px] font-bold uppercase tracking-widest">Past 14 days</span>
         </div>
         <div class="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
@@ -216,7 +217,7 @@ onMounted(() => {
             v-for="t in trendingTags"
             :key="t.name"
             @click="searchTag(t.name)"
-            class="shrink-0 px-4 py-2 rounded-full border-1.5 border-glass-border bg-surface/60 text-sm font-bold hover:border-orange hover:text-orange transition-all"
+            class="shrink-0 px-4 py-2 rounded-full border-1.5 border-border bg-surface/60 text-sm font-bold hover:border-orange hover:text-orange transition-all"
           >
             #{{ t.name }}
             <span class="ml-2 text-[10px] text-text-dim tabular-nums">{{ t.count }}</span>
@@ -243,7 +244,7 @@ onMounted(() => {
               <div
                 v-for="u in userResults"
                 :key="u.id"
-                class="flex items-center gap-4 p-4 bg-background-secondary/50 border border-glass-border rounded-2xl hover:border-orange transition-all"
+                class="flex items-center gap-4 p-4 bg-background-secondary/50 border border-border rounded-2xl hover:border-orange transition-all"
               >
                 <RouterLink :to="`/profile/${u.id}`" class="flex items-center gap-3 flex-1 min-w-0">
                   <UserAvatar :user="u" size="md" class="shrink-0" />
@@ -268,7 +269,7 @@ onMounted(() => {
           <!-- Empty -->
           <div
             v-if="(postResults?.length ?? 0) === 0 && (userResults?.length ?? 0) === 0"
-            class="text-center py-12 bg-background-secondary rounded-3xl border-1.5 border-dashed border-glass-border"
+            class="text-center py-12 bg-background-secondary rounded-3xl border-1.5 border-dashed border-border"
           >
             <p class="text-text-dim">No results found for "{{ searchQuery }}".</p>
           </div>
@@ -306,8 +307,8 @@ onMounted(() => {
         <div class="flex items-center justify-between mb-6">
           <h2 class="font-montserrat font-extrabold text-2xl">Trending This Week</h2>
           <div class="flex gap-2">
-            <button @click="scrollTrending(-1)" aria-label="Scroll left" class="w-10 h-10 rounded-full border border-glass-border bg-surface/70 backdrop-blur flex items-center justify-center text-text-dim hover:text-orange hover:border-orange transition-all">‹</button>
-            <button @click="scrollTrending(1)" aria-label="Scroll right" class="w-10 h-10 rounded-full border border-glass-border bg-surface/70 backdrop-blur flex items-center justify-center text-text-dim hover:text-orange hover:border-orange transition-all">›</button>
+            <button @click="scrollTrending(-1)" aria-label="Scroll left" class="w-10 h-10 rounded-full border border-border bg-surface/70 flex items-center justify-center text-text-dim hover:text-orange hover:border-orange transition-all">‹</button>
+            <button @click="scrollTrending(1)" aria-label="Scroll right" class="w-10 h-10 rounded-full border border-border bg-surface/70 flex items-center justify-center text-text-dim hover:text-orange hover:border-orange transition-all">›</button>
           </div>
         </div>
 

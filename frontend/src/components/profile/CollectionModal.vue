@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, onMounted } from 'vue'
 import { collectionsApi, type Collection } from '@/http/endpoints/collections'
@@ -80,7 +81,7 @@ onMounted(loadCollections)
         >
           <div class="w-12 h-12 bg-gray-200 dark:bg-zinc-600 rounded-lg flex items-center justify-center text-xl overflow-hidden flex-shrink-0">
             <img v-if="col.thumbnailUrl" :src="col.thumbnailUrl" class="w-full h-full object-cover" />
-            <span v-else>📁</span>
+            <BaseIcons v-else name="folder" size="md" class="text-text-dim" />
           </div>
           <div class="flex-1 text-left min-w-0">
             <div class="font-semibold text-sm text-gray-900 dark:text-white truncate">{{ col.name }}</div>
