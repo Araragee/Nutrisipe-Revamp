@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nutrisipe-postgres-dev
+    environment:
+      POSTGRES_USER: nutrisipe
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: nutrisipe_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nutrisipe -d nutrisipe_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata-dev:

@@ -36,8 +36,8 @@ export async function listIngredients(params: ListParams) {
   const where: Prisma.IngredientWhereInput = {}
   if (params.search) {
     where.OR = [
-      { food_item: { contains: params.search } },
-      { alt_name: { contains: params.search } },
+      { food_item: { contains: params.search, mode: 'insensitive' } },
+      { alt_name: { contains: params.search, mode: 'insensitive' } },
     ]
   }
   if (params.category) {

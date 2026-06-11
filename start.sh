@@ -30,15 +30,20 @@ err() { printf "\033[1;31m[start.sh]\033[0m %s\n" "$*" >&2; }
 [[ -d "$BACKEND" ]]  || { err "missing $BACKEND"; exit 1; }
 [[ -d "$FRONTEND" ]] || { err "missing $FRONTEND"; exit 1; }
 
+# Start dev postgres database if not running
+c "bringing up dev postgres container"
+docker compose -f "$ROOT/docker-compose.dev.yml" up -d
+
+# Wait for postgres to be ready
+c "waiting for postgres to be ready..."
+until docker exec nutrisipe-postgres-dev pg_isready -U nutrisipe -d nutrisipe_dev >/dev/null 2>&1; do
+  sleep 1
+done
+
 # Backend env
 if [[ ! -f "$BACKEND/.env" ]]; then
   c "no backend/.env — copying from .env.example"
   cp "$BACKEND/.env.example" "$BACKEND/.env"
-  # Force SQLite for local dev (overrides postgres example)
-  if ! grep -q '^DATABASE_URL="file:' "$BACKEND/.env"; then
-    sed -i.bak 's|^DATABASE_URL=.*|DATABASE_URL="file:./dev.db"|' "$BACKEND/.env" || true
-    rm -f "$BACKEND/.env.bak"
-  fi
 fi
 
 # Install deps
@@ -51,21 +56,23 @@ if [[ ! -d "$FRONTEND/node_modules" ]]; then
   (cd "$FRONTEND" && npm install)
 fi
 
+cd "$BACKEND"
+
 # Reset DB if requested
 if [[ $RESET -eq 1 ]]; then
-  c "wiping dev.db"
-  rm -f "$BACKEND/prisma/dev.db" "$BACKEND/prisma/dev.db-journal"
+  c "resetting database schema"
+  npx prisma migrate reset --force --skip-seed
 fi
 
 # Migrate + seed if missing
-cd "$BACKEND"
-if [[ ! -f "prisma/dev.db" ]]; then
-  c "running prisma migrate"
-  npx prisma migrate deploy
+c "applying migrations"
+npx prisma migrate deploy
+
+c "checking if database needs seeding"
+IS_EMPTY=$(npx tsx -e "import { PrismaClient } from '@prisma/client'; new PrismaClient().user.count().then(c => console.log(c === 0 ? 'true' : 'false')).catch(() => console.log('true'))")
+
+if [[ "$IS_EMPTY" == "true" ]] || [[ $RESEED -eq 1 ]]; then
   c "seeding database"
-  npm run seed:all
-elif [[ $RESEED -eq 1 ]]; then
-  c "reseeding database"
   npm run seed:all
 fi
 

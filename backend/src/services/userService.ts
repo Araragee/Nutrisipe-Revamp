@@ -55,8 +55,8 @@ export async function searchUsers(
     prisma.user.findMany({
       where: {
         OR: [
-          { username: { contains: query } },
-          { displayName: { contains: query } },
+          { username: { contains: query, mode: 'insensitive' } },
+          { displayName: { contains: query, mode: 'insensitive' } },
         ],
       },
       select: {
@@ -75,8 +75,8 @@ export async function searchUsers(
     prisma.user.count({
       where: {
         OR: [
-          { username: { contains: query } },
-          { displayName: { contains: query } },
+          { username: { contains: query, mode: 'insensitive' } },
+          { displayName: { contains: query, mode: 'insensitive' } },
         ],
       },
     }),

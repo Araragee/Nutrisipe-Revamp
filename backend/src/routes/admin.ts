@@ -101,9 +101,9 @@ router.get('/users', auth, adminOnly, async (req: AuthRequest, res) => {
 
     if (search) {
       where.OR = [
-        { username: { contains: search } },
-        { email: { contains: search } },
-        { displayName: { contains: search } },
+        { username: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { displayName: { contains: search, mode: 'insensitive' } },
       ]
     }
 

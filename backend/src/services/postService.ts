@@ -30,9 +30,9 @@ function buildTagOrFilter(keywords: string[]) {
   if (keywords.length === 0) return undefined
   return {
     OR: keywords.flatMap((kw) => [
-      { tags: { contains: kw } },
-      { tags: { contains: kw.toLowerCase() } },
-      { category: { contains: kw } },
+      { tags: { contains: kw, mode: 'insensitive' as const } },
+      { tags: { contains: kw.toLowerCase(), mode: 'insensitive' as const } },
+      { category: { contains: kw, mode: 'insensitive' as const } },
     ]),
   }
 }
@@ -58,8 +58,8 @@ function buildTagNotFilter(keywords: string[]) {
   return {
     NOT: {
       OR: keywords.flatMap((kw) => [
-        { tags: { contains: kw } },
-        { tags: { contains: kw.toLowerCase() } },
+        { tags: { contains: kw, mode: 'insensitive' as const } },
+        { tags: { contains: kw.toLowerCase(), mode: 'insensitive' as const } },
       ]),
     },
   }
@@ -192,7 +192,7 @@ export async function getRelatedPosts(postId: string, userId?: string, limit: nu
       isPublic: true,
       OR: [
         { category: post.category },
-        ...tags.map((tag: string) => ({ tags: { contains: tag } })),
+        ...tags.map((tag: string) => ({ tags: { contains: tag, mode: 'insensitive' as const } })),
       ],
     },
     take: limit,
@@ -658,9 +658,9 @@ export async function searchPosts(
   const where: any = {
     isPublic: true,
     OR: [
-      { title: { contains: query } },
-      { description: { contains: query } },
-      { tags: { contains: query } },
+      { title: { contains: query, mode: 'insensitive' } },
+      { description: { contains: query, mode: 'insensitive' } },
+      { tags: { contains: query, mode: 'insensitive' } },
     ],
   }
 
@@ -753,7 +753,7 @@ export async function getPostsByTag(tag: string, userId?: string, page: number =
 
   const where: any = {
     isPublic: true,
-    tags: { contains: tag },
+    tags: { contains: tag, mode: 'insensitive' },
   }
 
   const [posts, total] = await Promise.all([

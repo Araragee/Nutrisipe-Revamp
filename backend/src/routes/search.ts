@@ -33,10 +33,10 @@ router.get('/', auth, async (req: AuthRequest, res) => {
         where: {
           isPublic: true,
           OR: [
-            { title: { contains: searchQuery } },
-            { description: { contains: searchQuery } },
-            { category: { contains: searchQuery } },
-            { tags: { contains: searchQuery.toLowerCase() } },
+            { title: { contains: searchQuery, mode: 'insensitive' } },
+            { description: { contains: searchQuery, mode: 'insensitive' } },
+            { category: { contains: searchQuery, mode: 'insensitive' } },
+            { tags: { contains: searchQuery.toLowerCase(), mode: 'insensitive' } },
           ],
         },
         include: {
@@ -78,8 +78,8 @@ router.get('/', auth, async (req: AuthRequest, res) => {
           isActive: true,
           isBanned: false,
           OR: [
-            { username: { contains: searchQuery } },
-            { displayName: { contains: searchQuery } },
+            { username: { contains: searchQuery, mode: 'insensitive' } },
+            { displayName: { contains: searchQuery, mode: 'insensitive' } },
           ],
         },
         select: {
@@ -113,10 +113,10 @@ router.get('/', auth, async (req: AuthRequest, res) => {
         where: {
           isPublic: true,
           OR: [
-            { title: { contains: searchQuery } },
-            { description: { contains: searchQuery } },
-            { category: { contains: searchQuery } },
-            { tags: { contains: searchQuery.toLowerCase() } },
+            { title: { contains: searchQuery, mode: 'insensitive' } },
+            { description: { contains: searchQuery, mode: 'insensitive' } },
+            { category: { contains: searchQuery, mode: 'insensitive' } },
+            { tags: { contains: searchQuery.toLowerCase(), mode: 'insensitive' } },
           ],
         },
       }) : results.posts.length,
@@ -125,8 +125,8 @@ router.get('/', auth, async (req: AuthRequest, res) => {
           isActive: true,
           isBanned: false,
           OR: [
-            { username: { contains: searchQuery } },
-            { displayName: { contains: searchQuery } },
+            { username: { contains: searchQuery, mode: 'insensitive' } },
+            { displayName: { contains: searchQuery, mode: 'insensitive' } },
           ],
         },
       }) : results.users.length,
@@ -318,6 +318,7 @@ router.get('/tag/:tag', auth, async (req: AuthRequest, res) => {
         isPublic: true,
         tags: {
           contains: tag.toLowerCase(),
+          mode: 'insensitive',
         },
       },
       include: {
@@ -347,6 +348,7 @@ router.get('/tag/:tag', auth, async (req: AuthRequest, res) => {
         isPublic: true,
         tags: {
           contains: tag.toLowerCase(),
+          mode: 'insensitive',
         },
       },
     })

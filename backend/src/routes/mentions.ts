@@ -156,12 +156,14 @@ router.get('/search', authenticate, async (req: AuthRequest, res) => {
             OR: [
               {
                 username: {
-                  contains: query
+                  contains: query,
+                  mode: 'insensitive'
                 }
               },
               {
                 displayName: {
-                  contains: query
+                  contains: query,
+                  mode: 'insensitive'
                 }
               }
             ]
