@@ -1,14 +1,11 @@
 <template>
-  <div class="star-rating" :class="{ interactive: !readonly }">
-    <div class="stars">
+  <div class="inline-flex items-center gap-2">
+    <div class="inline-flex gap-0.5">
       <span
         v-for="star in 5"
         :key="star"
-        class="star"
-        :class="{
-          filled: star <= currentRating,
-          hovered: !readonly && star <= hoverRating
-        }"
+        class="inline-block transition-transform duration-150 ease-in-out"
+        :class="{ 'cursor-pointer hover:scale-110': !readonly }"
         @click="!readonly && handleClick(star)"
         @mouseenter="!readonly && handleMouseEnter(star)"
         @mouseleave="!readonly && handleMouseLeave()"
@@ -16,8 +13,13 @@
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
-          :fill="getStarFill(star)"
-          :stroke="getStarStroke(star)"
+          class="transition-all duration-200"
+          :class="[
+            size === 'small' ? 'w-4 h-4' : size === 'large' ? 'w-7 h-7' : 'w-5 h-5',
+            star <= (hoverRating || currentRating)
+              ? (readonly ? 'fill-amber-500 stroke-amber-500' : 'fill-amber-400 stroke-amber-400')
+              : 'fill-none stroke-neutral-300 dark:stroke-neutral-600'
+          ]"
           stroke-width="1.5"
         >
           <path
@@ -28,10 +30,14 @@
         </svg>
       </span>
     </div>
-    <span v-if="showCount && count !== undefined" class="rating-count">
+    <span v-if="showCount && count !== undefined" class="text-sm text-text-muted">
       ({{ count }})
     </span>
-    <span v-if="showValue" class="rating-value">
+    <span
+      v-if="showValue"
+      class="font-semibold text-text"
+      :class="size === 'small' ? 'text-sm' : size === 'large' ? 'text-lg' : 'text-base'"
+    >
       {{ displayValue }}
     </span>
   </div>
@@ -71,26 +77,6 @@ const displayValue = computed(() => {
   return currentRating.value.toFixed(1)
 })
 
-function getStarFill(star: number): string {
-  const rating = hoverRating.value || currentRating.value
-
-  if (star <= rating) {
-    return props.readonly ? '#f59e0b' : '#fbbf24'
-  }
-
-  // Partial fill for decimal ratings
-  if (star - 1 < rating && rating < star) {
-    return `url(#gradient-${star})`
-  }
-
-  return 'none'
-}
-
-function getStarStroke(star: number): string {
-  const rating = hoverRating.value || currentRating.value
-  return star <= rating ? '#f59e0b' : '#d1d5db'
-}
-
 function handleClick(rating: number) {
   emit('update:modelValue', rating)
 }
@@ -103,70 +89,3 @@ function handleMouseLeave() {
   hoverRating.value = 0
 }
 </script>
-
-<style scoped>
-.star-rating {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.stars {
-  display: inline-flex;
-  gap: 2px;
-}
-
-.star {
-  display: inline-block;
-  cursor: default;
-  transition: transform 0.15s ease;
-}
-
-.interactive .star {
-  cursor: pointer;
-}
-
-.interactive .star:hover {
-  transform: scale(1.1);
-}
-
-.star svg {
-  width: 20px;
-  height: 20px;
-  transition: all 0.2s ease;
-}
-
-.star-rating.small .star svg {
-  width: 16px;
-  height: 16px;
-}
-
-.star-rating.large .star svg {
-  width: 28px;
-  height: 28px;
-}
-
-.star.filled svg,
-.star.hovered svg {
-  filter: drop-shadow(0 1px 2px rgba(245, 158, 11, 0.3));
-}
-
-.rating-count {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.rating-value {
-  font-size: 16px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.star-rating.small .rating-value {
-  font-size: 14px;
-}
-
-.star-rating.large .rating-value {
-  font-size: 18px;
-}
-</style>

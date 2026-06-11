@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<Props>(), {
 const variantClasses = computed(() => {
   switch (props.variant) {
     case 'glass':
-      return 'bg-glass backdrop-blur-[24px] saturate-[120%] border border-glass-border shadow-sm dark:bg-[#0f0d15]/86 dark:border-white/10'
+      return 'bg-glass backdrop-blur-[24px] saturate-[120%] border border-glass-border shadow-sm'
     case 'solid':
       return 'bg-surface-solid border border-glass-border shadow-md'
     case 'flat':

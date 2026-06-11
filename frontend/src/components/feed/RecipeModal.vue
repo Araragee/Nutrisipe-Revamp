@@ -46,10 +46,10 @@ const isOwner = computed(() => authStore.user?.id === post.value?.userId);
 const nutritionFacts = computed(() => {
   const n = post.value?.recipe?.nutrition;
   return [
-    { label: "Calories", val: n?.calories || "0", unit: "kcal", color: "#FF6B35" },
-    { label: "Protein", val: n?.protein || "0", unit: "g", color: "#4ECDC4" },
-    { label: "Carbs", val: n?.carbs || "0", unit: "g", color: "#FFE66D" },
-    { label: "Fat", val: n?.fat || "0", unit: "g", color: "#FF6B8A" },
+    { label: "Calories", val: n?.calories || "0", unit: "kcal", textClass: "text-nutrition-calories", bgClass: "bg-nutrition-calories/18" },
+    { label: "Protein", val: n?.protein || "0", unit: "g", textClass: "text-nutrition-protein", bgClass: "bg-nutrition-protein/18" },
+    { label: "Carbs", val: n?.carbs || "0", unit: "g", textClass: "text-nutrition-carbs", bgClass: "bg-nutrition-carbs/18" },
+    { label: "Fat", val: n?.fat || "0", unit: "g", textClass: "text-nutrition-fat", bgClass: "bg-nutrition-fat/18" },
   ];
 });
 
@@ -254,7 +254,7 @@ const recipeImage = computed(() =>
                 :key="n.label"
                 class="bg-background-secondary rounded-2xl p-4 text-center border border-glass-border"
               >
-                <span class="block w-7 h-7 mx-auto mb-1.5 rounded-md flex items-center justify-center" :style="{ background: n.color + '22', color: n.color }">
+                <span class="block w-7 h-7 mx-auto mb-1.5 rounded-md flex items-center justify-center" :class="[n.bgClass, n.textClass]">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
                   </svg>

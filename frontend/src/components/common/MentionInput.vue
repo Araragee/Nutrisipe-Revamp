@@ -1,5 +1,5 @@
 <template>
-  <div class="mention-input-wrapper" ref="wrapperRef">
+  <div class="relative w-full" ref="wrapperRef">
     <textarea
       ref="textareaRef"
       v-model="localValue"
@@ -8,20 +8,20 @@
       :placeholder="placeholder"
       :rows="rows"
       :maxlength="maxLength"
-      class="mention-textarea"
+      :class="textareaClass"
     ></textarea>
 
     <!-- Mention Suggestions Dropdown -->
     <div
       v-if="showSuggestions && searchResults.length > 0"
-      class="mention-suggestions"
+      class="absolute z-50 bg-surface border border-glass-border rounded-lg shadow-modal max-h-[200px] overflow-y-auto min-w-[250px]"
       :style="suggestionsStyle"
     >
       <div
         v-for="(user, index) in searchResults"
         :key="user.id"
-        class="mention-suggestion-item"
-        :class="{ selected: index === selectedIndex }"
+        class="flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors"
+        :class="{ 'bg-orange-soft/40 dark:bg-orange-soft/18': index === selectedIndex }"
         @mousedown.prevent="selectUser(user)"
         @mouseenter="selectedIndex = index"
       >
@@ -29,14 +29,14 @@
           v-if="user.avatarUrl"
           :src="user.avatarUrl"
           :alt="user.username"
-          class="suggestion-avatar"
+          class="w-9 h-9 rounded-full object-cover"
         />
-        <div v-else class="suggestion-avatar-placeholder">
+        <div v-else class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-semibold text-base">
           {{ user.username[0].toUpperCase() }}
         </div>
-        <div class="suggestion-info">
-          <div class="suggestion-username">@{{ user.username }}</div>
-          <div class="suggestion-display-name">{{ user.displayName }}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm text-text">@{{ user.username }}</div>
+          <div class="text-xs text-text-muted truncate">{{ user.displayName }}</div>
         </div>
       </div>
     </div>
@@ -52,6 +52,7 @@ interface Props {
   placeholder?: string
   rows?: number
   maxLength?: number
+  textareaClass?: string
 }
 
 interface Emits {
@@ -61,7 +62,8 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   placeholder: 'Write a comment...',
   rows: 3,
-  maxLength: 2000
+  maxLength: 2000,
+  textareaClass: 'w-full p-3 border border-glass-border bg-background-secondary rounded-lg text-sm text-text font-inherit resize-y transition-colors focus:outline-none focus:border-orange'
 })
 
 const emit = defineEmits<Emits>()
@@ -202,110 +204,3 @@ defineExpose({
   focus: () => textareaRef.value?.focus()
 })
 </script>
-
-<style scoped>
-.mention-input-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-.mention-textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
-  transition: border-color 0.2s;
-}
-
-.mention-textarea:focus {
-  outline: none;
-  border-color: #4caf50;
-}
-
-.mention-suggestions {
-  position: absolute;
-  z-index: 1000;
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  max-height: 200px;
-  overflow-y: auto;
-  min-width: 250px;
-}
-
-.mention-suggestion-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.mention-suggestion-item:hover,
-.mention-suggestion-item.selected {
-  background-color: #f5f5f5;
-}
-
-.suggestion-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.suggestion-avatar-placeholder {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.suggestion-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.suggestion-username {
-  font-weight: 600;
-  font-size: 14px;
-  color: #333;
-}
-
-.suggestion-display-name {
-  font-size: 12px;
-  color: #666;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Scrollbar styling */
-.mention-suggestions::-webkit-scrollbar {
-  width: 6px;
-}
-
-.mention-suggestions::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 8px;
-}
-
-.mention-suggestions::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 8px;
-}
-
-.mention-suggestions::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-</style>

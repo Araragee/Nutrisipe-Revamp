@@ -91,7 +91,7 @@ onMounted(() => {
           v-model="newCommentText"
           placeholder="Add a comment… use @ to mention"
           :rows="4"
-          class="comment-mention-input"
+          textareaClass="w-full p-5 bg-background-secondary border-1.5 border-glass-border rounded-2xl text-sm text-text font-inherit resize-y transition-colors focus:outline-none focus:border-orange min-h-[100px]"
         />
         <div class="flex items-center justify-between mt-3 px-1">
           <p class="text-[10px] text-text-dim italic">Type @ to mention</p>
@@ -147,35 +147,5 @@ onMounted(() => {
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-.comment-mention-input :deep(.mention-textarea) {
-  background: var(--background-secondary, rgb(245 245 247 / 0.5));
-  border: 1.5px solid var(--glass-border, rgb(255 255 255 / 0.1));
-  border-radius: 16px;
-  padding: 20px;
-  font-size: 14px;
-  color: inherit;
-  min-height: 100px;
-  transition: border-color 0.3s;
-}
-.comment-mention-input :deep(.mention-textarea:focus) {
-  border-color: var(--orange, #ff6b35);
-}
-.comment-mention-input :deep(.mention-suggestions) {
-  background: var(--surface, #fff);
-  border-color: var(--glass-border, rgb(255 255 255 / 0.1));
-  border-radius: 12px;
-  margin-top: 4px;
-}
-.comment-mention-input :deep(.mention-suggestion-item:hover),
-.comment-mention-input :deep(.mention-suggestion-item.selected) {
-  background-color: var(--orange-soft, rgb(255 107 53 / 0.1));
-}
-.comment-mention-input :deep(.suggestion-username) {
-  color: var(--orange, #ff6b35);
-}
-.comment-mention-input :deep(.suggestion-display-name) {
-  color: var(--text-dim, #888);
 }
 </style>

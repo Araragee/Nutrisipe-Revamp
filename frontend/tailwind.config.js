@@ -21,6 +21,19 @@ module.exports = {
         sans: ['Inter', 'sans-serif'],
       },
       colors: {
+        nutriscore: {
+          a: '#008b4c',
+          b: '#85bb2f',
+          c: '#fecb02',
+          d: '#ee8100',
+          e: '#e63e11',
+        },
+        nutrition: {
+          calories: '#FF6B35',
+          protein: '#4ECDC4',
+          carbs: '#FFE66D',
+          fat: '#FF6B8A',
+        },
         orange: {
           DEFAULT: 'var(--orange)',
           light: 'var(--orange-light)',

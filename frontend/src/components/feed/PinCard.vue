@@ -81,18 +81,18 @@ const tags = computed(() => {
 });
 
 const nutriScoreClass = computed(() => {
-  const score = props.post.recipe?.nutriScore;
+  const score = props.post.recipe?.nutriScore?.toLowerCase();
   switch (score) {
-    case "A":
-      return "bg-[#008b4c]";
-    case "B":
-      return "bg-[#85bb2f]";
-    case "C":
-      return "bg-[#fecb02]";
-    case "D":
-      return "bg-[#ee8100]";
-    case "E":
-      return "bg-[#e63e11]";
+    case "a":
+      return "bg-nutriscore-a";
+    case "b":
+      return "bg-nutriscore-b";
+    case "c":
+      return "bg-nutriscore-c";
+    case "d":
+      return "bg-nutriscore-d";
+    case "e":
+      return "bg-nutriscore-e";
     default:
       return "bg-gray-500";
   }
@@ -101,7 +101,7 @@ const nutriScoreClass = computed(() => {
 
 <template>
   <div
-    class="recipe-card group relative rounded-card overflow-hidden cursor-pointer shadow-card transition-all duration-revamp border-1.5 border-glass-border bg-[#111] w-full"
+    class="recipe-card group relative rounded-card overflow-hidden cursor-pointer shadow-card transition-all duration-revamp border-1.5 border-glass-border bg-neutral-900 w-full"
     :class="aspectVariant.class"
     @click="emit('click', post.id)"
   >

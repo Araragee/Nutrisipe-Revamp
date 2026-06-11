@@ -1,17 +1,17 @@
 <template>
-  <div class="rating-input">
-    <h3 class="rating-title">{{ title }}</h3>
+  <div class="bg-surface border border-glass-border rounded-xl p-6 shadow-card">
+    <h3 class="text-lg font-semibold text-text mb-5">{{ title }}</h3>
 
-    <div class="rating-stars-section">
-      <label class="rating-label">Your Rating</label>
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-text-muted mb-2">Your Rating</label>
       <StarRating v-model="localRating" :readonly="false" size="large" />
-      <p v-if="localRating > 0" class="rating-text">
+      <p v-if="localRating > 0" class="mt-2 text-sm font-medium text-amber-500">
         {{ getRatingText(localRating) }}
       </p>
     </div>
 
-    <div class="review-section">
-      <label for="review" class="review-label">
+    <div class="mb-6">
+      <label for="review" class="block text-sm font-medium text-text-muted mb-2">
         Write a Review (Optional)
       </label>
       <textarea
@@ -20,14 +20,14 @@
         rows="5"
         maxlength="1000"
         placeholder="Share your experience with this recipe..."
-        class="review-textarea"
+        class="w-full p-3 bg-background-secondary border border-glass-border rounded-lg text-sm text-text font-inherit resize-y transition-colors focus:outline-none focus:border-orange"
       ></textarea>
-      <div class="character-count">
+      <div class="text-right text-xs text-text-dim mt-1">
         {{ localReview.length }} / 1000
       </div>
     </div>
 
-    <div class="rating-actions">
+    <div class="flex gap-3 justify-end">
       <BaseButton
         @click="handleCancel"
         buttonType="plainOutlined"
@@ -126,111 +126,4 @@ function handleCancel() {
 }
 </script>
 
-<style scoped>
-.rating-input {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
 
-.rating-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 20px;
-}
-
-.rating-stars-section {
-  margin-bottom: 24px;
-}
-
-.rating-label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.rating-text {
-  margin-top: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #f59e0b;
-}
-
-.review-section {
-  margin-bottom: 24px;
-}
-
-.review-label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.review-textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
-  transition: border-color 0.2s;
-}
-
-.review-textarea:focus {
-  outline: none;
-  border-color: #4caf50;
-}
-
-.character-count {
-  text-align: right;
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 4px;
-}
-
-.rating-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
-.btn {
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: #e5e7eb;
-}
-
-.btn-primary {
-  background: #4caf50;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #45a049;
-}
-</style>
