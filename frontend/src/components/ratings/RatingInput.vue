@@ -28,20 +28,29 @@
     </div>
 
     <div class="rating-actions">
-      <button
+      <BaseButton
         @click="handleCancel"
-        class="btn btn-secondary"
+        buttonType="plainOutlined"
         :disabled="isSubmitting"
+        size="sm"
+        rounded="lg"
+        widthClass="w-auto"
+        textStyle="normal-case"
       >
         Cancel
-      </button>
-      <button
+      </BaseButton>
+      <BaseButton
         @click="handleSubmit"
-        class="btn btn-primary"
-        :disabled="localRating === 0 || isSubmitting"
+        buttonType="primary"
+        :disabled="localRating === 0"
+        :loading="isSubmitting"
+        size="sm"
+        rounded="lg"
+        widthClass="w-auto"
+        textStyle="normal-case"
       >
-        {{ isSubmitting ? 'Submitting...' : isEditing ? 'Update Rating' : 'Submit Rating' }}
-      </button>
+        {{ isEditing ? 'Update Rating' : 'Submit Rating' }}
+      </BaseButton>
     </div>
   </div>
 </template>
@@ -49,6 +58,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import StarRating from '@/components/common/StarRating.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 interface Props {
   title?: string

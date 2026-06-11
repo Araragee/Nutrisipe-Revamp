@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { logger } from '@/utils/logger'
 import { ref, onMounted, computed, watch } from "vue";
-import { socialApi } from "@/http/endpoints/social";
 import { postsApi } from "@/http/endpoints/posts";
 import { useAuthStore } from "@/stores/auth";
 import { useUiStore } from "@/stores/ui";
+import { usePostActions } from "@/composables/usePostActions";
 import UserAvatar from "@/components/user/UserAvatar.vue";
 import FollowButton from "@/components/user/FollowButton.vue";
 import CommentSection from "@/components/post/CommentSection.vue";
@@ -38,7 +38,8 @@ const ratingListRef = ref<any>(null);
 const showCollectionModal = ref(false);
 const showExperiment = ref(false);
 const isForking = ref(false);
-const showCopyToast = ref(false);
+
+const { toggleLike, toggleSave, sharePost: shareRecipe, showCopyToast } = usePostActions(post);
 
 const isOwner = computed(() => authStore.user?.id === post.value?.userId);
 
@@ -52,17 +53,6 @@ const nutritionFacts = computed(() => {
   ];
 });
 
-async function shareRecipe() {
-  if (!post.value) return;
-  const url = ogShareUrl(post.value.id);
-  try {
-    await navigator.clipboard.writeText(url);
-  } catch {
-    // ignore — toast still useful
-  }
-  showCopyToast.value = true;
-  setTimeout(() => { showCopyToast.value = false; }, 2200);
-}
 
 async function forkRecipe() {
   if (!authStore.isAuthenticated) {
@@ -122,39 +112,6 @@ async function handleRatingSubmit(data: { rating: number; review?: string }) {
   }
 }
 
-async function toggleLike() {
-  if (!post.value || !authStore.isAuthenticated) {
-    uiStore.showToast("Please sign in to like", "info");
-    return;
-  }
-  const wasLiked = post.value.isLiked;
-  post.value.isLiked = !wasLiked;
-  post.value.likeCount += wasLiked ? -1 : 1;
-  try {
-    if (wasLiked) await socialApi.unlikePost(post.value.id);
-    else await socialApi.likePost(post.value.id);
-  } catch {
-    post.value.isLiked = wasLiked;
-    post.value.likeCount += wasLiked ? 1 : -1;
-  }
-}
-
-async function toggleSave() {
-  if (!post.value || !authStore.isAuthenticated) {
-    uiStore.showToast("Please sign in to save", "info");
-    return;
-  }
-  const wasSaved = post.value.isSaved;
-  post.value.isSaved = !wasSaved;
-  post.value.saveCount += wasSaved ? -1 : 1;
-  try {
-    if (wasSaved) await socialApi.unsavePost(post.value.id);
-    else await socialApi.savePost(post.value.id);
-  } catch {
-    post.value.isSaved = wasSaved;
-    post.value.saveCount += wasSaved ? 1 : -1;
-  }
-}
 
 onMounted(() => {
   if (props.show) fetchPost();

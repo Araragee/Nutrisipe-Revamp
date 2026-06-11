@@ -2,10 +2,11 @@
 import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, watch } from 'vue'
 import { postsApi } from '@/http/endpoints/posts'
-import { socialApi } from '@/http/endpoints/social'
+import { usePostActions } from '@/composables/usePostActions'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import CommentSection from '@/components/post/CommentSection.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
+import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import type { Post } from '@/typescript/interface/Post'
 
 const props = defineProps<{
@@ -20,6 +21,8 @@ const emit = defineEmits<{
 const post = ref<Post | null>(null)
 const isLoading = ref(false)
 const activeTab = ref<'details' | 'comments'>('details')
+
+const { toggleLike, toggleSave, sharePost: handleShare } = usePostActions(post)
 
 const formattedDate = computed(() => {
   if (!post.value) return ''
@@ -43,73 +46,6 @@ async function loadPost() {
 function handleClose() {
   emit('close')
   post.value = null
-}
-
-async function toggleLike() {
-  if (!post.value) return
-
-  const postId = post.value.id
-  const wasLiked = post.value.isLiked
-
-  // Optimistic update
-  post.value.isLiked = !wasLiked
-  post.value.likeCount += wasLiked ? -1 : 1
-
-  try {
-    if (wasLiked) {
-      await socialApi.unlikePost(postId)
-    } else {
-      await socialApi.likePost(postId)
-    }
-  } catch (error) {
-    // Revert on error
-    post.value.isLiked = wasLiked
-    post.value.likeCount += wasLiked ? 1 : -1
-  }
-}
-
-async function toggleSave() {
-  if (!post.value) return
-
-  const postId = post.value.id
-  const wasSaved = post.value.isSaved
-
-  // Optimistic update
-  post.value.isSaved = !wasSaved
-  post.value.saveCount += wasSaved ? -1 : 1
-
-  try {
-    if (wasSaved) {
-      await socialApi.unsavePost(postId)
-    } else {
-      await socialApi.savePost(postId)
-    }
-  } catch (error) {
-    // Revert on error
-    post.value.isSaved = wasSaved
-    post.value.saveCount += wasSaved ? 1 : -1
-  }
-}
-
-async function handleShare() {
-  if (!post.value) return
-
-  const postUrl = `${window.location.origin}/post/${post.value.id}`
-
-  try {
-    if (navigator.share) {
-      await navigator.share({
-        title: post.value.title,
-        text: post.value.description || '',
-        url: postUrl,
-      })
-    } else {
-      await navigator.clipboard.writeText(postUrl)
-      alert('Link copied to clipboard!')
-    }
-  } catch (error) {
-    logger.error('Failed to share:', error)
-  }
 }
 
 onMounted(() => {
@@ -145,7 +81,7 @@ watch(() => [props.show, props.postId], ([show, postId]) => {
       </button>
 
       <div v-if="isLoading" class="flex items-center justify-center w-full p-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+        <LoadingSpinner size="lg" color="border-orange-500" />
       </div>
 
       <template v-else-if="post">

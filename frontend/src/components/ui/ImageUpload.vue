@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useFileDrop } from '@/composables/useFileDrop'
 
 interface Props {
   modelValue?: string
@@ -19,9 +20,10 @@ const emit = defineEmits<{
 }>()
 
 const fileInput = ref<HTMLInputElement | null>(null)
-const isDragging = ref(false)
 const isUploading = ref(false)
 const previewUrl = ref(props.modelValue)
+
+const { isDragging, handleDragOver, handleDragLeave, handleDrop } = useFileDrop(processFile)
 
 const hasImage = computed(() => !!previewUrl.value)
 
@@ -37,13 +39,7 @@ async function handleFileSelect(event: Event) {
   }
 }
 
-async function handleDrop(event: DragEvent) {
-  isDragging.value = false
-  const file = event.dataTransfer?.files[0]
-  if (file) {
-    await processFile(file)
-  }
-}
+
 
 async function processFile(file: File) {
   // Validate file type
@@ -93,14 +89,7 @@ function removeImage() {
   }
 }
 
-function handleDragOver(event: DragEvent) {
-  event.preventDefault()
-  isDragging.value = true
-}
 
-function handleDragLeave() {
-  isDragging.value = false
-}
 </script>
 
 <template>

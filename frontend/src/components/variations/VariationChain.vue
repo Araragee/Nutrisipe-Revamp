@@ -96,17 +96,7 @@
         <p>This recipe has evolved through {{ depth }} generation{{ depth === 1 ? '' : 's' }}, with each creator adding their unique twist.</p>
         <div class="contributors">
           <span class="label">Contributors:</span>
-          <div class="avatar-stack">
-            <img
-              v-for="(item, index) in chain"
-              :key="item.post.user.id"
-              :src="item.post.user.avatarUrl || '/default-avatar.png'"
-              :alt="item.post.user.displayName"
-              :title="item.post.user.displayName"
-              :style="{ zIndex: chain.length - index }"
-              class="avatar"
-            />
-          </div>
+          <AvatarStack :users="chain.map(item => item.post.user)" :max="5" size="md" />
         </div>
       </div>
     </div>
@@ -117,6 +107,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useVariationsStore } from '@/stores/variations'
+import AvatarStack from '@/components/common/AvatarStack.vue'
 import type { VariationChainItem } from '@/http/endpoints/variations'
 
 interface Props {

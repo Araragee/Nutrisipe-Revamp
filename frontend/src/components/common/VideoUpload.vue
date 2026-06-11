@@ -1,6 +1,14 @@
 <template>
   <div class="video-upload">
-    <div v-if="!videoUrl" class="upload-area" @click="triggerFileInput">
+    <div
+      v-if="!videoUrl"
+      class="upload-area"
+      @click="triggerFileInput"
+      @drop.prevent="handleDrop"
+      @dragover.prevent="handleDragOver"
+      @dragleave="handleDragLeave"
+      :class="{ 'border-orange-500 bg-orange-50 dark:bg-orange-900/10': isDragging }"
+    >
       <input
         ref="fileInputRef"
         type="file"
@@ -97,6 +105,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { httpClient } from '@/http/client'
+import { useFileDrop } from '@/composables/useFileDrop'
 import type { AxiosProgressEvent } from 'axios'
 
 interface Props {
@@ -129,6 +138,8 @@ const uploading = ref(false)
 const uploadProgress = ref(0)
 const error = ref<string | null>(null)
 
+const { isDragging, handleDragOver, handleDragLeave, handleDrop } = useFileDrop(processFile)
+
 const triggerFileInput = () => {
   fileInputRef.value?.click()
 }
@@ -137,12 +148,7 @@ const triggerThumbnailInput = () => {
   thumbnailInputRef.value?.click()
 }
 
-const handleFileSelect = async (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-
-  if (!file) return
-
+async function processFile(file: File) {
   // Validate file
   error.value = null
 
@@ -162,6 +168,15 @@ const handleFileSelect = async (event: Event) => {
   }
 
   await uploadVideo(file)
+}
+
+async function handleFileSelect(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+
+  if (file) {
+    await processFile(file)
+  }
 }
 
 const uploadVideo = async (file: File) => {
