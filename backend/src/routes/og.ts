@@ -7,6 +7,13 @@ const router = Router()
 
 const APP_URL = env.CORS_ORIGIN
 
+function getAbsoluteImageUrl(url: string | null, req: Request): string {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url) || url.startsWith('data:')) return url
+  const base = env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`
+  return `${base.replace(/\/$/, '')}/${url.replace(/^\//, '')}`
+}
+
 function escapeHtml(str: string): string {
   return String(str ?? '')
     .replace(/&/g, '&amp;')
@@ -57,10 +64,11 @@ router.get('/post/:id', async (req: Request, res: Response) => {
 
     const title = escapeHtml(post.title)
     const description = escapeHtml(post.description?.slice(0, 200) || `Recipe by ${post.user.displayName}`)
+    const absoluteImgUrl = getAbsoluteImageUrl(post.imageUrl, req)
     // HTML-escaped image URL for use in meta content attributes
-    const imageHtml = escapeHtml(transformedImageUrl(post.imageUrl))
+    const imageHtml = escapeHtml(transformedImageUrl(absoluteImgUrl))
     // CSS-safe image URL for background-image url()
-    const imageCss = escapeCssUrl(transformedImageUrl(post.imageUrl))
+    const imageCss = escapeCssUrl(transformedImageUrl(absoluteImgUrl))
     const author = escapeHtml(post.user.displayName)
     // canonical is MEDIA_BASE (trusted env var) + UUID from DB — safe
     const canonical = `${APP_URL}/recipes/${escapeHtml(post.id)}`

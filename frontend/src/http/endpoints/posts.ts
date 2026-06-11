@@ -23,7 +23,7 @@ export const postsApi = {
   create: (data: Partial<Post>) => httpClient.post<ApiResponse<Post>>('/posts', data),
 
   update: (id: string, data: Partial<Post>) =>
-    httpClient.patch<ApiResponse<Post>>(`/posts/${id}`, data),
+    httpClient.put<ApiResponse<Post>>(`/posts/${id}`, data),
 
   delete: (id: string) =>
     httpClient.delete<ApiResponse<void>>(`/posts/${id}`),

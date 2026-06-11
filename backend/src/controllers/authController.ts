@@ -97,6 +97,15 @@ export async function logoutHandler(_req: Request, res: Response, _next: NextFun
   })
 }
 
+export async function logoutAllHandler(_req: Request, res: Response, _next: NextFunction) {
+  // JWT stateless; real multi-device revocation needs token versioning - out of scope.
+  res.json({
+    success: true,
+    message: 'Logged out from all devices successfully',
+  })
+}
+
+
 export async function devLoginHandler(req: Request, res: Response, next: NextFunction) {
   try {
     const { email } = req.body

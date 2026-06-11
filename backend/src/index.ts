@@ -2,12 +2,25 @@ import express from 'express'
 import cors from 'cors'
 import rateLimit from 'express-rate-limit'
 import { createServer } from 'http'
-import { mkdirSync } from 'fs'
+import { mkdirSync, writeFileSync, unlinkSync } from 'fs'
+import path from 'path'
 import { env } from './config/env'
 import { logger } from './utils/logger'
 
-// Ensure temp upload dir exists before multer tries to write to it (B-13).
-mkdirSync('uploads/temp', { recursive: true })
+// Startup validation: ensure UPLOAD_DIR and subdirectories exist and are writable (B-13).
+const UPLOAD_DIR = env.UPLOAD_DIR || 'uploads'
+try {
+  mkdirSync(path.join(UPLOAD_DIR, 'temp'), { recursive: true })
+  mkdirSync(path.join(UPLOAD_DIR, 'images'), { recursive: true })
+  mkdirSync(path.join(UPLOAD_DIR, 'videos'), { recursive: true })
+
+  const probeFile = path.join(UPLOAD_DIR, '.write-probe')
+  writeFileSync(probeFile, 'probe')
+  unlinkSync(probeFile)
+} catch (err) {
+  console.error(`FATAL: Upload directory "${UPLOAD_DIR}" is not writable:`, err)
+  process.exit(1)
+}
 import { errorHandler } from './middleware/errorHandler'
 import { initializeSocketServer } from './socket'
 import authRoutes from './routes/auth'
@@ -33,6 +46,7 @@ import { purgeExpired as purgeExpiredStories } from './services/storyService'
 import { purgeScheduledDeletions } from './services/userService'
 
 const app = express()
+app.set('trust proxy', 1)
 const httpServer = createServer(app)
 
 app.use(cors({
