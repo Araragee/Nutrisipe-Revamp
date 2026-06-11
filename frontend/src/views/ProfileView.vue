@@ -196,16 +196,16 @@ const displayPosts = computed(() => {
                            <div class="flex items-center justify-between mb-1">
                               <p class="text-sm font-medium">
                                  <template v-if="item.type === 'like'">
-                                    Liked <RouterLink :to="`/recipe/${item.data.postId}`" class="font-bold hover:text-orange">{{ item.data.postTitle }}</RouterLink>
+                                    Liked <RouterLink :to="`/recipes/${item.data.postId}`" class="font-bold hover:text-orange">{{ item.data.postTitle }}</RouterLink>
                                  </template>
                                  <template v-else-if="item.type === 'comment'">
-                                    Commented on <RouterLink :to="`/recipe/${item.data.postId}`" class="font-bold hover:text-orange">{{ item.data.postTitle }}</RouterLink>
+                                    Commented on <RouterLink :to="`/recipes/${item.data.postId}`" class="font-bold hover:text-orange">{{ item.data.postTitle }}</RouterLink>
                                  </template>
                                  <template v-else-if="item.type === 'follow'">
                                     Started following <RouterLink :to="`/profile/${item.data.userId}`" class="font-bold hover:text-orange">{{ item.data.displayName }}</RouterLink>
                                  </template>
                                  <template v-else-if="item.type === 'rating'">
-                                    Rated <RouterLink :to="`/recipe/${item.data.postId}`" class="font-bold hover:text-orange">{{ item.data.postTitle }}</RouterLink> with {{ item.data.score }} stars
+                                    Rated <RouterLink :to="`/recipes/${item.data.postId}`" class="font-bold hover:text-orange">{{ item.data.postTitle }}</RouterLink> with {{ item.data.score }} stars
                                  </template>
                               </p>
                               <span class="text-[10px] text-text-dim uppercase font-bold tracking-widest">{{ new Date(item.date).toLocaleDateString() }}</span>

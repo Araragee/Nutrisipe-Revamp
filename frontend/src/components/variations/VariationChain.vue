@@ -152,7 +152,7 @@ const loadChain = async () => {
 }
 
 const navigateToPost = (postId: string) => {
-  router.push(`/recipe/${postId}`)
+  router.push(`/recipes/${postId}`)
 }
 </script>
 

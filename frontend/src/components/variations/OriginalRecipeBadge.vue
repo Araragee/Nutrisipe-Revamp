@@ -65,7 +65,7 @@ onMounted(async () => {
 
 const navigateToOriginal = () => {
   if (originalRecipe.value) {
-    router.push(`/recipe/${originalRecipe.value.originalPost.id}`)
+    router.push(`/recipes/${originalRecipe.value.originalPost.id}`)
   }
 }
 </script>
