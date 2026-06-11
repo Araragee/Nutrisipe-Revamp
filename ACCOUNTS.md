@@ -56,10 +56,22 @@ Each user is seeded with:
 - 5–15 random likes
 - 3–8 random follows
 
+## Seeded Engagement Data
+
+In addition to standard user profiles, running the full seeding pipeline (`npm run seed:all`) populates:
+- **Comments & Replies**: 3–8 comments per post (with 30% nested replies and user mentions).
+- **Ratings & Reviews**: 5–20 ratings (1–5 stars) per recipe, with 60% written reviews. Post aggregates (`averageRating`, `ratingCount`) are recalculated.
+- **Recipe Variations**: ~15 forks including 2–3 multi-generational chain lineages (Original -> Fork -> Fork-of-Fork).
+- **Collections**: 1–3 custom folders per ~20 users with 4–10 posts in each.
+- **Conversations & DMs**: ~15 chat logs between mutual follows containing 5–25 messages each (including unread indicators).
+- **Stories**: 8–12 active (24h) and expired stories.
+- **Meal Plans**: Full 7-day breakfast/lunch/dinner slots for 5 users.
+- **Notifications & Mentions**: Pre-populated inbox logs for demo users and the admin account.
+
 ## Database
 
 - **Engine:** SQLite (`backend/prisma/dev.db`)
 - **ORM:** Prisma 5
-- **Seed entry:** `backend/prisma/seed.ts`
+- **Seed entry:** `backend/prisma/seed.ts`, `backend/prisma/seed-ingredients.ts`, and `backend/prisma/seed-engagement.ts`.
 
 Reset everything: `./start.sh --reset`

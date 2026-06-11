@@ -270,10 +270,11 @@ async function main() {
               difficulty: randomElement(DIFFICULTIES),
               ingredients: JSON.stringify([
                 { name: 'Olive oil', qty: '2 tbsp' },
-                { name: 'Garlic', qty: '3 cloves, minced' },
-                { name: 'Onion', qty: '1 medium, diced' },
-                { name: 'Fresh herbs', qty: 'to taste' },
-                { name: 'Sea salt', qty: '1 tsp' },
+                { name: 'Garlic, raw', qty: '3 cloves, minced' },
+                { name: 'Onion, red, raw', qty: '1 medium, diced' },
+                { name: 'Chicken breast, skinless, raw', qty: '500g' },
+                { name: 'Salt, iodized', qty: '1 tsp' },
+                { name: 'Soy sauce', qty: '2 tbsp' },
               ]),
               instructions: JSON.stringify([
                 { step: 1, text: 'Mise en place — prep and measure all ingredients.' },

@@ -63,10 +63,10 @@ if [[ ! -f "prisma/dev.db" ]]; then
   c "running prisma migrate"
   npx prisma migrate deploy
   c "seeding database"
-  npx tsx prisma/seed.ts
+  npm run seed:all
 elif [[ $RESEED -eq 1 ]]; then
   c "reseeding database"
-  npx tsx prisma/seed.ts
+  npm run seed:all
 fi
 
 # Generate Prisma client (cheap if already current)

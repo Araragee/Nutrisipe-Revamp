@@ -12,7 +12,9 @@
         "prisma:migrate": "prisma migrate dev",
         "prisma:seed": "tsx prisma/seed.ts",
         "prisma:seed-ingredients": "tsx prisma/seed-ingredients.ts",
-        "prisma:studio": "prisma studio"
+        "prisma:seed-engagement": "tsx prisma/seed-engagement.ts",
+        "prisma:studio": "prisma studio",
+        "seed:all": "npm run prisma:seed && npm run prisma:seed-ingredients && npm run prisma:seed-engagement"
     },
     "keywords": [
         "recipe",
