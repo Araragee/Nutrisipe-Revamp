@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { postsApi } from '@/http/endpoints/posts'
 import { searchApi } from '@/http/endpoints/search'
 import { collectionsApi, type Collection } from '@/http/endpoints/collections'
@@ -17,6 +17,7 @@ import RecipeMosaicBackground from '@/components/common/RecipeMosaicBackground.v
 type SearchType = 'all' | 'recipes' | 'people'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const searchQuery = ref('')
@@ -150,11 +151,22 @@ function scrollTrending(dir: -1 | 1) {
   el.scrollBy({ left: step * dir * 2, behavior: 'smooth' })
 }
 
+function applyQueryParam() {
+  const q = (route.query.q as string)?.trim()
+  if (q && q !== searchQuery.value) {
+    searchQuery.value = q
+    runSearch()
+  }
+}
+
 onMounted(() => {
   loadTrending()
   loadTrendingTags()
   loadCollections()
+  applyQueryParam()
 })
+
+watch(() => route.query.q, applyQueryParam)
 </script>
 
 <template>

@@ -55,7 +55,7 @@ export async function forkRecipe(
         description,
         imageUrl: originalPost.imageUrl, // Copy original image by default
         category: originalPost.category,
-        tags: JSON.stringify(originalPost.tags || []),
+        tags: originalPost.tags || '[]',
         isVariation: true,
         isPublic: true
       }
@@ -70,9 +70,15 @@ export async function forkRecipe(
         cookTime: recipeData.cookTime ?? originalPost.recipe!.cookTime,
         totalTime: recipeData.totalTime ?? originalPost.recipe!.totalTime,
         difficulty: recipeData.difficulty ?? originalPost.recipe!.difficulty,
-        ingredients: JSON.stringify(recipeData.ingredients ?? originalPost.recipe!.ingredients ?? []),
-        instructions: JSON.stringify(recipeData.instructions ?? originalPost.recipe!.instructions ?? []),
-        nutrition: JSON.stringify(recipeData.nutrition ?? originalPost.recipe!.nutrition ?? null)
+        ingredients: recipeData.ingredients
+          ? (typeof recipeData.ingredients === 'string' ? recipeData.ingredients : JSON.stringify(recipeData.ingredients))
+          : (originalPost.recipe!.ingredients || '[]'),
+        instructions: recipeData.instructions
+          ? (typeof recipeData.instructions === 'string' ? recipeData.instructions : JSON.stringify(recipeData.instructions))
+          : (originalPost.recipe!.instructions || '[]'),
+        nutrition: recipeData.nutrition
+          ? (typeof recipeData.nutrition === 'string' ? recipeData.nutrition : JSON.stringify(recipeData.nutrition))
+          : (originalPost.recipe!.nutrition || null)
       }
     })
 

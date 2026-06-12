@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useUiStore } from "@/stores/ui";
 import { usePostActions } from "@/composables/usePostActions";
 import UserAvatar from "@/components/user/UserAvatar.vue";
+import BaseIcons from "@/components/base/BaseIcons.vue";
 import FollowButton from "@/components/user/FollowButton.vue";
 import CommentSection from "@/components/post/CommentSection.vue";
 import RatingInput from "@/components/ratings/RatingInput.vue";
@@ -42,14 +43,15 @@ const isForking = ref(false);
 const { toggleLike, toggleSave, sharePost: shareRecipe, showCopyToast } = usePostActions(post);
 
 const isOwner = computed(() => authStore.user?.id === post.value?.userId);
+const isForkDisabled = computed(() => isForking.value || !post.value?.recipe || (authStore.isAuthenticated && isOwner.value));
 
 const nutritionFacts = computed(() => {
   const n = post.value?.recipe?.nutrition;
   return [
-    { label: "Calories", val: n?.calories || "0", unit: "kcal", textClass: "text-nutrition-calories", bgClass: "bg-nutrition-calories/18" },
-    { label: "Protein", val: n?.protein || "0", unit: "g", textClass: "text-nutrition-protein", bgClass: "bg-nutrition-protein/18" },
-    { label: "Carbs", val: n?.carbs || "0", unit: "g", textClass: "text-nutrition-carbs", bgClass: "bg-nutrition-carbs/18" },
-    { label: "Fat", val: n?.fat || "0", unit: "g", textClass: "text-nutrition-fat", bgClass: "bg-nutrition-fat/18" },
+    { label: "Calories", val: n?.calories ?? 0, unit: "kcal", icon: "fire", accent: true },
+    { label: "Protein", val: n?.protein ?? 0, unit: "g", icon: "bolt", accent: false },
+    { label: "Carbs", val: n?.carbs ?? 0, unit: "g", icon: "circle-stack", accent: false },
+    { label: "Fat", val: n?.fat ?? 0, unit: "g", icon: "beaker", accent: false },
   ];
 });
 
@@ -80,7 +82,6 @@ async function forkRecipe() {
     isForking.value = false;
   }
 }
-
 async function fetchPost() {
   if (!props.postId) return;
   isLoading.value = true;
@@ -139,10 +140,11 @@ const recipeImage = computed(() =>
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-black/75 animate-revamp"
+    class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 bg-black/60 animate-revamp"
+    @click.self="emit('close')"
   >
     <div
-      class="relative bg-background w-full max-w-5xl h-full max-h-[90vh] rounded-[32px] overflow-hidden shadow-modal border-1.5 border-border flex animate-modalIn"
+      class="relative bg-surface dark:bg-surface w-full max-w-5xl h-full max-h-[90vh] rounded-[28px] overflow-hidden shadow-modal border border-border flex animate-modalIn"
       @click.stop
     >
       <div v-if="isLoading" class="flex-1 flex items-center justify-center">
@@ -152,92 +154,84 @@ const recipeImage = computed(() =>
       </div>
 
       <template v-else-if="post">
-        <!-- Close button (modal top-right, over image) -->
+        <!-- Close button -->
         <button
           @click="emit('close')"
-          class="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-black/45 hover:bg-black/70 border border-white/15 flex items-center justify-center text-white transition-all"
+          class="absolute top-4 right-4 z-30 w-9 h-9 rounded-full bg-surface/95 dark:bg-surface/95 border border-border hover:bg-background-secondary flex items-center justify-center text-text-muted hover:text-text transition-colors"
           aria-label="Close"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <BaseIcons name="x-mark" size="sm" />
         </button>
 
         <!-- Toast: link copied -->
         <div
           v-if="showCopyToast"
-          class="fixed left-1/2 -translate-x-1/2 bottom-10 z-[150] flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/85 text-white text-sm font-bold shadow-2xl animate-toastIn"
+          class="fixed left-1/2 -translate-x-1/2 bottom-10 z-[150] flex items-center gap-2 px-4 py-2.5 rounded-full bg-text text-background text-sm font-semibold shadow-modal animate-toastIn"
         >
           <span class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <BaseIcons name="check" size="xs" class="text-white" />
           </span>
           Link copied
         </div>
 
         <!-- Left: Image side -->
-        <div class="hidden md:block w-[45%] h-full relative overflow-hidden bg-black">
-          <img :src="recipeImage.src" :srcset="recipeImage.srcset" sizes="(min-width:1024px) 50vw, 100vw" class="w-full h-full object-cover opacity-90" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+        <div class="hidden md:block w-[45%] h-full relative overflow-hidden bg-background-secondary">
+          <img :src="recipeImage.src" :srcset="recipeImage.srcset" sizes="(min-width:1024px) 50vw, 100vw" class="w-full h-full object-cover" />
 
-          <!-- Glass dock: like / save / share (iOS 26-style, top-left) -->
-          <div class="modal-quick-actions absolute top-4 left-4 z-20 flex items-center gap-1 p-1 rounded-full">
+          <!-- Quick actions: flat white pills -->
+          <div class="absolute top-4 left-4 z-20 flex items-center gap-2">
             <button
               @click="toggleLike"
-              :class="['quick-icon-btn w-9 h-9 rounded-full flex items-center justify-center text-white transition-all', post.isLiked && 'is-active']"
-              :title="post.isLiked ? 'Liked' : 'Like'"
-              aria-label="Like"
+              :class="['w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-card', post.isLiked ? 'bg-orange text-white' : 'bg-surface/95 text-text-muted hover:text-orange']"
+              :aria-label="post.isLiked ? 'Unlike' : 'Like'"
             >
-              <svg v-if="post.isLiked" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              <svg v-else width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <BaseIcons name="heart" :solid="post.isLiked" size="sm" />
             </button>
             <button
               @click="toggleSave"
-              :class="['quick-icon-btn w-9 h-9 rounded-full flex items-center justify-center text-white transition-all', post.isSaved && 'is-active']"
-              :title="post.isSaved ? 'Saved' : 'Save'"
-              aria-label="Save"
+              :class="['w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-card', post.isSaved ? 'bg-orange text-white' : 'bg-surface/95 text-text-muted hover:text-orange']"
+              :aria-label="post.isSaved ? 'Unsave' : 'Save'"
             >
-              <svg v-if="post.isSaved" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-              <svg v-else width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              <BaseIcons name="bookmark" :solid="post.isSaved" size="sm" />
             </button>
             <button
               @click="shareRecipe"
-              class="quick-icon-btn w-9 h-9 rounded-full flex items-center justify-center text-white transition-all"
-              title="Share"
+              class="w-10 h-10 rounded-full bg-surface/95 text-text-muted hover:text-orange flex items-center justify-center transition-colors shadow-card"
               aria-label="Share"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              <BaseIcons name="share" size="sm" />
             </button>
           </div>
         </div>
 
         <!-- Right: Content side -->
-        <div class="flex-1 flex flex-col h-full bg-background overflow-hidden relative">
+        <div class="flex-1 flex flex-col h-full bg-surface dark:bg-surface overflow-hidden relative">
           <!-- Header -->
-          <div class="p-8 pb-6 pt-12 md:pt-8">
-            <div class="flex items-center gap-3 mb-4">
-              <span class="px-3.5 py-1 rounded-full bg-orange text-white text-[11px] font-bold tracking-wider uppercase">
+          <div class="p-7 pb-5 pt-12 md:pt-7">
+            <div class="flex items-center gap-3 mb-3.5">
+              <span class="px-3 py-1 rounded-full bg-orange-soft text-orange-deep dark:text-orange-light text-[11px] font-semibold capitalize">
                 {{ post.category }}
               </span>
-              <div class="flex items-center gap-1.5 text-orange font-bold text-xs">
-                <span>★</span> {{ post.averageRating?.toFixed(1) || "0.0" }} ({{ post.ratingCount }})
+              <div class="flex items-center gap-1 text-text-muted font-semibold text-xs">
+                <BaseIcons name="star" solid size="xs" class="text-orange" />
+                <span class="tabular-nums">{{ post.averageRating?.toFixed(1) || "0.0" }}</span>
+                <span class="text-text-dim font-normal">({{ post.ratingCount }})</span>
               </div>
             </div>
 
             <h2
-              class="font-montserrat font-extrabold text-3xl tracking-tight leading-tight mb-6"
+              class="font-montserrat font-extrabold text-2xl sm:text-3xl tracking-tight leading-tight mb-5 text-text dark:text-text"
             >
               {{ post.title }}
             </h2>
 
             <div
-              class="flex items-center gap-4 py-4 border-y border-border"
+              class="flex items-center gap-3 py-3.5 border-y border-border"
             >
-              <UserAvatar
-                :user="post.user"
-                size="md"
-                class="border-2 border-orange"
-              />
-              <div class="flex-1">
-                <p class="font-bold text-sm">{{ post.user.displayName }}</p>
-                <p class="text-xs text-text-dim">@{{ post.user.username }}</p>
+              <UserAvatar :user="post.user" size="md" />
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-sm text-text dark:text-text truncate">{{ post.user.displayName }}</p>
+                <p class="text-xs text-text-dim truncate">@{{ post.user.username }}</p>
               </div>
               <div v-if="!isOwner">
                 <FollowButton :user-id="post.user.id" :is-following="post.user.isFollowing" />
@@ -246,55 +240,56 @@ const recipeImage = computed(() =>
           </div>
 
           <!-- Body -->
-          <div class="flex-1 overflow-y-auto px-8 pb-8">
-            <!-- Stats Row -->
-            <div class="grid grid-cols-4 gap-3 mb-8">
+          <div class="flex-1 overflow-y-auto px-7 pb-7">
+            <!-- Nutrition stats -->
+            <div class="grid grid-cols-4 gap-2.5 mb-7">
               <div
                 v-for="n in nutritionFacts"
                 :key="n.label"
-                class="bg-background-secondary rounded-2xl p-4 text-center border border-border"
+                :class="['rounded-2xl p-3.5 text-center border', n.accent ? 'bg-orange-soft border-transparent' : 'bg-background-secondary border-border']"
               >
-                <span class="block w-7 h-7 mx-auto mb-1.5 rounded-md flex items-center justify-center" :class="[n.bgClass, n.textClass]">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
-                  </svg>
-                </span>
-                <span class="font-montserrat font-extrabold text-lg block">{{ n.val }}</span>
-                <span class="text-[10px] text-text-dim uppercase font-bold tracking-wider">{{ n.label }}</span>
+                <BaseIcons
+                  :name="n.icon"
+                  size="sm"
+                  :class="['mx-auto mb-1.5', n.accent ? 'text-orange' : 'text-text-dim']"
+                />
+                <span :class="['font-montserrat font-extrabold text-lg block tabular-nums', n.accent ? 'text-orange-deep dark:text-orange-light' : 'text-text dark:text-text']">{{ n.val }}</span>
+                <span class="text-[10px] text-text-dim uppercase font-semibold tracking-wider">{{ n.label }}</span>
               </div>
             </div>
 
             <!-- Tabs -->
-            <div class="flex gap-8 border-b border-border mb-6">
+            <div class="flex gap-6 border-b border-border mb-6">
               <button
                 v-for="t in ['ingredients', 'instructions', 'reviews']"
                 :key="t"
                 @click="activeTab = t"
                 :class="[
-                  'pb-3 text-sm font-bold capitalize transition-all border-b-2',
+                  'pb-3 text-sm font-semibold capitalize transition-colors border-b-2 -mb-px',
                   activeTab === t
                     ? 'text-orange border-orange'
-                    : 'text-text-muted border-transparent',
+                    : 'text-text-muted border-transparent hover:text-text',
                 ]"
               >
                 {{ t }}
               </button>
             </div>
 
-            <div v-if="activeTab === 'ingredients'" class="space-y-3">
+            <div v-if="activeTab === 'ingredients'" class="space-y-2.5">
               <div
                 v-if="
                   post.recipe?.ingredients && post.recipe.ingredients.length > 0
                 "
+                class="space-y-2.5"
               >
                 <div
                   v-for="(ing, idx) in post.recipe.ingredients"
                   :key="idx"
                   class="flex items-center gap-3 p-3.5 bg-background-secondary rounded-xl border border-border"
                 >
-                  <div class="w-2 h-2 rounded-full bg-orange"></div>
-                  <span class="text-sm font-medium">{{ ing.name }}</span>
-                  <span class="ml-auto text-xs font-bold text-orange">{{
+                  <div class="w-1.5 h-1.5 rounded-full bg-orange shrink-0"></div>
+                  <span class="text-sm font-medium text-text dark:text-text">{{ ing.name }}</span>
+                  <span class="ml-auto text-xs font-semibold text-orange tabular-nums">{{
                     ing.quantity
                   }}</span>
                 </div>
@@ -307,12 +302,13 @@ const recipeImage = computed(() =>
               </div>
             </div>
 
-            <div v-if="activeTab === 'instructions'" class="space-y-6">
+            <div v-if="activeTab === 'instructions'" class="space-y-5">
               <div
                 v-if="
                   post.recipe?.instructions &&
                   post.recipe.instructions.length > 0
                 "
+                class="space-y-5"
               >
                 <div
                   v-for="step in post.recipe.instructions"
@@ -320,15 +316,13 @@ const recipeImage = computed(() =>
                   class="flex gap-4"
                 >
                   <div
-                    class="w-9 h-9 rounded-full bg-orange text-white font-montserrat font-extrabold flex items-center justify-center shrink-0"
+                    class="w-8 h-8 rounded-full bg-orange-soft text-orange font-montserrat font-bold text-sm flex items-center justify-center shrink-0 tabular-nums"
                   >
                     {{ step.step }}
                   </div>
-                  <div>
-                    <p class="text-sm text-text-muted leading-relaxed">
-                      {{ step.text }}
-                    </p>
-                  </div>
+                  <p class="text-sm text-text-muted dark:text-text-muted leading-relaxed pt-1">
+                    {{ step.text }}
+                  </p>
                 </div>
               </div>
               <div
@@ -348,35 +342,35 @@ const recipeImage = computed(() =>
                <div class="my-8"></div>
                <CommentSection :post-id="post.id" />
             </div>
-          </div>
 
-          <!-- Variations -->
-          <div class="px-8 pb-10 border-t border-border pt-8">
-             <VariationList :post-id="post.id" />
+            <!-- Variations -->
+            <div class="mt-8 pt-7 border-t border-border">
+               <VariationList :post-id="post.id" />
+            </div>
           </div>
 
           <!-- Footer -->
-          <div class="p-6 px-8 border-t border-border bg-background flex gap-3">
+          <div class="p-5 px-7 border-t border-border bg-surface dark:bg-surface flex gap-2.5">
             <button
               @click="showCollectionModal = true"
-              class="flex-1 btn-secondary py-3.5 !text-sm flex items-center justify-center gap-2"
+              class="flex-1 btn-secondary py-3 !text-sm flex items-center justify-center gap-2"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <BaseIcons name="folder-plus" size="sm" />
               Save
             </button>
             <button
               @click="forkRecipe"
-              :disabled="isForking"
-              class="flex-1 py-3.5 rounded-xl border-1.5 border-border font-bold text-sm text-text-muted hover:border-orange hover:text-orange flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              :disabled="isForkDisabled"
+              class="flex-1 py-3 rounded-btn border border-border font-semibold text-sm text-text-muted hover:border-orange hover:text-orange flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v3a2 2 0 0 1-2 2H6"/><path d="M6 9v12"/></svg>
+              <BaseIcons name="arrow-path-rounded-square" size="sm" :class="{ 'animate-spin': isForking }" />
               {{ isForking ? 'Forking…' : 'Fork' }}
             </button>
             <button
               @click="showExperiment = true"
-              class="flex-1 btn-primary py-3.5 !text-sm flex items-center justify-center gap-2"
+              class="flex-1 btn-primary py-3 !text-sm flex items-center justify-center gap-2"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <BaseIcons name="sparkles" size="sm" />
               Experiment
             </button>
           </div>
@@ -410,37 +404,5 @@ const recipeImage = computed(() =>
 }
 .animate-toastIn {
   animation: toastIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* iOS 26-style glass dock for quick actions */
-.modal-quick-actions {
-  background: rgba(255,255,255,0.10);
-  border: 1px solid rgba(255,255,255,0.18);
-  backdrop-filter: blur(2px) saturate(120%);
-  -webkit-backdrop-filter: blur(2px) saturate(120%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
-  transition: background 0.32s ease, backdrop-filter 0.32s ease,
-              border-color 0.32s ease, box-shadow 0.32s ease, transform 0.32s ease;
-}
-.modal-quick-actions:hover {
-  background: rgba(255,255,255,0.22);
-  border-color: rgba(255,255,255,0.45);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.55),
-    inset 0 -1px 0 rgba(255,255,255,0.10),
-    0 8px 32px rgba(0,0,0,0.18);
-  transform: translateY(-1px);
-}
-.quick-icon-btn {
-  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
-}
-.quick-icon-btn:hover { background: rgba(255,255,255,0.28); transform: scale(1.06); }
-.quick-icon-btn.is-active {
-  background: var(--orange);
-  color: #fff;
-  box-shadow: 0 4px 14px var(--orange-glow), inset 0 1px 0 rgba(255,255,255,0.3);
-  text-shadow: none;
 }
 </style>

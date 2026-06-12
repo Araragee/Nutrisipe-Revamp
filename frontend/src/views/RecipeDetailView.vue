@@ -62,6 +62,7 @@ function resetServings() {
 
 const postId = computed(() => (Array.isArray(route.params.id) ? route.params.id[0] : route.params.id) as string)
 const isOwner = computed(() => authStore.user?.id === post.value?.userId)
+const isForkDisabled = computed(() => isForking.value || !post.value?.recipe || (authStore.isAuthenticated && isOwner.value))
 
 const nutritionFacts = computed(() => {
   const n = post.value?.recipe?.nutrition
@@ -242,7 +243,7 @@ const recipeImage = computed(() =>
                    <p class="text-xs text-text-dim font-bold uppercase tracking-wider">@{{ post.user.username }}</p>
                 </div>
                 <div v-if="!isOwner">
-                  <FollowButton :user-id="post.user.id" :is-following="post.user.isFollowing" />
+                   <FollowButton :user-id="post.user.id" :is-following="post.user.isFollowing" />
                 </div>
                 <button v-else @click="router.push(`/recipes/${post.id}/edit`)" class="btn-secondary py-2.5 px-6 !text-xs">Edit Post</button>
              </div>
@@ -276,35 +277,31 @@ const recipeImage = computed(() =>
                    <div v-if="baseServings" class="flex items-center justify-between gap-3 mb-5 p-3 bg-background-secondary/40 border border-border rounded-2xl">
                       <span class="text-xs font-bold uppercase tracking-widest text-text-dim">Servings</span>
                       <div class="flex items-center gap-2">
-                         <button @click="adjustServings(-1)" :disabled="(targetServings ?? baseServings) <= 1" class="w-8 h-8 rounded-full bg-background-secondary border border-border text-text font-bold disabled:opacity-40">−</button>
-                         <span class="font-montserrat font-extrabold text-lg w-12 text-center tabular-nums">{{ targetServings ?? baseServings }}</span>
-                         <button @click="adjustServings(1)" class="w-8 h-8 rounded-full bg-background-secondary border border-border text-text font-bold">+</button>
-                         <button v-if="scaleFactor !== 1" @click="resetServings" class="ml-2 text-[10px] font-bold uppercase tracking-widest text-orange hover:underline">Reset</button>
+                          <button @click="adjustServings(-1)" :disabled="(targetServings ?? baseServings) <= 1" class="w-8 h-8 rounded-full bg-background-secondary border border-border text-text font-bold disabled:opacity-40">−</button>
+                          <span class="font-montserrat font-extrabold text-lg w-12 text-center tabular-nums">{{ targetServings ?? baseServings }}</span>
+                          <button @click="adjustServings(1)" class="w-8 h-8 rounded-full bg-background-secondary border border-border text-text font-bold">+</button>
+                          <button v-if="scaleFactor !== 1" @click="resetServings" class="ml-2 text-[10px] font-bold uppercase tracking-widest text-orange hover:underline">Reset</button>
                       </div>
                    </div>
 
                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <template v-if="scaledIngredients.length > 0">
-                       <div v-for="(ing, idx) in scaledIngredients" :key="idx" class="flex items-center gap-4 p-4 bg-background-secondary/30 rounded-2xl border border-border">
-                          <div class="w-2.5 h-2.5 rounded-full bg-orange"></div>
-                          <span class="text-[15px] font-medium">{{ ing.name }}</span>
-                          <span class="ml-auto font-bold text-orange text-sm">{{ ing.quantity }}</span>
-                       </div>
-                     </template>
-                     <div v-else class="col-span-full text-center py-10 text-text-dim italic">No ingredients listed.</div>
+                      <div v-for="(ing, idx) in scaledIngredients" :key="idx" class="flex items-center gap-4 p-4 bg-background-secondary/30 rounded-2xl border border-border">
+                         <div class="w-2.5 h-2.5 rounded-full bg-orange"></div>
+                         <span class="text-[15px] font-medium">{{ ing.name }}</span>
+                         <span class="ml-auto font-bold text-orange text-sm">{{ ing.quantity }}</span>
+                      </div>
+                      <div v-if="scaledIngredients.length === 0" class="col-span-full text-center py-10 text-text-dim italic">No ingredients listed.</div>
                    </div>
                 </div>
 
                 <div v-if="activeTab === 'instructions'" class="space-y-8">
-                   <template v-if="post.recipe?.instructions && post.recipe.instructions.length > 0">
-                     <div v-for="step in post.recipe.instructions" :key="step.step" class="flex gap-6">
-                        <div class="w-10 h-10 rounded-full bg-orange text-white font-montserrat font-extrabold flex items-center justify-center shrink-0 shadow-lg shadow-orange/30">{{ step.step }}</div>
-                        <div>
-                           <p class="text-text-muted leading-relaxed">{{ step.text }}</p>
-                        </div>
-                     </div>
-                   </template>
-                   <div v-else class="text-center py-10 text-text-dim italic">No instructions listed.</div>
+                    <div v-for="step in post.recipe?.instructions" :key="step.step" class="flex gap-6">
+                       <div class="w-10 h-10 rounded-full bg-orange text-white font-montserrat font-extrabold flex items-center justify-center shrink-0 shadow-lg shadow-orange/30">{{ step.step }}</div>
+                       <div>
+                          <p class="text-text-muted leading-relaxed">{{ step.text }}</p>
+                       </div>
+                    </div>
+                    <div v-if="!post.recipe?.instructions || post.recipe.instructions.length === 0" class="text-center py-10 text-text-dim italic">No instructions listed.</div>
                 </div>
 
                 <div v-if="activeTab === 'reviews'" class="space-y-8">
@@ -327,7 +324,7 @@ const recipeImage = computed(() =>
                 <button @click="showCollectionModal = true" class="flex-1 min-w-[160px] btn-secondary flex items-center justify-center gap-2 h-14">
                   <BaseIcons name="folder-plus" size="sm" /> Save to Collection
                 </button>
-                <button @click="forkRecipe" :disabled="isForking" class="flex-1 min-w-[160px] btn-secondary flex items-center justify-center gap-2 h-14">
+                <button @click="forkRecipe" :disabled="isForkDisabled" class="flex-1 min-w-[160px] btn-secondary flex items-center justify-center gap-2 h-14 disabled:opacity-50 disabled:cursor-not-allowed">
                   <BaseIcons name="arrow-path-rounded-square" size="sm" :class="{ 'animate-spin': isForking }" /> Fork
                 </button>
                 <button @click="shareRecipe" class="flex-1 min-w-[140px] btn-secondary flex items-center justify-center gap-2 h-14">

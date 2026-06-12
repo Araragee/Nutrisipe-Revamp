@@ -28,6 +28,16 @@ export async function createNotification(data: CreateNotificationData) {
         commentId: data.commentId || undefined,
         createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
       },
+      include: {
+        actor: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+          },
+        },
+      },
     })
     if (existing) return existing
 
