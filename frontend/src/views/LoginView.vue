@@ -1,30 +1,73 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useAuthStore } from '@/stores/auth'
 import { usePostAuthFlow } from '@/composables/usePostAuthFlow'
 import SplashScreen from '@/components/common/SplashScreen.vue'
+import IngredientField3D from '@/components/common/IngredientField3D.vue'
+import IngredientPlate from '@/components/landing/IngredientPlate.vue'
 import loginBg from '@/assets/login-bg.jpeg'
 
-const STATS = [
-  { value: '15k+', label: 'Recipes' },
-  { value: '4.9', label: 'Rating' },
-  { value: '100%', label: 'Organic' },
+gsap.registerPlugin(ScrollTrigger)
+
+interface Stat {
+  target: number
+  suffix: string
+  decimals: number
+  label: string
+}
+
+const STATS: Stat[] = [
+  { target: 15, suffix: 'k+', decimals: 0, label: 'Recipes' },
+  { target: 4.9, suffix: '', decimals: 1, label: 'Rating' },
+  { target: 100, suffix: '%', decimals: 0, label: 'Organic' },
+]
+
+const FEATURES = [
+  {
+    emoji: '🍝',
+    band: 'from-orange/30 to-orange-deep/10',
+    title: 'Fork any recipe',
+    body: 'Remix dishes like code — swap ingredients, save your version, and credit flows back to the original cook.',
+    chips: [{ label: '2.4k forks', tone: 'orange' }],
+  },
+  {
+    emoji: '🥗',
+    band: 'from-green/30 to-green-deep/10',
+    title: 'Nutrition, decoded',
+    body: 'Every recipe ships with macros per serving, calculated for you — so you know exactly what lands on your plate.',
+    chips: [
+      { label: '420 kcal', tone: 'orange' },
+      { label: '32g protein', tone: 'green' },
+    ],
+  },
+  {
+    emoji: '🔥',
+    band: 'from-orange-light/30 to-orange/10',
+    title: 'A feed that feeds you',
+    body: 'Follow cooks you love, save dishes into collections, and let the community plate up daily inspiration.',
+    chips: [{ label: '18k saves', tone: 'orange' }],
+  },
 ] as const
 
 const STEPS = [
   {
     num: '01',
+    chip: 'Browse',
     title: 'Discover',
     body: 'Browse 15k+ community recipes. Filter by craving, diet, or the macros you are chasing.',
   },
   {
     num: '02',
+    chip: 'Make it yours',
     title: 'Cook & tweak',
     body: 'Follow clear steps, scale servings, and swap what you don\'t have — the recipe adapts with you.',
   },
   {
     num: '03',
+    chip: 'Pass it on',
     title: 'Share your fork',
     body: 'Publish your spin. Watch it travel, get saved, and spark the next remix.',
   },
@@ -35,16 +78,25 @@ const TESTIMONIALS = [
     quote: 'I forked a carbonara five times before nailing my dairy-free version. The original cook even saved it back.',
     name: 'Maya R.',
     role: 'Home cook',
+    initials: 'MR',
+    stat: '5 forks',
+    tilt: '-2.5deg',
   },
   {
     quote: 'The macro breakdown per serving sold me instantly. I plan my entire prep week without leaving the feed.',
     name: 'Daniel O.',
     role: 'Meal prepper',
+    initials: 'DO',
+    stat: 'Prep pro',
+    tilt: '1.8deg',
   },
   {
     quote: 'Posted my lola\'s adobo and watched people remix it across the world. Unreal feeling.',
     name: 'Carlo V.',
     role: 'Recipe creator',
+    initials: 'CV',
+    stat: '2.3k saves',
+    tilt: '-1.4deg',
   },
 ] as const
 
@@ -66,7 +118,13 @@ const mode = ref<'signin' | 'signup'>('signin')
 const pageRef = ref<HTMLElement | null>(null)
 const cardRef = ref<HTMLElement | null>(null)
 
-let revealObserver: IntersectionObserver | null = null
+const statDisplays = ref<string[]>(STATS.map(() => '0'))
+
+let gsapCtx: gsap.Context | null = null
+
+function formatStat(value: number, stat: Stat): string {
+  return `${value.toFixed(stat.decimals)}${stat.suffix}`
+}
 
 function moveGlow(e: PointerEvent) {
   const card = cardRef.value
@@ -197,29 +255,112 @@ onMounted(() => {
     mode.value = 'signup'
   }
 
-  revealObserver = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('reveal-visible')
-          revealObserver?.unobserve(entry.target)
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  // Reduced motion: skip all scroll/scrub work, show stats + bowl complete.
+  if (reduceMotion) {
+    statDisplays.value = STATS.map((s) => formatStat(s.target, s))
+    return
+  }
+
+  pageRef.value?.classList.add('anim-ready')
+
+  gsapCtx = gsap.context(() => {
+    // ── Hero stat counters ──
+    STATS.forEach((stat, i) => {
+      const obj = { v: 0 }
+      gsap.to(obj, {
+        v: stat.target,
+        duration: 1.6,
+        delay: 0.3,
+        ease: 'power2.out',
+        onUpdate: () => {
+          statDisplays.value[i] = formatStat(obj.v, stat)
+        },
+      })
+    })
+
+    // ── Scroll reveals ── (clear inline props on finish so CSS hover/tilt still works)
+    gsap.utils.toArray<HTMLElement>('.reveal').forEach((el) => {
+      ScrollTrigger.create({
+        trigger: el,
+        start: 'top 85%',
+        once: true,
+        onEnter: () => {
+          gsap.to(el, {
+            opacity: 1,
+            y: 0,
+            duration: 0.7,
+            ease: 'power3.out',
+            onComplete: () => {
+              el.classList.add('revealed')
+              gsap.set(el, { clearProps: 'opacity,transform' })
+            },
+          })
+        },
+      })
+    })
+
+    // ── "How it works" — bowl fills as each step scrolls in (desktop) ──
+    const isDesktop = window.matchMedia('(min-width: 768px)').matches
+    if (isDesktop) {
+      // Hide every layer; reveal cumulatively per step.
+      gsap.set('.pl-item', { opacity: 0, scale: 0.4, transformBox: 'fill-box', transformOrigin: 'center' })
+      gsap.set('.pl-fork', { opacity: 0, y: 28, transformBox: 'fill-box', transformOrigin: 'center' })
+
+      const stages: string[][] = [
+        ['.pl-base'],
+        ['.pl-grain', '.pl-top'],
+        ['.pl-garnish', '.pl-fork'],
+      ]
+      const stepEls = gsap.utils.toArray<HTMLElement>('.how-step')
+      let reached = -1
+
+      const revealStage = (target: number) => {
+        for (let s = reached + 1; s <= target; s++) {
+          const sel = stages[s]
+          if (sel.includes('.pl-fork')) {
+            gsap.to('.pl-fork', { opacity: 1, y: 0, duration: 0.6, ease: 'back.out(1.6)' })
+          }
+          const itemSel = sel.filter((x) => x !== '.pl-fork').map((x) => `${x} .pl-item`).join(',')
+          if (itemSel) {
+            gsap.to(itemSel, { opacity: 1, scale: 1, duration: 0.5, stagger: 0.05, ease: 'back.out(1.7)' })
+          }
         }
+        reached = Math.max(reached, target)
       }
-    },
-    { threshold: 0.15 },
-  )
-  pageRef.value?.querySelectorAll('.reveal').forEach((el) => revealObserver?.observe(el))
+
+      stepEls.forEach((step, i) => {
+        const activate = () => {
+          stepEls.forEach((s, idx) => s.classList.toggle('is-active', idx === i))
+          revealStage(i)
+        }
+        ScrollTrigger.create({
+          trigger: step,
+          start: 'top 65%',
+          end: 'bottom 35%',
+          onEnter: activate,
+          onEnterBack: activate,
+        })
+      })
+    }
+  }, pageRef.value ?? undefined)
 })
 
-onBeforeUnmount(() => revealObserver?.disconnect())
+onBeforeUnmount(() => gsapCtx?.revert())
 </script>
 
 <template>
-  <div ref="pageRef" class="landing-page min-h-screen bg-[#0c0907] text-white">
+  <div ref="pageRef" class="landing-page relative min-h-screen bg-[#0c0907] text-white">
     <SplashScreen :show="showSplash" />
 
+    <!-- Ambient low-poly ingredient field — drifts behind every section below the hero -->
+    <div class="fixed inset-0 z-0 pointer-events-none opacity-[0.28]" aria-hidden="true">
+      <IngredientField3D :density="11" />
+    </div>
+
     <!-- ════ HERO × LOGIN ════ -->
-    <section class="relative min-h-[100dvh] flex flex-col overflow-hidden">
+    <section class="relative z-10 min-h-[100dvh] flex flex-col overflow-hidden">
 
       <!-- Food photo background: dishes weighted left, slate dead space right -->
       <img :src="loginBg" class="absolute inset-0 w-full h-full object-cover object-left" alt="" aria-hidden="true" />
@@ -269,7 +410,7 @@ onBeforeUnmount(() => revealObserver?.disconnect())
             <template v-for="(stat, i) in STATS" :key="stat.label">
               <div v-if="i > 0" class="h-9 w-px bg-white/15"></div>
               <div>
-                <p class="font-montserrat font-extrabold text-2xl tabular-nums">{{ stat.value }}</p>
+                <p class="font-montserrat font-extrabold text-2xl tabular-nums">{{ statDisplays[i] }}</p>
                 <p class="text-[11px] text-white/55 font-bold uppercase tracking-widest mt-0.5">{{ stat.label }}</p>
               </div>
             </template>
@@ -460,8 +601,8 @@ onBeforeUnmount(() => revealObserver?.disconnect())
       </button>
     </section>
 
-    <!-- ════ SECTION 1: FEATURES ════ -->
-    <section id="features" class="section-features relative py-24 sm:py-28 overflow-hidden">
+    <!-- ════ SECTION 1: FEATURES (recipe-card tiles) ════ -->
+    <section id="features" class="section-features relative z-10 py-24 sm:py-28 overflow-hidden">
       <div class="max-w-6xl mx-auto px-6">
         <div class="reveal max-w-2xl mb-14">
           <p class="text-[11px] font-bold uppercase tracking-[0.32em] text-orange-light/90 mb-4">Why Nutrisipe</p>
@@ -474,105 +615,111 @@ onBeforeUnmount(() => revealObserver?.disconnect())
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div class="reveal feature-card rounded-3xl p-7">
-            <span class="feature-icon w-12 h-12 rounded-2xl flex items-center justify-center mb-5">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="6" cy="5" r="2.6" /><circle cx="18" cy="5" r="2.6" /><circle cx="12" cy="19" r="2.6" />
-                <path d="M6 8v1.5a4 4 0 0 0 4 4h4a4 4 0 0 0 4-4V8" /><path d="M12 13.5v3" />
-              </svg>
-            </span>
-            <h3 class="font-montserrat font-bold text-lg mb-2">Fork any recipe</h3>
-            <p class="text-sm text-white/60 leading-relaxed">
-              Remix dishes like code — swap ingredients, save your version, and credit flows back to the original cook.
-            </p>
-          </div>
-
-          <div class="reveal delay-100 feature-card rounded-3xl p-7">
-            <span class="feature-icon w-12 h-12 rounded-2xl flex items-center justify-center mb-5">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" />
-              </svg>
-            </span>
-            <h3 class="font-montserrat font-bold text-lg mb-2">Nutrition, decoded</h3>
-            <p class="text-sm text-white/60 leading-relaxed">
-              Every recipe ships with macros per serving, calculated for you — so you know exactly what lands on your plate.
-            </p>
-          </div>
-
-          <div class="reveal delay-200 feature-card rounded-3xl p-7">
-            <span class="feature-icon w-12 h-12 rounded-2xl flex items-center justify-center mb-5">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-              </svg>
-            </span>
-            <h3 class="font-montserrat font-bold text-lg mb-2">A feed that feeds you</h3>
-            <p class="text-sm text-white/60 leading-relaxed">
-              Follow cooks you love, save dishes into collections, and let the community plate up daily inspiration.
-            </p>
-          </div>
+          <article
+            v-for="(f, i) in FEATURES"
+            :key="f.title"
+            class="reveal recipe-card group rounded-3xl overflow-hidden flex flex-col"
+            :class="{ 'delay-100': i === 1, 'delay-200': i === 2 }"
+          >
+            <!-- "cover photo" band -->
+            <div class="relative h-32 flex items-center justify-center bg-gradient-to-br overflow-hidden" :class="f.band">
+              <span class="text-5xl drop-shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">{{ f.emoji }}</span>
+              <span class="absolute inset-0 bg-gradient-to-t from-[#15100c]/80 to-transparent"></span>
+            </div>
+            <div class="flex-1 p-6 -mt-6 relative">
+              <div class="flex flex-wrap gap-1.5 mb-3">
+                <span
+                  v-for="chip in f.chips"
+                  :key="chip.label"
+                  class="macro-chip text-[11px] font-bold px-2.5 py-1 rounded-full"
+                  :class="chip.tone === 'green' ? 'is-green' : 'is-orange'"
+                >{{ chip.label }}</span>
+              </div>
+              <h3 class="font-montserrat font-bold text-lg mb-2">{{ f.title }}</h3>
+              <p class="text-sm text-white/60 leading-relaxed">{{ f.body }}</p>
+            </div>
+          </article>
         </div>
       </div>
     </section>
 
-    <!-- ════ SECTION 2: HOW IT WORKS ════ -->
-    <section id="how-it-works" class="section-how relative py-24 sm:py-28 overflow-hidden">
+    <!-- ════ SECTION 2: HOW IT WORKS (sticky bowl fills as you scroll) ════ -->
+    <section id="how-it-works" class="section-how relative z-10 py-24 sm:py-28">
       <div class="max-w-6xl mx-auto px-6">
         <div class="reveal max-w-2xl mb-14">
           <p class="text-[11px] font-bold uppercase tracking-[0.32em] text-orange-light/90 mb-4">How it works</p>
           <h2 class="font-montserrat font-black text-4xl sm:text-5xl tracking-tight leading-tight">
-            Three steps to your<br />next <span class="italic font-serif font-medium text-orange-light">favourite dish.</span>
+            Watch your bowl<br />come <span class="italic font-serif font-medium text-orange-light">together.</span>
           </h2>
         </div>
 
-        <div class="steps-row relative grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
-          <div
-            v-for="(step, i) in STEPS"
-            :key="step.num"
-            class="reveal relative"
-            :class="{ 'delay-100': i === 1, 'delay-200': i === 2 }"
-          >
-            <p class="step-num font-montserrat font-black text-6xl mb-4">{{ step.num }}</p>
-            <h3 class="font-montserrat font-bold text-xl mb-2.5">{{ step.title }}</h3>
-            <p class="text-sm text-white/60 leading-relaxed max-w-xs">{{ step.body }}</p>
+        <div class="grid md:grid-cols-2 gap-12 md:gap-16 items-start">
+          <!-- Sticky bowl — stays put while the steps scroll past, filling layer by layer -->
+          <div class="plate-stage md:sticky md:top-24">
+            <div class="relative mx-auto w-full max-w-[380px] aspect-square">
+              <div class="plate-glow"></div>
+              <IngredientPlate class="relative" />
+            </div>
           </div>
+
+          <!-- Scroll steps -->
+          <ol class="how-steps">
+            <li
+              v-for="step in STEPS"
+              :key="step.num"
+              class="how-step py-8 md:min-h-[56vh] flex flex-col justify-center"
+            >
+              <span class="how-chip inline-flex w-fit items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4">
+                <span class="how-dot w-1.5 h-1.5 rounded-full"></span>{{ step.chip }}
+              </span>
+              <div class="flex items-baseline gap-4 mb-2.5">
+                <span class="how-num font-montserrat font-black text-5xl sm:text-6xl">{{ step.num }}</span>
+                <h3 class="font-montserrat font-bold text-2xl sm:text-3xl">{{ step.title }}</h3>
+              </div>
+              <p class="how-body text-base text-white/55 leading-relaxed max-w-md">{{ step.body }}</p>
+            </li>
+          </ol>
         </div>
       </div>
     </section>
 
     <!-- ════ SECTION 3: COMMUNITY + CTA ════ -->
-    <section id="community" class="section-community relative py-24 sm:py-28 overflow-hidden">
+    <section id="community" class="section-community relative z-10 py-24 sm:py-28 overflow-hidden">
       <div class="max-w-6xl mx-auto px-6">
-        <div class="reveal max-w-2xl mb-14">
+        <div class="reveal max-w-2xl mb-16">
           <p class="text-[11px] font-bold uppercase tracking-[0.32em] text-orange-light/90 mb-4">Community</p>
           <h2 class="font-montserrat font-black text-4xl sm:text-5xl tracking-tight leading-tight">
             Cooks who came for recipes,<br /><span class="italic font-serif font-medium text-orange-light">stayed for the people.</span>
           </h2>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-20">
-          <figure
-            v-for="(t, i) in TESTIMONIALS"
-            :key="t.name"
-            class="reveal feature-card rounded-3xl p-7 flex flex-col"
-            :class="{ 'delay-100': i === 1, 'delay-200': i === 2 }"
-          >
-            <svg class="text-orange-light/70 mb-4" width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9.6 5.2C6 7.1 3.8 10 3.8 13.7c0 3 1.9 5.1 4.4 5.1 2.2 0 3.9-1.7 3.9-3.9 0-2.1-1.5-3.6-3.5-3.6-.4 0-.9.1-1 .1.3-2 2-4 4-5.2L9.6 5.2Zm10 0C16 7.1 13.8 10 13.8 13.7c0 3 1.9 5.1 4.4 5.1 2.2 0 3.9-1.7 3.9-3.9 0-2.1-1.5-3.6-3.5-3.6-.4 0-.9.1-1 .1.3-2 2-4 4-5.2l-2-1Z" />
-            </svg>
-            <blockquote class="text-sm text-white/75 leading-relaxed flex-1">{{ t.quote }}</blockquote>
-            <figcaption class="mt-5 pt-5 border-t border-white/10">
-              <p class="font-montserrat font-bold text-sm">{{ t.name }}</p>
-              <p class="text-xs text-white/50 mt-0.5">{{ t.role }}</p>
-            </figcaption>
-          </figure>
+        <!-- Testimonials as polaroids pinned to a board -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 mb-24 pt-4">
+          <div v-for="(t, i) in TESTIMONIALS" :key="t.name" class="reveal">
+            <figure class="polaroid relative flex flex-col h-full" :class="`tilt-${i}`">
+              <span class="pin" aria-hidden="true"></span>
+              <div class="polaroid-photo relative flex items-center justify-center rounded-xl overflow-hidden mb-4">
+                <span class="avatar font-montserrat font-black text-2xl">{{ t.initials }}</span>
+                <span class="stat-badge absolute bottom-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full">{{ t.stat }}</span>
+              </div>
+              <blockquote class="text-[13.5px] text-zinc-700 leading-relaxed flex-1">“{{ t.quote }}”</blockquote>
+              <figcaption class="mt-4 pt-4 border-t border-zinc-200">
+                <p class="font-montserrat font-bold text-sm text-zinc-900">{{ t.name }}</p>
+                <p class="text-xs text-zinc-500 mt-0.5">{{ t.role }}</p>
+              </figcaption>
+            </figure>
+          </div>
         </div>
 
         <!-- CTA banner -->
-        <div class="reveal cta-banner relative rounded-[34px] px-8 py-14 sm:py-16 text-center overflow-hidden">
+        <div class="reveal cta-banner relative rounded-[34px] px-8 py-16 sm:py-20 text-center overflow-hidden">
+          <div class="cta-float" aria-hidden="true">
+            <span>🍅</span><span>🥑</span><span>🌿</span><span>🧄</span><span>🥕</span><span>🍋</span>
+          </div>
           <h2 class="relative font-montserrat font-black text-3xl sm:text-5xl tracking-tight leading-tight mb-4">
             Ready to stir<br class="sm:hidden" /> things up?
           </h2>
-          <p class="relative text-white/65 text-base max-w-md mx-auto mb-9">
+          <p class="relative text-white/70 text-base max-w-md mx-auto mb-9">
             Join thousands of cooks sharing, forking, and perfecting recipes together.
           </p>
           <div class="relative flex flex-col sm:flex-row items-center justify-center gap-3.5">
@@ -588,7 +735,7 @@ onBeforeUnmount(() => revealObserver?.disconnect())
     </section>
 
     <!-- Footer -->
-    <footer class="border-t border-white/10">
+    <footer class="relative z-10 border-t border-white/10 bg-[#0c0907]/80">
       <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/40">
         <p>© 2026 Nutrisipe Culinary Labs</p>
         <p>Made by cooks, for cooks.</p>
@@ -709,73 +856,175 @@ onBeforeUnmount(() => revealObserver?.disconnect())
   opacity: 0.6;
 }
 
-/* ── Landing sections ── */
+/* ── Landing sections — transparent base so the 3D ingredient field drifts behind ── */
 .section-features {
-  background:
-    radial-gradient(90% 70% at 85% 0%, rgba(255, 107, 53, 0.07), transparent 60%),
-    #0c0907;
+  background: radial-gradient(90% 70% at 85% 0%, rgba(255, 107, 53, 0.10), transparent 60%);
 }
-
 .section-how {
-  background:
-    radial-gradient(80% 80% at 8% 50%, rgba(120, 70, 40, 0.14), transparent 55%),
-    #0c0907;
+  background: radial-gradient(80% 80% at 8% 50%, rgba(120, 70, 40, 0.18), transparent 55%);
 }
-
 .section-community {
-  background:
-    radial-gradient(90% 70% at 50% 100%, rgba(255, 107, 53, 0.08), transparent 60%),
-    #0c0907;
+  background: radial-gradient(90% 70% at 50% 100%, rgba(255, 107, 53, 0.10), transparent 60%);
 }
 
-.feature-card {
-  background: rgba(255, 255, 255, 0.04);
+/* ── Features: recipe-card tiles ── */
+.recipe-card {
+  background: rgba(20, 15, 11, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  transition: border-color 0.25s, background 0.25s, transform 0.25s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
 }
-.feature-card:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 150, 80, 0.35);
-  transform: translateY(-3px);
+.recipe-card:hover {
+  border-color: rgba(255, 150, 80, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 44px -20px rgba(0, 0, 0, 0.8);
+}
+.macro-chip.is-orange {
+  background: rgba(255, 107, 53, 0.16);
+  color: var(--orange-light);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+}
+.macro-chip.is-green {
+  background: rgba(16, 185, 129, 0.16);
+  color: var(--green-light);
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-.feature-icon {
-  background: rgba(255, 107, 53, 0.14);
+/* ── How it works: sticky bowl ── */
+.plate-glow {
+  position: absolute;
+  inset: 6%;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 50% 45%, rgba(255, 140, 66, 0.34), rgba(255, 107, 53, 0.05) 60%, transparent 72%);
+  filter: blur(18px);
+  pointer-events: none;
+}
+.how-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.55);
+  transition: color 0.4s, border-color 0.4s, background 0.4s;
+}
+.how-dot {
+  background: rgba(255, 255, 255, 0.4);
+  transition: background 0.4s, box-shadow 0.4s;
+}
+.how-num {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 150, 80, 0.4);
+  transition: -webkit-text-stroke-color 0.4s;
+}
+.how-step {
+  opacity: 0.4;
+  transition: opacity 0.45s ease;
+}
+.how-step.is-active {
+  opacity: 1;
+}
+.how-step.is-active .how-chip {
+  background: rgba(255, 107, 53, 0.16);
+  border-color: rgba(255, 107, 53, 0.5);
   color: var(--orange-light);
 }
-
-.step-num {
-  color: transparent;
-  -webkit-text-stroke: 1.5px rgba(255, 150, 80, 0.55);
+.how-step.is-active .how-dot {
+  background: var(--orange-light);
+  box-shadow: 0 0 10px 1px rgba(255, 140, 66, 0.8);
+}
+.how-step.is-active .how-num {
+  -webkit-text-stroke-color: var(--orange);
+}
+/* Small screens: no scrubbing, every step reads fully */
+@media (max-width: 767px) {
+  .how-step { opacity: 1; }
 }
 
-/* Connector line behind the step numbers on wide screens */
-@media (min-width: 768px) {
-  .steps-row::before {
-    content: '';
-    position: absolute;
-    top: 30px;
-    left: 4%;
-    right: 4%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 150, 80, 0.3) 15%, rgba(255, 150, 80, 0.3) 85%, transparent);
-  }
+/* ── Community: pinned polaroids ── */
+.polaroid {
+  background: #fdfbf6;
+  padding: 14px 14px 18px;
+  border-radius: 6px;
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.7);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.tilt-0 { transform: rotate(-2.5deg); }
+.tilt-1 { transform: rotate(1.8deg); }
+.tilt-2 { transform: rotate(-1.4deg); }
+.polaroid:hover {
+  transform: rotate(0deg) translateY(-6px);
+  box-shadow: 0 26px 52px -16px rgba(0, 0, 0, 0.85);
+  z-index: 2;
+}
+.polaroid-photo {
+  height: 140px;
+  background: linear-gradient(140deg, var(--orange-light), var(--orange-deep));
+}
+.tilt-1 .polaroid-photo {
+  background: linear-gradient(140deg, var(--green-light), var(--green-deep));
+}
+.tilt-2 .polaroid-photo {
+  background: linear-gradient(140deg, #ffb27a, #c2410c);
+}
+.avatar {
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
+}
+.stat-badge {
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  backdrop-filter: blur(4px);
+}
+.pin {
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 30%, #ff8c42, #c2410c);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  z-index: 3;
 }
 
+/* ── CTA floating ingredients ── */
 .cta-banner {
+  isolation: isolate;
   background:
     radial-gradient(70% 120% at 50% 0%, rgba(255, 107, 53, 0.18), transparent 65%),
     rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 150, 80, 0.22);
 }
-
-/* Scroll-reveal */
-.reveal {
-  opacity: 0;
-  transform: translateY(26px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+.cta-float {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
-.reveal-visible {
+.cta-float span {
+  position: absolute;
+  font-size: 26px;
+  opacity: 0.5;
+  animation: ctaFloat 7s ease-in-out infinite;
+}
+.cta-float span:nth-child(1) { left: 8%;  top: 28%; animation-delay: 0s; }
+.cta-float span:nth-child(2) { left: 17%; top: 64%; animation-delay: 1.1s; font-size: 32px; }
+.cta-float span:nth-child(3) { left: 85%; top: 22%; animation-delay: 2.2s; }
+.cta-float span:nth-child(4) { left: 90%; top: 62%; animation-delay: 0.6s; }
+.cta-float span:nth-child(5) { left: 74%; top: 78%; animation-delay: 1.7s; font-size: 30px; }
+.cta-float span:nth-child(6) { left: 30%; top: 14%; animation-delay: 2.8s; }
+@keyframes ctaFloat {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-16px) rotate(8deg); }
+}
+
+/* ── Scroll-reveal (GSAP-driven via .anim-ready) ── */
+.reveal { opacity: 1; }
+.anim-ready .reveal {
+  opacity: 0;
+  transform: translateY(32px);
+}
+.anim-ready .reveal.revealed {
   opacity: 1;
   transform: none;
 }
@@ -802,5 +1051,7 @@ onBeforeUnmount(() => revealObserver?.disconnect())
 @media (prefers-reduced-motion: reduce) {
   .n-path { animation: none; stroke-dashoffset: 0; }
   .reveal { opacity: 1; transform: none; transition: none; }
+  .how-step { opacity: 1; }
+  .cta-float span { animation: none; }
 }
 </style>

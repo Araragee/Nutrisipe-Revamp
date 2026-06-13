@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: light;
   --orange: #FF6B35;
   --orange-light: #FF8C42;
   --orange-deep: #E8531F;
@@ -32,6 +33,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --bg: #09090b;
   --bg2: #18181b;
   --surface: #18181b;

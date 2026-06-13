@@ -38,6 +38,16 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    proxy: {
+      '/api': 'http://localhost:80',
+      '/uploads': 'http://localhost:80',
+      '/socket.io': {
+        target: 'http://localhost:80',
+        ws: true,
+      },
+    },
+  },
   build: {
     rollupOptions: {
       output: {

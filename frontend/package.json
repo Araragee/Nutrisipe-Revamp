@@ -21,6 +21,7 @@
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
     "dompurify": "^3.4.8",
+    "gsap": "^3.15.0",
     "pinia": "^2.2.6",
     "socket.io-client": "^4.8.3",
     "three": "^0.184.0",
