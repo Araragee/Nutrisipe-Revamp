@@ -43,7 +43,13 @@ const isForking = ref(false);
 const { toggleLike, toggleSave, sharePost: shareRecipe, showCopyToast } = usePostActions(post);
 
 const isOwner = computed(() => authStore.user?.id === post.value?.userId);
-const isForkDisabled = computed(() => isForking.value || !post.value?.recipe || (authStore.isAuthenticated && isOwner.value));
+const hasIngredients = computed(() => (post.value?.recipe?.ingredients?.length ?? 0) > 0);
+const isForkDisabled = computed(() => isForking.value || !post.value?.recipe || !hasIngredients.value || (authStore.isAuthenticated && isOwner.value));
+const forkDisabledReason = computed(() => {
+  if (isOwner.value) return "You can't fork your own recipe";
+  if (!hasIngredients.value) return "This recipe has no ingredients to fork";
+  return "";
+});
 
 const nutritionFacts = computed(() => {
   const n = post.value?.recipe?.nutrition;
@@ -361,6 +367,7 @@ const recipeImage = computed(() =>
             <button
               @click="forkRecipe"
               :disabled="isForkDisabled"
+              :title="forkDisabledReason"
               class="flex-1 py-3 rounded-btn border border-border font-semibold text-sm text-text-muted hover:border-orange hover:text-orange flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <BaseIcons name="arrow-path-rounded-square" size="sm" :class="{ 'animate-spin': isForking }" />

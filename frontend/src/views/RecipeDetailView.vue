@@ -62,7 +62,13 @@ function resetServings() {
 
 const postId = computed(() => (Array.isArray(route.params.id) ? route.params.id[0] : route.params.id) as string)
 const isOwner = computed(() => authStore.user?.id === post.value?.userId)
-const isForkDisabled = computed(() => isForking.value || !post.value?.recipe || (authStore.isAuthenticated && isOwner.value))
+const hasIngredients = computed(() => (post.value?.recipe?.ingredients?.length ?? 0) > 0)
+const isForkDisabled = computed(() => isForking.value || !post.value?.recipe || !hasIngredients.value || (authStore.isAuthenticated && isOwner.value))
+const forkDisabledReason = computed(() => {
+  if (isOwner.value) return "You can't fork your own recipe"
+  if (!hasIngredients.value) return 'This recipe has no ingredients to fork'
+  return ''
+})
 
 const nutritionFacts = computed(() => {
   const n = post.value?.recipe?.nutrition
@@ -324,7 +330,7 @@ const recipeImage = computed(() =>
                 <button @click="showCollectionModal = true" class="flex-1 min-w-[160px] btn-secondary flex items-center justify-center gap-2 h-14">
                   <BaseIcons name="folder-plus" size="sm" /> Save to Collection
                 </button>
-                <button @click="forkRecipe" :disabled="isForkDisabled" class="flex-1 min-w-[160px] btn-secondary flex items-center justify-center gap-2 h-14 disabled:opacity-50 disabled:cursor-not-allowed">
+                <button @click="forkRecipe" :disabled="isForkDisabled" :title="forkDisabledReason" class="flex-1 min-w-[160px] btn-secondary flex items-center justify-center gap-2 h-14 disabled:opacity-50 disabled:cursor-not-allowed">
                   <BaseIcons name="arrow-path-rounded-square" size="sm" :class="{ 'animate-spin': isForking }" /> Fork
                 </button>
                 <button @click="shareRecipe" class="flex-1 min-w-[140px] btn-secondary flex items-center justify-center gap-2 h-14">

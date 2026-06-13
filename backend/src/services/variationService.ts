@@ -177,17 +177,11 @@ export async function getVariations(
   ])
 
   return {
+    // transformPost already parses recipe.ingredients/instructions/nutrition.
+    // Do NOT re-parse here — it double-parses an already-parsed array into "[object Object]".
     variations: variations.map(v => ({
       ...v,
-      variationPost: {
-        ...transformPost(v.variationPost),
-        recipe: v.variationPost.recipe ? {
-          ...v.variationPost.recipe,
-          ingredients: JSON.parse(v.variationPost.recipe.ingredients as string),
-          instructions: JSON.parse(v.variationPost.recipe.instructions as string),
-          nutrition: v.variationPost.recipe.nutrition ? JSON.parse(v.variationPost.recipe.nutrition as string) : null
-        } : null
-      }
+      variationPost: transformPost(v.variationPost)
     })),
     pagination: {
       page,
@@ -225,15 +219,8 @@ export async function getOriginalRecipe(postId: string) {
 
   return {
     variation,
-    originalPost: {
-      ...transformPost(variation.originalPost),
-      recipe: variation.originalPost.recipe ? {
-        ...variation.originalPost.recipe,
-        ingredients: JSON.parse(variation.originalPost.recipe.ingredients as string),
-        instructions: JSON.parse(variation.originalPost.recipe.instructions as string),
-        nutrition: variation.originalPost.recipe.nutrition ? JSON.parse(variation.originalPost.recipe.nutrition as string) : null
-      } : null
-    }
+    // transformPost already parses the recipe — re-parsing double-parses into "[object Object]".
+    originalPost: transformPost(variation.originalPost)
   }
 }
 
