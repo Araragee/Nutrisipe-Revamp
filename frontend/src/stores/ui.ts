@@ -4,8 +4,17 @@ import { useToast } from '@/composables/useToast'
 
 export const useUiStore = defineStore('ui', () => {
   const pinModalOpen = ref(false)
+  const createModalOpen = ref(false)
   const selectedPostId = ref<string | null>(null)
   const sidebarCollapsed = ref(false)
+
+  function openCreateModal() {
+    createModalOpen.value = true
+  }
+
+  function closeCreateModal() {
+    createModalOpen.value = false
+  }
 
   function openPinModal(postId: string) {
     selectedPostId.value = postId
@@ -28,10 +37,13 @@ export const useUiStore = defineStore('ui', () => {
 
   return {
     pinModalOpen,
+    createModalOpen,
     selectedPostId,
     sidebarCollapsed,
     openPinModal,
     closePinModal,
+    openCreateModal,
+    closeCreateModal,
     toggleSidebar,
     showToast,
   }

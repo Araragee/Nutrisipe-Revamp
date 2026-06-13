@@ -55,12 +55,7 @@ const router = createRouter({
       name: 'recipes',
       redirect: { name: 'home', query: { scope: 'all' } }
     },
-    {
-      path: '/recipes/create',
-      name: 'recipe-create',
-      component: () => import('@/views/RecipeCreateView.vue'),
-      meta: { requiresAuth: true },
-    },
+
     {
       path: '/recipes/:id',
       name: 'recipe-detail',

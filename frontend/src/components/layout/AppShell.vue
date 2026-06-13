@@ -14,6 +14,8 @@ import UserAvatar from '@/components/user/UserAvatar.vue'
 import BaseIcons from '@/components/base/BaseIcons.vue'
 import NotificationDropdown from '@/components/notifications/NotificationDropdown.vue'
 import AccountDropdown from '@/components/layout/AccountDropdown.vue'
+import RecipeCreateModal from '@/components/recipe/RecipeCreateModal.vue'
+import { useUiStore } from '@/stores/ui'
 
 interface NavItem {
   id: string
@@ -41,6 +43,7 @@ const authStore = useAuthStore()
 const notificationsStore = useNotificationsStore()
 const router = useRouter()
 const route = useRoute()
+const uiStore = useUiStore()
 
 const showMoreDrawer = ref(false)
 const searchQuery = ref('')
@@ -225,7 +228,7 @@ onUnmounted(() => {
 
         <div class="ml-auto flex items-center gap-2.5">
           <button
-            @click="router.push('/recipes/create')"
+            @click="uiStore.openCreateModal()"
             class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-orange text-white font-semibold text-sm hover:bg-orange-deep transition-colors"
           >
             <BaseIcons name="plus" size="sm" />
@@ -367,8 +370,8 @@ onUnmounted(() => {
         </RouterLink>
 
         <button
-          @click="router.push('/recipes/create')"
-          class="w-14 h-14 rounded-full bg-orange text-white flex items-center justify-center shadow-card-hover -translate-y-4 border-4 border-background transition-transform active:scale-95"
+          @click="uiStore.openCreateModal()"
+          class="w-14 h-14 rounded-full bg-orange text-white flex items-center justify-center shadow-card-hover -translate-y-4 border-4 border-background transition-transform active:scale-95 shrink-0"
           aria-label="Share recipe"
         >
           <BaseIcons name="plus" size="lg" />
@@ -426,6 +429,7 @@ onUnmounted(() => {
   <div v-else class="h-full">
     <slot />
   </div>
+  <RecipeCreateModal v-if="uiStore.createModalOpen" />
 </template>
 
 <style scoped>

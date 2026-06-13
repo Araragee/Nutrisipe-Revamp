@@ -66,7 +66,7 @@ export const useFeedStore = defineStore('feed', () => {
   function addPost(post: Post) {
     posts.value.unshift(post)
     // Invalidate all feed cache when new post is added
-    invalidateCache(/^feed_page_/)
+    invalidateCache(/^feed_/)
   }
 
   return {

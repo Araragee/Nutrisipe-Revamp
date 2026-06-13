@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { postsApi } from '@/http/endpoints/posts'
 import { PostCategory } from '@/typescript/types/enums'
 import { useUiStore } from '@/stores/ui'
+import { useFeedStore } from '@/stores/feed'
 import ImageUpload from '@/components/ui/ImageUpload.vue'
 import IngredientAutocomplete from '@/components/recipe/IngredientAutocomplete.vue'
 import NutritionFactsLabel from '@/components/recipe/NutritionFactsLabel.vue'
@@ -98,7 +99,11 @@ async function handleSubmit() {
       }
     }
 
-    await postsApi.create(postData as any)
+    const response = await postsApi.create(postData as any)
+    const feedStore = useFeedStore()
+    if (response.data?.data) {
+      feedStore.addPost(response.data.data)
+    }
     step.value = 4 // Success step
   } catch (error) {
     uiStore.showToast('Failed to create recipe', 'error')
@@ -108,18 +113,18 @@ async function handleSubmit() {
 }
 
 function handleClose() {
-  router.push('/')
+  uiStore.closeCreateModal()
 }
 </script>
 
 <template>
   <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/75 animate-revamp">
-    <div class="create-modal relative bg-background w-full max-w-[50vw] h-[800px] max-h-[90vh] rounded-[28px] border-1.5 border-border shadow-modal flex flex-col overflow-hidden animate-modalIn">
-      <button @click="handleClose" class="absolute top-6 right-6 z-50 w-9 h-9 rounded-full bg-background-secondary border-1.5 border-border flex items-center justify-center text-text-muted hover:border-orange hover:text-orange transition-all">✕</button>
+    <div class="create-modal relative bg-background w-full max-w-2xl max-h-[95vh] rounded-[28px] border-1.5 border-border shadow-modal flex flex-col overflow-hidden animate-modalIn">
+      <button @click="handleClose" class="absolute top-5 right-5 z-50 w-9 h-9 rounded-full bg-background-secondary border-1.5 border-border flex items-center justify-center text-text-muted hover:border-orange hover:text-orange transition-all">✕</button>
 
       <!-- Header -->
-      <header class="p-5 border-b border-border flex items-center gap-3">
-        <div class="flex gap-1.5 flex-1 pr-12">
+      <header class="p-5 pr-16 md:pr-20 border-b border-border flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 shrink-0">
+        <div class="flex gap-1.5 flex-1 w-full">
           <div
             v-for="(s, i) in STEPS"
             :key="i"
@@ -131,7 +136,7 @@ function handleClose() {
             ></div>
           </div>
         </div>
-        <span class="text-[12px] font-bold text-text-dim whitespace-nowrap">Step {{ Math.min(step + 1, 4) }} of 4 — {{ STEPS[Math.min(step, 3)] }}</span>
+        <span class="text-[11px] sm:text-[12px] font-bold text-text-dim shrink-0">Step {{ Math.min(step + 1, 4) }} of 4 — <span class="hidden sm:inline">{{ STEPS[Math.min(step, 3)] }}</span></span>
       </header>
 
       <!-- Body -->
