@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useUsersStore } from '@/stores/users'
 import { useUiStore } from '@/stores/ui'
 import BaseButton from '@/components/base/BaseButton.vue'
@@ -16,7 +16,25 @@ const uiStore = useUiStore()
 const isLoading = ref(false)
 const localIsFollowing = ref(props.isFollowing || false)
 
+// Keep local state in sync when the parent re-fetches or the component is
+// reused for a different user (e.g. navigating between profiles).
+watch(
+  () => props.isFollowing,
+  (val) => {
+    localIsFollowing.value = val || false
+  },
+)
+
+// Backend already knows the true state; treat these as a state-sync, not a failure.
+function messageSaysAlreadyFollowing(msg: string) {
+  return /already following/i.test(msg)
+}
+function messageSaysNotFollowing(msg: string) {
+  return /not following/i.test(msg)
+}
+
 async function toggleFollow() {
+  if (isLoading.value) return
   isLoading.value = true
 
   try {
@@ -29,8 +47,16 @@ async function toggleFollow() {
       localIsFollowing.value = true
       uiStore.showToast('Following user', 'success')
     }
-  } catch (error) {
-    uiStore.showToast('Failed to update follow status', 'error')
+  } catch (error: any) {
+    const msg = error?.response?.data?.message || ''
+    // Reconcile UI with the server's actual state instead of showing an error.
+    if (messageSaysAlreadyFollowing(msg)) {
+      localIsFollowing.value = true
+    } else if (messageSaysNotFollowing(msg)) {
+      localIsFollowing.value = false
+    } else {
+      uiStore.showToast('Failed to update follow status', 'error')
+    }
   } finally {
     isLoading.value = false
   }

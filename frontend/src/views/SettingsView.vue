@@ -489,8 +489,8 @@ const themeOptions = [
 }
 
 .settings-card {
-  background: var(--background-secondary, rgba(245, 245, 247, 0.5));
-  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+  background: var(--bg2);
+  border: 1px solid var(--border);
   border-radius: 32px;
   padding: 32px;
 }
@@ -568,7 +568,7 @@ const themeOptions = [
   appearance: none;
   width: 44px;
   height: 24px;
-  background: var(--background-secondary, #e6e1d8);
+  background: var(--bg2);
   border-radius: 999px;
   position: relative;
   cursor: pointer;

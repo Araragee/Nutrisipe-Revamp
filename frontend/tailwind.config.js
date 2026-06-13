@@ -1,5 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 
+// Our theme tokens live in CSS custom properties that hold *hex* values
+// (e.g. --surface: #18181b). Tailwind's `/<opacity>` modifier would emit an
+// invalid `rgb(#18181b / .7)` for those, so opacity-modified utilities like
+// `bg-surface/70`, `bg-orange/20`, or `shadow-orange/30` silently render
+// transparent. Resolve the color through color-mix so the opacity modifier
+// works while a plain utility (no slash) still returns the raw var.
+const alphaVar = (varName) => ({ opacityValue }) =>
+  opacityValue === undefined
+    ? `var(${varName})`
+    : `color-mix(in srgb, var(${varName}) calc(${opacityValue} * 100%), transparent)`
+
 module.exports = {
   content: [
     "./index.html",
@@ -35,29 +46,29 @@ module.exports = {
           fat: '#FF6B8A',
         },
         orange: {
-          DEFAULT: 'var(--orange)',
-          light: 'var(--orange-light)',
-          deep: 'var(--orange-deep)',
+          DEFAULT: alphaVar('--orange'),
+          light: alphaVar('--orange-light'),
+          deep: alphaVar('--orange-deep'),
           glow: 'var(--orange-glow)',
           soft: 'var(--orange-soft)',
         },
-        border: 'var(--border)',
+        border: alphaVar('--border'),
         background: {
-          DEFAULT: 'var(--bg)',
-          secondary: 'var(--bg2)',
+          DEFAULT: alphaVar('--bg'),
+          secondary: alphaVar('--bg2'),
         },
         surface: {
-          DEFAULT: 'var(--surface)',
-          solid: 'var(--surface-solid)',
+          DEFAULT: alphaVar('--surface'),
+          solid: alphaVar('--surface-solid'),
         },
         text: {
-          DEFAULT: 'var(--text)',
-          muted: 'var(--text2)',
-          dim: 'var(--text3)',
+          DEFAULT: alphaVar('--text'),
+          muted: alphaVar('--text2'),
+          dim: alphaVar('--text3'),
         },
         glass: {
-          DEFAULT: 'var(--glass)',
-          border: 'var(--glass-border)',
+          DEFAULT: alphaVar('--glass'),
+          border: alphaVar('--glass-border'),
         }
       },
       borderRadius: {

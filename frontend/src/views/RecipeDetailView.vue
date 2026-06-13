@@ -223,13 +223,25 @@ const recipeImage = computed(() =>
                 <img :src="recipeImage.src" :srcset="recipeImage.srcset" sizes="(min-width:1024px) 45vw, 100vw" class="w-full object-cover aspect-[4/5]" />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
 
-                <button
-                  @click="toggleLike"
-                  class="absolute top-6 right-6 w-14 h-14 rounded-full bg-surface/80 border border-border flex items-center justify-center text-2xl transition-all active:scale-90"
-                  :class="post.isLiked ? 'text-orange shadow-lg shadow-orange/20' : 'text-text-dim'"
-                >
-                  <BaseIcons name="heart" :solid="post.isLiked" size="lg" />
-                </button>
+                <div class="absolute top-6 right-6 flex flex-col gap-3">
+                  <button
+                    @click="toggleLike"
+                    class="w-14 h-14 rounded-full bg-surface/80 border border-border flex items-center justify-center text-2xl transition-all active:scale-90"
+                    :class="post.isLiked ? 'text-orange shadow-lg shadow-orange/20' : 'text-text-dim'"
+                    :aria-label="post.isLiked ? 'Unlike' : 'Like'"
+                  >
+                    <BaseIcons name="heart" :solid="post.isLiked" size="lg" />
+                  </button>
+                  <button
+                    @click="toggleSave"
+                    class="w-14 h-14 rounded-full bg-surface/80 border border-border flex items-center justify-center text-2xl transition-all active:scale-90"
+                    :class="post.isSaved ? 'text-orange shadow-lg shadow-orange/20' : 'text-text-dim'"
+                    :aria-label="post.isSaved ? 'Unsave' : 'Save'"
+                    :title="post.isSaved ? 'Saved — tap to remove' : 'Save recipe'"
+                  >
+                    <BaseIcons name="bookmark" :solid="post.isSaved" size="lg" />
+                  </button>
+                </div>
              </div>
           </div>
 

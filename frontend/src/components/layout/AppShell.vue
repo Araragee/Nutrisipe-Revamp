@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { logger } from '@/utils/logger'
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
@@ -40,7 +41,6 @@ const notificationsStore = useNotificationsStore()
 const router = useRouter()
 const route = useRoute()
 
-const showNotifs = ref(false)
 const showMoreDrawer = ref(false)
 const searchQuery = ref('')
 const suggestedCreators = ref<SuggestedCreator[]>([])
@@ -258,12 +258,11 @@ onUnmounted(() => {
             Share recipe
           </button>
 
-          <div class="relative">
-            <button
-              @click="showNotifs = !showNotifs"
+          <Popover v-slot="{ open, close }" class="relative">
+            <PopoverButton
               :class="[
-                'w-9 h-9 rounded-full flex items-center justify-center transition-colors relative',
-                showNotifs ? 'bg-orange-soft text-orange' : 'text-text-muted hover:bg-background-secondary hover:text-text',
+                'w-9 h-9 rounded-full flex items-center justify-center transition-colors relative focus:outline-none focus-visible:ring-2 focus-visible:ring-orange',
+                open ? 'bg-orange-soft text-orange' : 'text-text-muted hover:bg-background-secondary hover:text-text',
               ]"
               aria-label="Notifications"
             >
@@ -272,9 +271,11 @@ onUnmounted(() => {
                 v-if="notificationsStore.unreadCount > 0"
                 class="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-orange text-white text-[9px] font-bold flex items-center justify-center border-2 border-surface dark:border-surface"
               >{{ notificationsStore.unreadCount }}</span>
-            </button>
-            <NotificationDropdown v-if="showNotifs" @close="showNotifs = false" class="absolute right-0 top-12 z-50" />
-          </div>
+            </PopoverButton>
+            <PopoverPanel class="absolute right-0 top-12 z-50">
+              <NotificationDropdown @close="close" />
+            </PopoverPanel>
+          </Popover>
 
           <RouterLink
             v-if="authStore.user"
@@ -355,18 +356,21 @@ onUnmounted(() => {
         </span>
         <span class="font-montserrat font-extrabold text-lg text-text dark:text-text">Nutri<span class="text-orange">sipe</span></span>
       </RouterLink>
-      <button
-        @click="showNotifs = !showNotifs"
-        class="w-9 h-9 rounded-full bg-orange-soft text-orange flex items-center justify-center relative"
-        aria-label="Notifications"
-      >
-        <BaseIcons name="bell" size="sm" />
-        <span
-          v-if="notificationsStore.unreadCount > 0"
-          class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-orange text-white text-[9px] font-bold flex items-center justify-center border-2 border-surface"
-        >{{ notificationsStore.unreadCount }}</span>
-      </button>
-      <NotificationDropdown v-if="showNotifs" @close="showNotifs = false" class="fixed top-16 right-4 z-50 w-[calc(100vw-32px)] max-w-sm md:hidden" />
+      <Popover v-slot="{ close }">
+        <PopoverButton
+          class="w-9 h-9 rounded-full bg-orange-soft text-orange flex items-center justify-center relative focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+          aria-label="Notifications"
+        >
+          <BaseIcons name="bell" size="sm" />
+          <span
+            v-if="notificationsStore.unreadCount > 0"
+            class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-orange text-white text-[9px] font-bold flex items-center justify-center border-2 border-surface"
+          >{{ notificationsStore.unreadCount }}</span>
+        </PopoverButton>
+        <PopoverPanel class="fixed top-16 right-4 z-50 w-[calc(100vw-32px)] max-w-sm md:hidden">
+          <NotificationDropdown @close="close" />
+        </PopoverPanel>
+      </Popover>
     </div>
 
     <!-- ── Mobile bottom nav ── -->

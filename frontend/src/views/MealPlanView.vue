@@ -446,8 +446,8 @@ const weekLabel = computed(() => {
 .settings-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: var(--background-secondary, rgba(245, 245, 247, 0.5));
-  border: 1.5px solid var(--border, rgba(0, 0, 0, 0.08));
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
   border-radius: 12px;
   font-size: 0.875rem;
   outline: none;

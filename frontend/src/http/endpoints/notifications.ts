@@ -6,15 +6,13 @@ export const notificationsApi = {
   getNotifications: (limit = 20) =>
     httpClient.get<{
       success: boolean
-      data: {
-        notifications: Notification[]
-        unreadCount: number
-        pagination: {
-          page: number
-          limit: number
-          total: number
-          totalPages: number
-        }
+      data: Notification[]
+      unreadCount: number
+      pagination: {
+        page: number
+        limit: number
+        total: number
+        totalPages: number
       }
     }>('/notifications', {
       params: { limit },

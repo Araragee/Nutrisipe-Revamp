@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
-import { onMounted, onErrorCaptured, computed, ref } from 'vue'
+import { onMounted, onErrorCaptured, computed, ref, watch } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useTheme } from '@/composables/useTheme'
@@ -25,6 +25,12 @@ const appError = ref<string | null>(null)
 const appShellKey = ref(0)
 
 onErrorCaptured((err, _vm, info) => {
+  // Ignore vue-masonry-wall unmount race condition
+  if (err instanceof TypeError && err.message.includes("reading 'children'") && info === 'mounted hook') {
+    logger.warn('Ignored vue-masonry-wall unmount error', err)
+    return false
+  }
+
   logger.error('[App error boundary]', info, err)
   if (err instanceof Error) {
     appError.value = err.message
@@ -36,6 +42,15 @@ function retryApp() {
   appError.value = null
   appShellKey.value++
 }
+
+// Clear a latched error when the user navigates away — a stuck error page
+// shouldn't survive a route change.
+watch(() => route.path, () => {
+  if (appError.value) {
+    appError.value = null
+    appShellKey.value++
+  }
+})
 
 onMounted(async () => {
   // initialization hook reserved for future use

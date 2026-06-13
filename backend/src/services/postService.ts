@@ -428,7 +428,8 @@ export async function getPostById(postId: string, userId?: string) {
   }
 
   if (userId) {
-    const [isLiked, isSaved] = await Promise.all([
+    const isOwnPost = post.userId === userId
+    const [isLiked, isSaved, follow] = await Promise.all([
       prisma.like.findUnique({
         where: {
           userId_postId: { userId, postId: post.id },
@@ -439,12 +440,25 @@ export async function getPostById(postId: string, userId?: string) {
           userId_postId: { userId, postId: post.id },
         },
       }),
+      // Whether the viewer already follows the post's author (skip for own posts).
+      isOwnPost
+        ? Promise.resolve(null)
+        : prisma.follow.findUnique({
+            where: {
+              followerId_followingId: { followerId: userId, followingId: post.userId },
+            },
+          }),
     ])
 
+    const transformed = transformPost(post)
     return {
-      ...transformPost(post),
+      ...transformed,
       isLiked: !!isLiked,
       isSaved: !!isSaved,
+      user: {
+        ...transformed.user,
+        isFollowing: !!follow,
+      },
     }
   }
 

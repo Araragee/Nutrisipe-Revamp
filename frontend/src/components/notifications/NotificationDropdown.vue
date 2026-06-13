@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNotificationsStore } from '@/stores/notifications'
 import UserAvatar from '@/components/user/UserAvatar.vue'
@@ -21,21 +21,6 @@ const filteredNotifications = computed(() => {
     return notificationsStore.notifications.filter(n => !n.isRead)
   }
   return notificationsStore.notifications
-})
-
-function handleClickOutside(event: MouseEvent) {
-  const dropdown = document.querySelector('.notification-dropdown')
-  if (dropdown && !dropdown.contains(event.target as Node)) {
-    emit('close')
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
 })
 
 async function handleNotificationClick(notification: any) {
@@ -82,7 +67,7 @@ const getActionBg = (type: string) => {
 </script>
 
 <template>
-  <div class="notification-dropdown w-full max-w-[420px] bg-white/95 dark:bg-background-secondary/95 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-border z-50 overflow-hidden animate-revamp">
+  <div class="notification-dropdown w-[380px] max-w-[calc(100vw-1.5rem)] bg-white/95 dark:bg-background-secondary/95 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-border z-50 overflow-hidden animate-revamp">
     <!-- Header -->
     <div class="p-6 pb-4 flex items-center justify-between">
       <h3 class="font-montserrat font-extrabold text-2xl text-text">Notifications</h3>

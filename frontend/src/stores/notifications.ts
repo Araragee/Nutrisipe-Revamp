@@ -15,8 +15,9 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
     try {
       const response = await notificationsApi.getNotifications(limit)
-      notifications.value = response.data.data.notifications
-      unreadCount.value = response.data.data.unreadCount
+      // API shape is flat: { success, data: Notification[], unreadCount, pagination }
+      notifications.value = response.data.data ?? []
+      unreadCount.value = response.data.unreadCount ?? 0
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to fetch notifications'
     } finally {
