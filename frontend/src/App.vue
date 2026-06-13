@@ -8,14 +8,13 @@ import { useTheme } from '@/composables/useTheme'
 import LayoutBackground from '@/components/layout/LayoutBackground.vue'
 import AppShell from '@/components/layout/AppShell.vue'
 import ToastContainer from '@/components/ToastContainer.vue'
-import Toast from '@/components/ui/Toast.vue'
 
 const authStore = useAuthStore()
 const route = useRoute()
 useTheme()
 
 // Routes that should NOT show the sidebar/navigation shell
-const noShellRoutes = ['/login', '/register', '/onboarding']
+const noShellRoutes = ['/login', '/onboarding']
 const shouldShowAppShell = computed(() => {
   return authStore.isAuthenticated && !noShellRoutes.includes(route.path)
 })
@@ -65,7 +64,6 @@ onMounted(async () => {
       </AppShell>
 
       <ToastContainer />
-      <Toast />
     </LayoutBackground>
   </div>
 </template>

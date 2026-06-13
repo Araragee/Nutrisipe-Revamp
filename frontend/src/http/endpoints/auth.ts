@@ -4,10 +4,10 @@ import type { User } from '@/typescript/interface/User'
 
 export const authApi = {
   register: (data: { username: string; email: string; password: string; displayName: string }) =>
-    httpClient.post<ApiResponse<AuthResponse>>('/auth/register', data),
+    httpClient.post<ApiResponse<AuthResponse>>('/auth/register', data, { skipErrorToast: true }),
 
   login: (data: { email: string; password: string }) =>
-    httpClient.post<ApiResponse<AuthResponse>>('/auth/login', data),
+    httpClient.post<ApiResponse<AuthResponse>>('/auth/login', data, { skipErrorToast: true }),
 
   googleLogin: (data: { google_id: string; name: string; email: string; image?: string }) =>
     httpClient.post<ApiResponse<AuthResponse>>('/auth/google-login', data),

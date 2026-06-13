@@ -1,13 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useToast } from '@/composables/useToast'
 
 export const useUiStore = defineStore('ui', () => {
   const pinModalOpen = ref(false)
   const selectedPostId = ref<string | null>(null)
   const sidebarCollapsed = ref(false)
-  const toastMessage = ref<string | null>(null)
-  const toastType = ref<'success' | 'error' | 'info'>('info')
-  let toastTimer: ReturnType<typeof setTimeout> | null = null
 
   function openPinModal(postId: string) {
     selectedPostId.value = postId
@@ -23,23 +21,15 @@ export const useUiStore = defineStore('ui', () => {
     sidebarCollapsed.value = !sidebarCollapsed.value
   }
 
-  function showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
-    toastMessage.value = message
-    toastType.value = type
-
-    if (toastTimer !== null) clearTimeout(toastTimer)
-    toastTimer = setTimeout(() => {
-      toastMessage.value = null
-      toastTimer = null
-    }, 3000)
+  function showToast(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') {
+    const toast = useToast()
+    toast.addToast(message, type)
   }
 
   return {
     pinModalOpen,
     selectedPostId,
     sidebarCollapsed,
-    toastMessage,
-    toastType,
     openPinModal,
     closePinModal,
     toggleSidebar,

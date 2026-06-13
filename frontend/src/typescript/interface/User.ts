@@ -10,6 +10,7 @@ export interface User {
   createdAt: string
   role?: 'USER' | 'MODERATOR' | 'ADMIN'
   isFollowing?: boolean
+  onboardingCompleted?: boolean
   settings?: {
     darkMode: boolean
   }

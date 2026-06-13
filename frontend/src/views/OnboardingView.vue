@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import BrandMeshBackground from '@/components/common/BrandMeshBackground.vue'
 import BaseIcons from '@/components/base/BaseIcons.vue'
 import { logger } from '@/utils/logger'
 import { ref, computed, onMounted } from 'vue'
@@ -115,6 +114,9 @@ async function finish() {
       }),
       ...followIds.map((id) => socialApi.followUser(id)),
     ])
+    if (authStore.user) {
+      authStore.user.onboardingCompleted = true
+    }
     uiStore.showToast('You’re all set!', 'success')
     router.push('/')
   } catch (error) {
@@ -143,8 +145,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="onboarding-view relative min-h-screen bg-background overflow-hidden">
-    <BrandMeshBackground variant="morning" :intensity="0.5" />
+  <div class="onboarding-view relative min-h-screen bg-[#0c0907] overflow-hidden text-white">
+    <!-- Radial glow in background -->
+    <div class="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_100%,rgba(255,107,53,0.08),transparent_50%)] pointer-events-none"></div>
     <div class="relative z-10 min-h-screen flex flex-col lg:flex-row">
       <!-- Left: copy + nav -->
       <aside class="lg:w-2/5 xl:w-1/3 flex flex-col justify-between p-8 md:p-12 lg:p-16">
@@ -156,20 +159,20 @@ onMounted(() => {
                   stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </span>
-            <span class="font-montserrat font-black text-xl tracking-tight text-text">
-              Nutri<span class="text-orange">sipe</span>
+            <span class="font-montserrat font-black text-xl tracking-tight text-white">
+              Nutri<span class="text-orange-light">sipe</span>
             </span>
           </div>
 
-          <p class="text-orange font-bold text-[11px] uppercase tracking-[0.3em] mb-3">
+          <p class="text-orange-light/90 font-bold text-[11px] uppercase tracking-[0.3em] mb-3">
             Step {{ step + 1 }} of 3
           </p>
-          <h1 class="font-montserrat font-extrabold text-4xl md:text-5xl tracking-tight leading-[1.05] mb-4 text-text">
-            <template v-if="step === 0">What's your<br /><span class="text-orange">flavor</span>?</template>
-            <template v-else-if="step === 1">Your<br /><span class="text-orange">goal</span> sets the tone.</template>
-            <template v-else>Find your<br /><span class="text-orange">people</span>.</template>
+          <h1 class="font-montserrat font-extrabold text-4xl md:text-5xl tracking-tight leading-[1.05] mb-4 text-white">
+            <template v-if="step === 0">What's your<br /><span class="text-orange-light">flavor</span>?</template>
+            <template v-else-if="step === 1">Your<br /><span class="text-orange-light">goal</span> sets the tone.</template>
+            <template v-else>Find your<br /><span class="text-orange-light">people</span>.</template>
           </h1>
-          <p class="text-text-muted text-base leading-relaxed max-w-md">
+          <p class="text-white/60 text-base leading-relaxed max-w-md">
             <template v-if="step === 0">Tell us your dietary preferences. We'll filter the feed so every scroll feels made for you.</template>
             <template v-else-if="step === 1">Pick what matters most right now — the feed weighs recipes accordingly.</template>
             <template v-else>Follow chefs and home cooks whose food makes you hungry. Tap any tile.</template>
@@ -177,18 +180,18 @@ onMounted(() => {
 
           <!-- Live taste preview -->
           <div v-if="step > 0" class="mt-10 space-y-3">
-            <p class="text-text-dim text-[10px] font-bold uppercase tracking-widest">Your taste so far</p>
+            <p class="text-white/40 text-[10px] font-bold uppercase tracking-widest">Your taste so far</p>
             <div class="flex flex-wrap gap-2">
               <span
                 v-for="d in selectedDiets"
                 :key="d"
-                class="px-3 py-1 rounded-full bg-orange/10 text-orange text-xs font-bold border border-orange/30"
+                class="px-3 py-1 rounded-full bg-orange-light/10 text-orange-light text-xs font-bold border border-orange-light/30"
               >{{ d }}</span>
               <template v-if="step > 1">
                 <span
                   v-for="g in selectedGoals"
                   :key="g"
-                  class="px-3 py-1 rounded-full bg-background-secondary text-text text-xs font-bold border border-border"
+                  class="px-3 py-1 rounded-full bg-white/5 text-white/80 text-xs font-bold border border-white/10"
                 >{{ goalIconMap[g] }} {{ goals.find(x => x.id === g)?.label }}</span>
               </template>
             </div>
@@ -201,10 +204,10 @@ onMounted(() => {
             <div
               v-for="(s, i) in steps"
               :key="s"
-              class="flex-1 h-1 rounded-full bg-background-secondary overflow-hidden"
+              class="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden"
             >
               <div
-                class="h-full rounded-full bg-orange transition-all duration-500"
+                class="h-full rounded-full bg-orange-light transition-all duration-500"
                 :style="{ width: fillPct(i) }"
               ></div>
             </div>
@@ -212,7 +215,7 @@ onMounted(() => {
           <button
             v-if="step < 2"
             @click="finish"
-            class="text-xs font-bold text-text-dim hover:text-orange transition-all"
+            class="text-xs font-bold text-white/40 hover:text-white transition-all"
           >Skip for now →</button>
         </div>
       </aside>
@@ -228,10 +231,10 @@ onMounted(() => {
                 :key="diet"
                 @click="toggleArr(selectedDiets, diet)"
                 :class="[
-                  'px-5 py-3 rounded-full border-1.5 text-sm font-bold transition-all',
+                  'px-5 py-3 rounded-full border border-white/10 text-sm font-bold transition-all',
                   selectedDiets.includes(diet)
-                    ? 'bg-orange border-orange text-white scale-105'
-                    : 'bg-surface/60 border-border text-text hover:border-orange',
+                    ? 'bg-orange-light border-orange-light text-white shadow-lg shadow-orange-light/20 scale-[1.02]'
+                    : 'bg-white/5 hover:bg-white/10 text-white/70 hover:text-white hover:border-white/20',
                 ]"
               >{{ diet }}</button>
             </div>
@@ -245,18 +248,18 @@ onMounted(() => {
                 :key="g.id"
                 @click="toggleArr(selectedGoals, g.id)"
                 :class="[
-                  'group p-7 rounded-3xl border-1.5 text-left transition-all',
+                  'group p-7 rounded-3xl border text-left transition-all backdrop-blur-md',
                   selectedGoals.includes(g.id)
-                    ? 'border-orange bg-orange/15'
-                    : 'border-border bg-surface/60 hover:border-orange hover:-translate-y-0.5',
+                    ? 'border-orange-light bg-orange-light/10 shadow-lg shadow-orange-light/10'
+                    : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 hover:-translate-y-0.5',
                 ]"
               >
-                <BaseIcons :name="g.icon" size="lg" class="mx-auto mb-3 text-orange" />
+                <BaseIcons :name="g.icon" size="lg" class="mx-auto mb-3" :class="selectedGoals.includes(g.id) ? 'text-orange-light' : 'text-white/40 group-hover:text-white/70'" />
                 <div
                   class="font-montserrat font-extrabold text-lg mb-1"
-                  :class="selectedGoals.includes(g.id) ? 'text-orange' : 'text-text'"
+                  :class="selectedGoals.includes(g.id) ? 'text-orange-light' : 'text-white/90'"
                 >{{ g.label }}</div>
-                <div class="text-sm text-text-dim">{{ g.desc }}</div>
+                <div class="text-sm" :class="selectedGoals.includes(g.id) ? 'text-orange-light/70' : 'text-white/50'">{{ g.desc }}</div>
               </button>
             </div>
           </div>
@@ -267,7 +270,7 @@ onMounted(() => {
               <div
                 v-for="i in 8"
                 :key="i"
-                class="aspect-[3/4] bg-background-secondary rounded-2xl animate-pulse"
+                class="aspect-[3/4] bg-white/5 rounded-2xl animate-pulse"
               ></div>
             </div>
 
@@ -280,8 +283,8 @@ onMounted(() => {
                   :class="[
                     'creator-tile relative aspect-[3/4] rounded-2xl overflow-hidden group transition-all',
                     selectedCreators.has(c.id)
-                      ? 'ring-[3px] ring-orange scale-[1.03]'
-                      : 'ring-1 ring-border hover:-translate-y-0.5',
+                      ? 'ring-2 ring-orange-light scale-[1.02] shadow-[0_0_20px_rgba(255,107,53,0.3)]'
+                      : 'ring-1 ring-white/10 hover:-translate-y-0.5 hover:ring-white/30',
                   ]"
                 >
                   <img
@@ -293,7 +296,7 @@ onMounted(() => {
 
                   <div
                     v-if="selectedCreators.has(c.id)"
-                    class="absolute top-2 right-2 w-7 h-7 rounded-full bg-orange flex items-center justify-center text-white text-sm font-bold shadow-lg"
+                    class="absolute top-2 right-2 w-7 h-7 rounded-full bg-orange-light flex items-center justify-center text-white text-sm font-bold shadow-lg"
                   >✓</div>
 
                   <div
@@ -309,12 +312,12 @@ onMounted(() => {
                 </button>
               </div>
 
-              <p class="mt-6 text-text-dim text-sm">
-                <span class="font-extrabold text-orange">{{ selectedCreators.size }}</span> selected — follow as many as you like
+              <p class="mt-6 text-white/40 text-sm">
+                <span class="font-extrabold text-orange-light">{{ selectedCreators.size }}</span> selected — follow as many as you like
               </p>
             </div>
 
-            <div v-else class="text-center py-16 text-text-dim">
+            <div v-else class="text-center py-16 text-white/40">
               <p class="text-base">No creators yet. You can find them later from the Explore page.</p>
             </div>
           </div>
@@ -325,12 +328,12 @@ onMounted(() => {
           <button
             v-if="step > 0"
             @click="step--"
-            class="flex-1 sm:flex-none sm:px-10 py-4 rounded-2xl border-1.5 border-border bg-surface/60 font-montserrat font-bold text-sm text-text hover:border-orange hover:text-orange transition-all"
+            class="flex-1 sm:flex-none sm:px-10 py-4 rounded-2xl border border-white/10 bg-white/5 font-montserrat font-bold text-sm text-white/70 hover:bg-white/10 hover:text-white transition-all"
           >← Back</button>
           <button
             @click="next"
             :disabled="isSaving || !canContinue"
-            class="flex-1 px-8 py-4 rounded-2xl bg-orange hover:bg-orange-deep text-white font-montserrat font-bold text-sm hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:cursor-not-allowed"
+            class="flex-1 px-8 py-4 rounded-2xl bg-gradient-to-b from-orange-light to-orange shadow-lg shadow-orange/20 text-white font-montserrat font-bold text-sm hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:cursor-not-allowed"
           >{{ isSaving ? 'Saving…' : ctaLabel }}</button>
         </div>
       </section>

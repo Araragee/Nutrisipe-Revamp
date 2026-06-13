@@ -12,6 +12,9 @@ let toastId = 0
 
 export function useToast() {
   const addToast = (message: string, type: Toast['type'] = 'info', duration = 3000) => {
+    const isDuplicate = toasts.value.some(t => t.message === message && t.type === type)
+    if (isDuplicate) return -1
+
     const id = toastId++
     const toast: Toast = { id, message, type, duration }
 

@@ -33,6 +33,7 @@ export async function register(username: string, email: string, password: string
       bio: true,
       followerCount: true,
       followingCount: true,
+      onboardingCompleted: true,
       createdAt: true,
     },
   })
@@ -78,6 +79,7 @@ export async function getCurrentUser(userId: string) {
       followingCount: true,
       createdAt: true,
       role: true,
+      onboardingCompleted: true,
       preferences: true,
     },
   })

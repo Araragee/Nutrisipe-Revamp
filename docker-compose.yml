@@ -10,6 +10,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-nutrisipe_prod}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nutrisipe} -d ${POSTGRES_DB:-nutrisipe_prod}"]
       interval: 5s
@@ -26,7 +28,7 @@ services:
       NODE_ENV: production
       PORT: 3001
       DATABASE_URL: postgresql://${POSTGRES_USER:-nutrisipe}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-nutrisipe_prod}?schema=public
-      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET: ${JWT_SECRET:-SUPER_SECRET_JWT_KEY_THAT_MUST_BE_AT_LEAST_32_CHARACTERS_LONG_FOR_PRODUCTION}
       CORS_ORIGIN: ${CORS_ORIGIN:-*}
       UPLOAD_DIR: uploads
     volumes:

@@ -2,6 +2,8 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { usePostAuthFlow } from '@/composables/usePostAuthFlow'
+import SplashScreen from '@/components/common/SplashScreen.vue'
 import loginBg from '@/assets/login-bg.jpeg'
 
 const STATS = [
@@ -49,12 +51,17 @@ const TESTIMONIALS = [
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const { runPostAuthFlow } = usePostAuthFlow()
 
 const email = ref('')
 const password = ref('')
+const username = ref('')
+const displayName = ref('')
 const error = ref<string | null>(null)
 const isLoading = ref(false)
+const showSplash = ref(false)
 const showPassword = ref(false)
+const mode = ref<'signin' | 'signup'>('signin')
 
 const pageRef = ref<HTMLElement | null>(null)
 const cardRef = ref<HTMLElement | null>(null)
@@ -86,6 +93,12 @@ function scrollToLogin() {
   cardRef.value?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' })
 }
 
+function setMode(newMode: 'signin' | 'signup') {
+  mode.value = newMode
+  error.value = null
+  scrollToLogin()
+}
+
 async function handleLogin() {
   if (!email.value || !password.value) {
     error.value = 'Please enter email and password'
@@ -96,11 +109,48 @@ async function handleLogin() {
   try {
     await authStore.login(email.value, password.value)
     const redirect = (route.query.redirect as string) || '/'
-    router.push(redirect)
+    showSplash.value = true
+    await new Promise(resolve => setTimeout(resolve, 1400))
+    await runPostAuthFlow(redirect)
   } catch (err: any) {
     error.value = err.response?.data?.message || 'Login failed'
   } finally {
     isLoading.value = false
+  }
+}
+
+async function handleSignup() {
+  if (!email.value || !password.value || !username.value || !displayName.value) {
+    error.value = 'Please fill out all fields'
+    return
+  }
+  if (password.value.length < 8) {
+    error.value = 'Password must be at least 8 characters'
+    return
+  }
+  if (!/^[a-zA-Z0-9_]+$/.test(username.value)) {
+    error.value = 'Username can only contain letters, numbers, and underscores'
+    return
+  }
+  isLoading.value = true
+  error.value = null
+  try {
+    await authStore.register(username.value, email.value, password.value, displayName.value)
+    showSplash.value = true
+    await new Promise(resolve => setTimeout(resolve, 1400))
+    await runPostAuthFlow()
+  } catch (err: any) {
+    error.value = err.response?.data?.message || 'Registration failed'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function handleSubmit() {
+  if (mode.value === 'signin') {
+    await handleLogin()
+  } else {
+    await handleSignup()
   }
 }
 
@@ -115,7 +165,9 @@ async function handleGoogleLogin() {
     })
     if (success) {
       const redirect = (route.query.redirect as string) || '/'
-      router.push(redirect)
+      showSplash.value = true
+      await new Promise(resolve => setTimeout(resolve, 1400))
+      await runPostAuthFlow(redirect)
     }
   } catch (err: any) {
     error.value = 'Google login failed'
@@ -125,6 +177,10 @@ async function handleGoogleLogin() {
 }
 
 onMounted(() => {
+  if (route.query.mode === 'signup') {
+    mode.value = 'signup'
+  }
+
   revealObserver = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
@@ -144,6 +200,7 @@ onBeforeUnmount(() => revealObserver?.disconnect())
 
 <template>
   <div ref="pageRef" class="landing-page min-h-screen bg-[#0c0907] text-white">
+    <SplashScreen :show="showSplash" />
 
     <!-- ════ HERO × LOGIN ════ -->
     <section class="relative min-h-[100dvh] flex flex-col overflow-hidden">
@@ -174,9 +231,9 @@ onBeforeUnmount(() => revealObserver?.disconnect())
           <button class="hover:text-white transition-colors" @click="scrollToSection('community')">Community</button>
         </div>
 
-        <router-link to="/register" class="social-btn rounded-xl px-4 py-2 text-[13px] font-semibold">
+        <button @click="setMode('signup')" class="social-btn rounded-xl px-4 py-2 text-[13px] font-semibold">
           Sign up free
-        </router-link>
+        </button>
       </nav>
 
       <!-- Hero content -->
@@ -211,8 +268,8 @@ onBeforeUnmount(() => revealObserver?.disconnect())
           @pointermove="moveGlow"
           @pointerleave="resetGlow"
         >
-          <h2 class="font-montserrat font-bold text-[26px] tracking-tight mb-1.5">Welcome back</h2>
-          <p class="text-sm text-orange-light/80 mb-7">Pick up your spatula right where you left, and start sharing!</p>
+          <h2 class="font-montserrat font-bold text-[26px] tracking-tight mb-1.5">{{ mode === 'signin' ? 'Welcome back' : 'Join the kitchen' }}</h2>
+          <p class="text-sm text-orange-light/80 mb-7">{{ mode === 'signin' ? 'Pick up your spatula right where you left, and start sharing!' : 'Your next favorite recipe starts here.' }}</p>
 
           <Transition name="slide-down">
             <div v-if="error" class="mb-5 p-3.5 rounded-xl bg-red-500/15 border border-red-400/30 text-red-200 text-xs font-semibold flex items-center gap-2">
@@ -255,7 +312,39 @@ onBeforeUnmount(() => revealObserver?.disconnect())
             <div class="flex-1 h-px bg-white/12"></div>
           </div>
 
-          <form @submit.prevent="handleLogin" class="space-y-4">
+          <form @submit.prevent="handleSubmit" class="space-y-4">
+            <template v-if="mode === 'signup'">
+              <div>
+                <label class="block text-xs font-semibold text-white/80 mb-1.5">Display name</label>
+                <div class="relative">
+                  <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  <input
+                    v-model="displayName"
+                    type="text"
+                    placeholder="Gordon Ramsay"
+                    class="glass-input w-full rounded-xl pl-11 pr-4 py-3 text-[15px] text-white placeholder-white/35 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-white/80 mb-1.5">Username</label>
+                <div class="relative">
+                  <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                  <input
+                    v-model="username"
+                    type="text"
+                    placeholder="gordon_r"
+                    class="glass-input w-full rounded-xl pl-11 pr-4 py-3 text-[15px] text-white placeholder-white/35 outline-none"
+                  />
+                </div>
+              </div>
+            </template>
+
             <div>
               <label class="block text-xs font-semibold text-white/80 mb-1.5">Email address</label>
               <div class="relative">
@@ -308,15 +397,17 @@ onBeforeUnmount(() => revealObserver?.disconnect())
                 <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <path d="M21 12a9 9 0 11-6.219-8.56" />
                 </svg>
-                Signing in…
+                {{ mode === 'signin' ? 'Signing in…' : 'Signing up…' }}
               </span>
-              <span v-else>Sign In</span>
+              <span v-else>{{ mode === 'signin' ? 'Sign In' : 'Sign Up' }}</span>
             </button>
           </form>
 
           <p class="text-center mt-6 text-[13px] text-white/55">
-            Don't have an account?
-            <router-link to="/register" class="text-orange-light font-semibold hover:underline ml-1">Sign up free</router-link>
+            {{ mode === 'signin' ? "Don't have an account?" : "Already have an account?" }}
+            <button @click="setMode(mode === 'signin' ? 'signup' : 'signin')" type="button" class="text-orange-light font-semibold hover:underline ml-1">
+              {{ mode === 'signin' ? "Sign up free" : "Sign in" }}
+            </button>
           </p>
         </div>
       </div>
@@ -450,10 +541,10 @@ onBeforeUnmount(() => revealObserver?.disconnect())
             Join thousands of cooks sharing, forking, and perfecting recipes together.
           </p>
           <div class="relative flex flex-col sm:flex-row items-center justify-center gap-3.5">
-            <router-link to="/register" class="cta-btn rounded-xl px-8 py-3.5 font-bold text-[15px] text-white">
+            <button @click="setMode('signup')" class="cta-btn rounded-xl px-8 py-3.5 font-bold text-[15px] text-white">
               Create free account
-            </router-link>
-            <button class="social-btn rounded-xl px-8 py-3.5 font-semibold text-[15px]" @click="scrollToLogin">
+            </button>
+            <button class="social-btn rounded-xl px-8 py-3.5 font-semibold text-[15px]" @click="setMode('signin')">
               Sign in
             </button>
           </div>

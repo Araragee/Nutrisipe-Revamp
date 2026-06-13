@@ -494,14 +494,20 @@ export async function updateUserPreferences(
   if (data.notifications) updateData.notifications = JSON.stringify(data.notifications)
   if (data.privacy) updateData.privacy = JSON.stringify(data.privacy)
 
-  const preferences = await prisma.userPreference.upsert({
-    where: { userId },
-    update: updateData,
-    create: {
-      userId,
-      ...updateData,
-    },
-  })
+  const [preferences] = await prisma.$transaction([
+    prisma.userPreference.upsert({
+      where: { userId },
+      update: updateData,
+      create: {
+        userId,
+        ...updateData,
+      },
+    }),
+    prisma.user.update({
+      where: { id: userId },
+      data: { onboardingCompleted: true },
+    }),
+  ])
 
   return {
     cuisines: safeParse<string[]>(preferences.cuisines, []),

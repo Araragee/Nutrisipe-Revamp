@@ -4,10 +4,10 @@ import { useToast } from '@/composables/useToast'
 const { toasts, removeToast } = useToast()
 
 const typeClasses = {
-  success: 'bg-emerald-50 border-emerald-500 text-emerald-900',
-  error: 'bg-error-100 border-error-base text-error-900',
-  warning: 'bg-amber-50 border-amber-500 text-amber-900',
-  info: 'bg-blue-50 border-blue-500 text-blue-900',
+  success: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200',
+  error: 'bg-red-500/15 border-red-500/30 text-red-200',
+  warning: 'bg-orange-500/15 border-orange-500/30 text-orange-200',
+  info: 'bg-blue-500/10 border-blue-500/30 text-blue-200',
 }
 
 const typeIcons = {
@@ -19,20 +19,21 @@ const typeIcons = {
 </script>
 
 <template>
-  <div class="fixed top-4 right-4 z-50 space-y-2 max-w-md">
+  <div class="fixed top-6 right-6 z-[9999] space-y-3 max-w-[360px] w-full pointer-events-none">
     <transition-group name="toast">
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        :class="[typeClasses[toast.type], 'flex items-start gap-3 p-4 rounded-lg border-l-4 shadow-lg']"
+        :class="[typeClasses[toast.type], 'pointer-events-auto flex items-start gap-3 p-4 rounded-2xl border shadow-2xl backdrop-blur-xl']"
+        style="background: rgba(28,22,17,0.85);"
       >
-        <span class="text-xl font-bold">{{ typeIcons[toast.type] }}</span>
-        <p class="flex-1 text-sm font-medium">{{ toast.message }}</p>
+        <span class="text-lg font-bold shrink-0 mt-0.5" :class="typeClasses[toast.type].split(' ')[2]">{{ typeIcons[toast.type] }}</span>
+        <p class="flex-1 text-[13px] font-semibold text-white/90 leading-snug pt-0.5">{{ toast.message }}</p>
         <button
           @click="removeToast(toast.id)"
-          class="text-gray-500 hover:text-gray-700 transition-colors"
+          class="text-white/40 hover:text-white transition-colors shrink-0 p-1"
         >
-          ✕
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
         </button>
       </div>
     </transition-group>
@@ -42,16 +43,16 @@ const typeIcons = {
 <style scoped>
 .toast-enter-active,
 .toast-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .toast-enter-from {
   opacity: 0;
-  transform: translateX(100%);
+  transform: translateX(100%) scale(0.95);
 }
 
 .toast-leave-to {
   opacity: 0;
-  transform: translateX(100%);
+  transform: translateY(-10px) scale(0.95);
 }
 </style>
