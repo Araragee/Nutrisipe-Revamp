@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import rateLimit from 'express-rate-limit'
 import { createServer } from 'http'
+import helmet from 'helmet'
 import { mkdirSync, writeFileSync, unlinkSync } from 'fs'
 import path from 'path'
 import { env } from './config/env'
@@ -48,6 +49,8 @@ import { purgeScheduledDeletions } from './services/userService'
 const app = express()
 app.set('trust proxy', 1)
 const httpServer = createServer(app)
+
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }))
 
 app.use(cors({
   origin: env.CORS_ORIGIN,

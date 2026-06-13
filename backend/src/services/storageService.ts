@@ -67,7 +67,12 @@ export async function deleteFile(relativeUrl: string): Promise<void> {
   }
   
   const cleanPath = relativeUrl.replace(/^\/uploads\//, '')
-  const fullPath = path.join(UPLOAD_DIR, cleanPath)
+  const fullPath = path.resolve(path.join(UPLOAD_DIR, cleanPath))
+  const uploadDirAbs = path.resolve(UPLOAD_DIR)
+
+  if (!fullPath.startsWith(uploadDirAbs + path.sep)) {
+    throw new AppError(400, 'Invalid file path')
+  }
   
   try {
     await fs.unlink(fullPath)
