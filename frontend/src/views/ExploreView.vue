@@ -7,6 +7,8 @@ import { postsApi } from '@/http/endpoints/posts'
 import { searchApi } from '@/http/endpoints/search'
 import { collectionsApi, type Collection } from '@/http/endpoints/collections'
 import { useAuthStore } from '@/stores/auth'
+import type { Post } from '@/typescript/interface/Post'
+import type { UserBasic } from '@/typescript/interface/User'
 import { resolveImage } from '@/utils/imageUrl'
 import PinCard from '@/components/feed/PinCard.vue'
 import UserAvatar from '@/components/user/UserAvatar.vue'
@@ -23,13 +25,13 @@ const authStore = useAuthStore()
 const searchQuery = ref('')
 const searchType = ref<SearchType>('all')
 
-const trendingPosts = ref<any[]>([])
+const trendingPosts = ref<Post[]>([])
 const loadingTrending = ref(false)
 
 const trendingTags = ref<Array<{ name: string; count: number }>>([])
 
-const postResults = ref<any[] | null>(null)
-const userResults = ref<any[] | null>(null)
+const postResults = ref<Post[] | null>(null)
+const userResults = ref<UserBasic[] | null>(null)
 const isSearching = ref(false)
 
 const collections = ref<Collection[]>([])

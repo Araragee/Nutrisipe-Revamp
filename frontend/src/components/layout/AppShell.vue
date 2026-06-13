@@ -59,7 +59,6 @@ const mainNav = computed<NavItem[]>(() => [
   { id: 'saved', icon: 'bookmark', label: 'Saved', path: '/saved' },
   { id: 'plan', icon: 'calendar', label: 'Plan', path: '/plan' },
   { id: 'groceries', icon: 'shopping-cart', label: 'Groceries', path: '/groceries' },
-  { id: 'following', icon: 'users', label: 'Feed', path: '/following' },
 ])
 
 const secondaryNav = computed<NavItem[]>(() => {
@@ -83,10 +82,39 @@ const mobileSecondary = computed(() =>
   allNav.value.filter((n) => !MOBILE_PRIMARY_IDS.includes(n.id as any)),
 )
 
-const showRightRail = computed(() => ['/', '/following'].includes(route.path))
+const showRightRail = computed(() => route.path === '/')
+
+const lastActiveTab = ref(sessionStorage.getItem('lastActiveTab') || 'home')
+
+watch(
+  () => route.fullPath,
+  () => {
+    const newPath = route.path
+    const activeItem = allNav.value.find((item) => {
+      if (item.path === '/') {
+        return newPath === '/'
+      }
+      return newPath.startsWith(item.path)
+    })
+
+    if (activeItem) {
+      lastActiveTab.value = activeItem.id
+      sessionStorage.setItem('lastActiveTab', activeItem.id)
+    }
+  },
+  { immediate: true },
+)
 
 function isActive(item: NavItem) {
-  if (item.path === '/') return route.path === '/'
+  // If we are on a recipe detail or edit page, keep the last active tab highlighted
+  if (route.path.startsWith('/recipes')) {
+    return item.id === lastActiveTab.value
+  }
+
+  if (item.path === '/') {
+    return route.path === '/'
+  }
+
   return route.path.startsWith(item.path)
 }
 
@@ -362,8 +390,7 @@ onUnmounted(() => {
         <RouterLink
           v-for="item in mobilePrimary.slice(0, 2)" :key="item.id"
           :to="item.path"
-          class="flex flex-col items-center gap-1 p-2 text-text-dim"
-          active-class="text-orange"
+          :class="['flex flex-col items-center gap-1 p-2 transition-colors', isActive(item) ? 'text-orange' : 'text-text-dim']"
         >
           <BaseIcons :name="item.icon" size="md" />
           <span class="text-[10px] font-semibold">{{ item.label }}</span>
@@ -380,8 +407,7 @@ onUnmounted(() => {
         <RouterLink
           v-for="item in mobilePrimary.slice(2, 4)" :key="item.id"
           :to="item.path"
-          class="flex flex-col items-center gap-1 p-2 text-text-dim"
-          active-class="text-orange"
+          :class="['flex flex-col items-center gap-1 p-2 transition-colors', isActive(item) ? 'text-orange' : 'text-text-dim']"
         >
           <BaseIcons :name="item.icon" size="md" />
           <span class="text-[10px] font-semibold">{{ item.label }}</span>
@@ -415,8 +441,12 @@ onUnmounted(() => {
               :key="item.id"
               :to="item.path"
               @click="showMoreDrawer = false"
-              class="flex flex-col items-center gap-2 p-4 rounded-2xl border border-border bg-background-secondary/60 hover:border-orange hover:text-orange transition-colors"
-              active-class="border-orange text-orange bg-orange-soft"
+              :class="[
+                'flex flex-col items-center gap-2 p-4 rounded-2xl border transition-colors',
+                isActive(item)
+                  ? 'border-orange text-orange bg-orange-soft'
+                  : 'border-border bg-background-secondary/60 text-text-muted hover:border-orange hover:text-orange'
+              ]"
             >
               <BaseIcons :name="item.icon" size="md" />
               <span class="text-[11px] font-semibold">{{ item.label }}</span>

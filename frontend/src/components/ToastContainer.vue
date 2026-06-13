@@ -24,8 +24,7 @@ const typeIcons = {
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        :class="[typeClasses[toast.type], 'pointer-events-auto flex items-start gap-3 p-4 rounded-2xl border shadow-2xl backdrop-blur-xl']"
-        style="background: rgba(28,22,17,0.85);"
+        :class="[typeClasses[toast.type], 'pointer-events-auto flex items-start gap-3 p-4 rounded-2xl border shadow-2xl backdrop-blur-xl bg-[rgba(28,22,17,0.85)]']"
       >
         <span class="text-lg font-bold shrink-0 mt-0.5" :class="typeClasses[toast.type].split(' ')[2]">{{ typeIcons[toast.type] }}</span>
         <p class="flex-1 text-[13px] font-semibold text-white/90 leading-snug pt-0.5">{{ toast.message }}</p>

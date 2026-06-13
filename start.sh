@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Nutrisipe — single launcher for dev and docker.
+# Nutrisipe — single launcher.
 #
-# Dev mode (default): postgres in docker, backend + frontend run locally.
-#   ./start.sh            start both (local npm dev)
-#   ./start.sh --reseed   rerun prisma seed before launching
-#   ./start.sh --reset    wipe dev db and re-migrate + seed
+# Docker mode (default): full stack (postgres + backend + frontend) in containers.
+#   ./start.sh            build changed layers + run full stack → http://localhost
+#   ./start.sh --fresh    build images from scratch (--no-cache)
+#   ./start.sh --reseed   run db seeder after stack is up
+#   ./start.sh --down     stop + remove the stack
 #
-# Docker mode: full stack (postgres + backend + frontend) in containers.
-#   ./start.sh --docker         build changed layers + run full stack
-#   ./start.sh --docker --fresh build images from scratch (--no-cache)
-#   ./start.sh --docker --reseed  run db seeder after stack is up
-#   ./start.sh --docker --down    stop + remove the stack
+# Dev mode (opt-in): postgres in docker, backend + frontend run locally (port 5173).
+#   ./start.sh --dev            start both (local npm dev)
+#   ./start.sh --dev --reseed   rerun prisma seed before launching
+#   ./start.sh --dev --reset    wipe dev db and re-migrate + seed
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -18,7 +18,7 @@ BACKEND="$ROOT/backend"
 FRONTEND="$ROOT/frontend"
 RESEED=0
 RESET=0
-DOCKER=0
+DOCKER=1
 FRESH=0
 DOWN=0
 
@@ -26,6 +26,7 @@ for arg in "$@"; do
   case "$arg" in
     --reseed) RESEED=1 ;;
     --reset)  RESET=1 ;;
+    --dev)    DOCKER=0 ;;
     --docker) DOCKER=1 ;;
     --fresh)  FRESH=1 ;;
     --down)   DOWN=1 ;;
@@ -77,6 +78,8 @@ if [[ $DOCKER -eq 1 ]]; then
   exit 0
 fi
 # ────────────────────────────────────────────────────────────────────────
+# Stop the production stack so it can't clash on host port 5433
+docker compose -f "$ROOT/docker-compose.yml" down >/dev/null 2>&1 || true
 
 # Start dev postgres database if not running
 c "bringing up dev postgres container"
@@ -86,6 +89,14 @@ docker compose -f "$ROOT/docker-compose.dev.yml" up -d
 c "waiting for postgres to be ready..."
 until docker exec nutrisipe-postgres-dev pg_isready -U nutrisipe -d nutrisipe_dev >/dev/null 2>&1; do
   sleep 1
+done
+
+# Wait for host port mapping to be active
+for i in {1..10}; do
+  if nc -z -w 1 127.0.0.1 5433 >/dev/null 2>&1; then
+    break
+  fi
+  sleep 0.5
 done
 
 # Backend env

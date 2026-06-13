@@ -26,8 +26,8 @@ const appShellKey = ref(0)
 
 onErrorCaptured((err, _vm, info) => {
   // Ignore vue-masonry-wall unmount race condition
-  if (err instanceof TypeError && err.message.includes("reading 'children'") && info === 'mounted hook') {
-    logger.warn('Ignored vue-masonry-wall unmount error', err)
+  if (err instanceof TypeError && err.message.includes("reading 'children'")) {
+    logger.warn('Ignored vue-masonry-wall unmount/render race condition', err)
     return false
   }
 

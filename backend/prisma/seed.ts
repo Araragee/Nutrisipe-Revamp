@@ -202,6 +202,37 @@ async function main() {
   })
   usersData.push({ id: adminId, username: 'admin' })
 
+  // ── TEST ACCOUNTS (deterministic) — remove before production ──
+  // Fixed emails so the login page quick-login buttons always resolve after any reseed.
+  const TEST_USERS = [
+    { username: 'cook', displayName: 'Test Cook' },
+    { username: 'chef', displayName: 'Test Chef' },
+    { username: 'baker', displayName: 'Test Baker' },
+  ]
+  for (const t of TEST_USERS) {
+    const testId = randomUUID()
+    await prisma.user.create({
+      data: {
+        id: testId,
+        username: t.username,
+        email: `${t.username}@nutrisipe.com`,
+        passwordHash,
+        displayName: t.displayName,
+        avatarUrl: `https://i.pravatar.cc/150?u=${t.username}`,
+        bio: 'Test account.',
+        role: 'USER',
+        preferences: {
+          create: {
+            cuisines: JSON.stringify(randomElements(['Italian', 'Mexican', 'Asian', 'Mediterranean', 'American'], randomInt(1, 3))),
+            dietary: JSON.stringify(randomElements(['Vegan', 'Keto', 'Gluten-Free', 'Low-Carb'], randomInt(0, 2))),
+            allergies: JSON.stringify(randomElements(['Nuts', 'Dairy', 'Soy', 'Shellfish'], randomInt(0, 1))),
+          }
+        }
+      }
+    })
+    usersData.push({ id: testId, username: t.username })
+  }
+
   for (let i = 0; i < 49; i++) {
     const firstName = randomElement(FIRST_NAMES)
     const lastName = randomElement(LAST_NAMES)

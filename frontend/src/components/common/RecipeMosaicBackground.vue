@@ -2,15 +2,19 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { searchApi } from '@/http/endpoints/search'
 import { resolveImage } from '@/utils/imageUrl'
+import { useTheme } from '@/composables/useTheme'
 import BrandMeshBackground from './BrandMeshBackground.vue'
 import type { Post } from '@/typescript/interface/Post'
+
+type FallbackVariant = 'warm' | 'cool' | 'sunset' | 'morning'
 
 const props = withDefaults(
   defineProps<{
     posts?: Post[]
     count?: number
+    /** Scrim strength: higher = more wash behind the hero text, lower = more food visible. */
     intensity?: number
-    fallbackVariant?: 'warm' | 'cool' | 'sunset' | 'morning'
+    fallbackVariant?: FallbackVariant
     blur?: number
   }>(),
   {
@@ -21,6 +25,8 @@ const props = withDefaults(
   },
 )
 
+const { isDark } = useTheme()
+
 const fetched = ref<Post[] | null>(null)
 const failed = ref(false)
 
@@ -30,6 +36,35 @@ const tiles = computed(() => {
 })
 
 const showFallback = computed(() => failed.value || tiles.value.length === 0)
+
+// Food stays vivid; the wash comes only from the scrim below — never from
+// dimming the imagery toward a flat white/black base.
+const gridStyle = computed(() => ({
+  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+  gap: '0px',
+  filter: `blur(${props.blur}px) saturate(1.25)`,
+  opacity: isDark.value ? 0.5 : 1,
+}))
+
+// Dark: moody top-down veil. Light: radial spotlight that keeps the centered
+// hero text legible while letting the food show at the edges, then fades into
+// the page background at the bottom.
+const veilStyle = computed(() => {
+  if (isDark.value) {
+    return {
+      background:
+        'linear-gradient(to bottom, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.62) 60%, var(--bg) 100%)',
+    }
+  }
+  const core = Math.min(props.intensity + 0.18, 0.82)
+  const mid = Math.max(props.intensity - 0.15, 0.08)
+  const edge = Math.max(props.intensity - 0.35, 0.04)
+  return {
+    background:
+      `radial-gradient(ellipse 92% 75% at 50% 44%, rgba(255,255,255,${core}) 0%, rgba(255,255,255,${mid}) 62%, rgba(255,255,255,${edge}) 100%),` +
+      ' linear-gradient(to bottom, transparent 60%, var(--bg) 100%)',
+  }
+})
 
 async function load() {
   if (props.posts && props.posts.length > 0) return
@@ -52,16 +87,7 @@ watch(() => props.posts, load)
   >
     <BrandMeshBackground v-if="showFallback" :variant="fallbackVariant" :intensity="0.8" />
 
-    <div
-      v-else
-      class="absolute inset-0 grid"
-      :style="{
-        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-        gap: '0px',
-        filter: `blur(${blur}px) saturate(1.25)`,
-        opacity: intensity,
-      }"
-    >
+    <div v-else class="absolute inset-0 grid" :style="gridStyle">
       <div
         v-for="(post, idx) in tiles"
         :key="post.id"
@@ -78,34 +104,17 @@ watch(() => props.posts, load)
       </div>
     </div>
 
-    <div class="absolute inset-0 recipe-mosaic-veil"></div>
+    <div class="absolute inset-0" :style="veilStyle"></div>
   </div>
 </template>
 
 <style scoped>
 .recipe-mosaic-bg {
   isolation: isolate;
-  background: var(--background, #faf6ee);
-}
-
-.recipe-mosaic-veil {
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.15) 0%,
-    rgba(0, 0, 0, 0.35) 60%,
-    var(--background, #faf6ee) 100%
-  );
+  background: var(--bg, #fafafa);
 }
 
 :global(.dark) .recipe-mosaic-bg {
-  background: var(--background, #0a0410);
-}
-:global(.dark) .recipe-mosaic-veil {
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.4) 0%,
-    rgba(0, 0, 0, 0.6) 60%,
-    var(--background, #0a0410) 100%
-  );
+  background: var(--bg, #09090b);
 }
 </style>

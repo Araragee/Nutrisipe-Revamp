@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useTheme } from '@/composables/useTheme'
+
+const { isDark } = useTheme()
 
 type Variant = 'warm' | 'cool' | 'sunset' | 'morning'
 
@@ -17,16 +20,25 @@ const props = withDefaults(
 )
 
 const palette = computed(() => {
+  const dark = isDark.value
   switch (props.variant) {
     case 'cool':
-      return ['oklch(72% 0.14 220)', 'oklch(80% 0.11 180)', 'oklch(68% 0.18 280)', 'oklch(85% 0.08 200)']
+      return dark
+        ? ['oklch(24% 0.12 220)', 'oklch(28% 0.09 180)', 'oklch(20% 0.15 280)', 'oklch(30% 0.07 200)']
+        : ['oklch(72% 0.14 220)', 'oklch(80% 0.11 180)', 'oklch(68% 0.18 280)', 'oklch(85% 0.08 200)']
     case 'sunset':
-      return ['oklch(72% 0.20 30)', 'oklch(78% 0.16 60)', 'oklch(65% 0.22 350)', 'oklch(82% 0.12 45)']
+      return dark
+        ? ['oklch(22% 0.16 30)', 'oklch(26% 0.12 60)', 'oklch(18% 0.18 350)', 'oklch(28% 0.09 45)']
+        : ['oklch(72% 0.20 30)', 'oklch(78% 0.16 60)', 'oklch(65% 0.22 350)', 'oklch(82% 0.12 45)']
     case 'morning':
-      return ['oklch(88% 0.08 80)', 'oklch(85% 0.12 50)', 'oklch(92% 0.06 100)', 'oklch(78% 0.14 35)']
+      return dark
+        ? ['oklch(30% 0.06 80)', 'oklch(27% 0.09 50)', 'oklch(32% 0.05 100)', 'oklch(25% 0.11 35)']
+        : ['oklch(88% 0.08 80)', 'oklch(85% 0.12 50)', 'oklch(92% 0.06 100)', 'oklch(78% 0.14 35)']
     case 'warm':
     default:
-      return ['oklch(75% 0.17 40)', 'oklch(82% 0.13 60)', 'oklch(70% 0.18 25)', 'oklch(88% 0.09 70)']
+      return dark
+        ? ['oklch(25% 0.13 40)', 'oklch(29% 0.10 60)', 'oklch(22% 0.14 25)', 'oklch(31% 0.07 70)']
+        : ['oklch(75% 0.17 40)', 'oklch(82% 0.13 60)', 'oklch(70% 0.18 25)', 'oklch(88% 0.09 70)']
   }
 })
 
@@ -79,7 +91,7 @@ const blobs = computed(() =>
 <style scoped>
 .brand-mesh-bg {
   isolation: isolate;
-  background: var(--background, #faf6ee);
+  background: var(--bg, #fafafa);
 }
 
 .brand-mesh-blob {
@@ -117,7 +129,7 @@ const blobs = computed(() =>
 }
 
 :global(.dark) .brand-mesh-bg {
-  background: var(--background, #0a0410);
+  background: var(--bg, #09090b);
 }
 :global(.dark) .brand-mesh-blob {
   opacity: 0.55;

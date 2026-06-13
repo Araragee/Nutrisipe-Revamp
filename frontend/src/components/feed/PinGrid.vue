@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MasonryWall } from '@yeger/vue-masonry-wall'
+import MasonryWall from './MasonryWall.vue'
 import PinCard from './PinCard.vue'
 import type { Post } from '@/typescript/interface/Post'
 

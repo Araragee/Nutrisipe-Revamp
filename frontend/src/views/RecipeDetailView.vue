@@ -380,7 +380,7 @@ const recipeImage = computed(() =>
        <!-- Related Posts -->
        <div class="mt-24">
           <h2 class="font-montserrat font-extrabold text-3xl tracking-tight mb-10">You might also like</h2>
-          <PinGrid :posts="relatedPosts" />
+          <PinGrid :posts="relatedPosts" @post-click="(id) => router.push(`/recipes/${id}`)" />
        </div>
     </div>
 

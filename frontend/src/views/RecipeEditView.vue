@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { postsApi } from '@/http/endpoints/posts'
+import { variationsApi } from '@/http/endpoints/variations'
 import { useUiStore } from '@/stores/ui'
 import ImageUpload from '@/components/ui/ImageUpload.vue'
 import IngredientAutocomplete from '@/components/recipe/IngredientAutocomplete.vue'
@@ -14,6 +15,7 @@ const uiStore = useUiStore()
 const post = ref<Post | null>(null)
 const isLoading = ref(true)
 const isSaving = ref(false)
+const originalPostId = ref<string | null>(null)
 
 const formData = ref({
   title: '',
@@ -43,6 +45,15 @@ async function loadPost() {
     const response = await postsApi.getById(id)
     const p = response.data.data
     post.value = p
+    
+    if (p.isVariation) {
+      try {
+        const origRes = await variationsApi.getOriginal(id)
+        originalPostId.value = origRes.data.data.originalPost.id
+      } catch (err) {
+        console.error('Failed to load original recipe id:', err)
+      }
+    }
     
     formData.value = {
       title: p.title,
@@ -122,6 +133,16 @@ async function handleUpdate() {
   }
 }
 
+function goBack() {
+  if (originalPostId.value) {
+    router.push(`/recipes/${originalPostId.value}`)
+  } else if (post.value) {
+    router.push(`/recipes/${post.value.id}`)
+  } else {
+    router.back()
+  }
+}
+
 onMounted(loadPost)
 
 const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverage']
@@ -130,7 +151,7 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
 <template>
   <div class="recipe-edit-view min-h-screen bg-background py-16 px-6">
     <div class="max-w-3xl mx-auto">
-      <button @click="router.back()" class="mb-8 flex items-center gap-2 text-text-dim font-bold hover:text-orange transition-colors">
+      <button @click="goBack()" class="mb-8 flex items-center gap-2 text-text-dim font-bold hover:text-orange transition-colors">
         <span>←</span> BACK TO RECIPE
       </button>
 
@@ -241,7 +262,7 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
                </button>
                <button
                  type="button"
-                 @click="router.back()"
+                 @click="goBack()"
                  class="btn-secondary px-8 h-14"
                >
                  Cancel

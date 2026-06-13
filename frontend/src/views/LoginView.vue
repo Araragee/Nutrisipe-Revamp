@@ -154,6 +154,22 @@ async function handleSubmit() {
   }
 }
 
+// ── TEST QUICK-LOGIN (remove before production) ──
+const TEST_ACCOUNTS = [
+  { label: 'Admin', email: 'admin@nutrisipe.com', isAdmin: true },
+  { label: 'Cook', email: 'cook@nutrisipe.com', isAdmin: false },
+  { label: 'Chef', email: 'chef@nutrisipe.com', isAdmin: false },
+  { label: 'Baker', email: 'baker@nutrisipe.com', isAdmin: false },
+] as const
+
+async function quickLogin(acct: (typeof TEST_ACCOUNTS)[number]) {
+  if (isLoading.value) return
+  mode.value = 'signin'
+  email.value = acct.email
+  password.value = 'password123'
+  await handleLogin()
+}
+
 async function handleGoogleLogin() {
   isLoading.value = true
   error.value = null
@@ -270,6 +286,25 @@ onBeforeUnmount(() => revealObserver?.disconnect())
         >
           <h2 class="font-montserrat font-bold text-[26px] tracking-tight mb-1.5">{{ mode === 'signin' ? 'Welcome back' : 'Join the kitchen' }}</h2>
           <p class="text-sm text-orange-light/80 mb-7">{{ mode === 'signin' ? 'Pick up your spatula right where you left, and start sharing!' : 'Your next favorite recipe starts here.' }}</p>
+
+          <!-- ⚠️ TEST QUICK-LOGIN — remove before production -->
+          <div class="quick-login mb-6 rounded-xl p-3">
+            <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-orange-light/70 mb-2.5">Test accounts · one-click</p>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                v-for="acct in TEST_ACCOUNTS"
+                :key="acct.email"
+                type="button"
+                :disabled="isLoading"
+                @click="quickLogin(acct)"
+                class="quick-login-btn rounded-lg py-2 text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                :class="{ 'is-admin': acct.isAdmin }"
+              >
+                {{ acct.label }}
+              </button>
+            </div>
+          </div>
+          <!-- ⚠️ END TEST QUICK-LOGIN -->
 
           <Transition name="slide-down">
             <div v-if="error" class="mb-5 p-3.5 rounded-xl bg-red-500/15 border border-red-400/30 text-red-200 text-xs font-semibold flex items-center gap-2">
@@ -620,6 +655,31 @@ onBeforeUnmount(() => revealObserver?.disconnect())
   border-color: var(--orange);
   background: rgba(255, 255, 255, 0.08);
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.18);
+}
+
+/* ⚠️ TEST QUICK-LOGIN — remove before production */
+.quick-login {
+  border: 1px dashed rgba(255, 150, 80, 0.35);
+  background: rgba(255, 107, 53, 0.06);
+}
+.quick-login-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.85);
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+.quick-login-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 150, 80, 0.5);
+  transform: translateY(-1px);
+}
+.quick-login-btn.is-admin {
+  background: rgba(255, 107, 53, 0.16);
+  border-color: rgba(255, 107, 53, 0.4);
+  color: var(--orange-light);
+}
+.quick-login-btn.is-admin:hover:not(:disabled) {
+  background: rgba(255, 107, 53, 0.26);
 }
 
 .social-btn {
