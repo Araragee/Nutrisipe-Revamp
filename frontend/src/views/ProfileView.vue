@@ -30,10 +30,12 @@ const profileError = ref<string | null>(null)
 const showEditModal = ref(false)
 const selectedPostId = ref<string | null>(null)
 const showPostModal = ref(false)
-const activeTab = ref('posts')
-const activities = ref<any[]>([])
-
 const isCurrentUser = computed(() => user.value?.id === authStore.user?.id)
+const activeTab = ref('posts')
+watch(isCurrentUser, (val) => {
+  activeTab.value = val ? 'my recipes' : 'posts'
+})
+const activities = ref<any[]>([])
 
 function handleProfileUpdated() {
   if (authStore.user) {
@@ -85,6 +87,8 @@ watch(() => route.params.userId, loadProfile)
 
 const displayPosts = computed(() => {
   if (activeTab.value === 'posts') return posts.value
+  if (activeTab.value === 'my recipes') return posts.value.filter(p => p.isPublic === false)
+  if (activeTab.value === 'shared recipes') return posts.value.filter(p => p.isPublic !== false)
   if (activeTab.value === 'saved') return savedPosts.value
   if (activeTab.value === 'liked') return likedPosts.value
   return []
@@ -163,7 +167,7 @@ const displayPosts = computed(() => {
             <div class="flex-1">
                <div class="flex gap-10 border-b border-border mb-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
                   <button
-                    v-for="t in ['posts', 'saved', 'liked', 'activity'].filter(tab => tab !== 'saved' || isCurrentUser)"
+                    v-for="t in (isCurrentUser ? ['my recipes', 'shared recipes', 'saved', 'liked', 'activity'] : ['posts', 'liked', 'activity'])"
                     :key="t"
                     @click="activeTab = t"
                     class="pb-4 text-sm font-bold uppercase tracking-widest transition-all border-b-2"

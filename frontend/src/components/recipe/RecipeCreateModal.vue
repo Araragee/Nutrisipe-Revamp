@@ -37,7 +37,8 @@ const form = ref({
   cals: '',
   protein: '',
   carbs: '',
-  fat: ''
+  fat: '',
+  isPublic: true
 })
 
 const addIngredient = () => form.value.ingredients.push({ name: '', quantity: '', ingredient: null })
@@ -85,6 +86,7 @@ async function handleSubmit() {
       imageUrl: form.value.photo,
       category: PostCategory.Recipe,
       tags: form.value.tag ? [form.value.tag.toLowerCase()] : [],
+      isPublic: form.value.isPublic,
       recipe: {
         servings: parseInt(form.value.servings) || undefined,
         totalTime: parseInt(form.value.time) || undefined,
@@ -183,6 +185,14 @@ function handleClose() {
                   <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider mb-2 block">Servings</label>
                   <input v-model="form.servings" type="number" class="w-full bg-background-secondary border-1.5 border-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="e.g. 2" />
                 </div>
+              </div>
+              <div class="flex items-center gap-3 pt-2">
+                <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider block">Make recipe public?</label>
+                <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                    <input type="checkbox" name="toggle" id="toggle" v-model="form.isPublic" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-background-secondary checked:right-0 checked:border-orange"/>
+                    <label for="toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-background-secondary cursor-pointer" :class="{'bg-orange': form.isPublic}"></label>
+                </div>
+                <span class="text-xs text-text-muted">{{ form.isPublic ? 'Visible to everyone' : 'Only visible to you' }}</span>
               </div>
             </div>
           </div>

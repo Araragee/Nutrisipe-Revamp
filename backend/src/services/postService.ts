@@ -465,14 +465,18 @@ export async function getPostById(postId: string, userId?: string) {
   return transformPost(post)
 }
 
-export async function getPostsByUser(targetUserId: string, currentUserId: string | undefined, page: number = 1, limit: number = 20) {
+export async function getPostsByUser(targetUserId: string, currentUserId: string | undefined, page: number = 1, limit: number = 20, isPublic?: boolean) {
   const skip = (page - 1) * limit
 
+  let whereClause: any = { userId: targetUserId }
+  if (targetUserId !== currentUserId || isPublic === true) {
+    whereClause.isPublic = true
+  } else if (isPublic === false) {
+    whereClause.isPublic = false
+  }
+
   const posts = await prisma.post.findMany({
-    where: {
-      userId: targetUserId,
-      isPublic: true,
-    },
+    where: whereClause,
     take: limit,
     skip,
     orderBy: { createdAt: 'desc' },
@@ -524,10 +528,7 @@ export async function getPostsByUser(targetUserId: string, currentUserId: string
   }
 
   const total = await prisma.post.count({
-    where: {
-      userId: targetUserId,
-      isPublic: true,
-    },
+    where: whereClause,
   })
 
   return {

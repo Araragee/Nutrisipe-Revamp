@@ -1,0 +1,9 @@
+
+> nutrisipe-backend@1.0.0 dev
+> tsx watch src/index.ts
+
+[env] WARNING: weak/placeholder JWT_SECRET — fine for local dev, fatal in production.
+🚀 Server running on http://localhost:3000
+📝 Environment: development
+🌐 CORS enabled for: http://localhost:5173
+⚡ WebSocket server initialized

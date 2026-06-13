@@ -31,6 +31,7 @@ const uiStore = useUiStore()
 const post = ref<Post | null>(null)
 const relatedPosts = ref<Post[]>([])
 const isLoading = ref(true)
+const isDeleting = ref(false)
 const activeTab = ref('ingredients')
 const ratingListRef = ref<any>(null)
 const histogramRef = ref<any>(null)
@@ -143,6 +144,21 @@ async function handleRatingSubmit(data: { rating: number; review?: string }) {
   }
 }
 
+async function handleDelete() {
+  if (!post.value) return
+  if (!confirm('Are you sure you want to delete this recipe?')) return
+  isDeleting.value = true
+  try {
+    await postsApi.delete(post.value.id)
+    uiStore.showToast('Recipe deleted successfully', 'success')
+    router.push(`/profile/${authStore.user?.id}`)
+  } catch (error) {
+    logger.error('Failed to delete recipe:', error)
+    uiStore.showToast('Failed to delete recipe', 'error')
+    isDeleting.value = false
+  }
+}
+
 async function toggleLike() {
   if (!post.value || !authStore.isAuthenticated) {
     uiStore.showToast('Please sign in to like', 'info')
@@ -249,6 +265,7 @@ const recipeImage = computed(() =>
           <div class="flex-1 flex flex-col pt-4">
              <div class="flex items-center gap-3 mb-6">
                 <span class="px-4 py-1.5 rounded-full bg-orange text-white text-xs font-bold tracking-widest uppercase">{{ post.category }}</span>
+                <span v-if="post.isPublic === false && isOwner" class="px-4 py-1.5 rounded-full bg-background-secondary border border-border text-text-muted text-xs font-bold tracking-widest uppercase flex items-center gap-1.5"><BaseIcons name="lock-closed" size="sm" /> Private</span>
                 <div class="flex items-center gap-1.5 text-orange font-bold text-sm">★ {{ post.averageRating?.toFixed(1) || '0.0' }} ({{ post.ratingCount }})</div>
              </div>
 
@@ -347,6 +364,9 @@ const recipeImage = computed(() =>
                 </button>
                 <button @click="shareRecipe" class="flex-1 min-w-[140px] btn-secondary flex items-center justify-center gap-2 h-14">
                   <BaseIcons name="share" size="sm" /> Share
+                </button>
+                <button v-if="isOwner" @click="handleDelete" :disabled="isDeleting" class="flex-1 min-w-[140px] btn-secondary flex items-center justify-center gap-2 h-14 !text-red-500 !border-red-500/30 hover:!bg-red-500/10">
+                  <BaseIcons name="trash" size="sm" /> Delete
                 </button>
              </div>
 

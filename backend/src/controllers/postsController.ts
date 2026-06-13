@@ -76,7 +76,11 @@ export async function getPostsByUserHandler(req: AuthRequest, res: Response, nex
     const { userId } = req.params
     const { page, limit } = parsePagination(req)
 
-    const result = await postService.getPostsByUser(userId, req.userId, page, limit)
+    const isPublicParam = req.query.isPublic as string | undefined
+    let isPublicFilter: boolean | undefined = undefined
+    if (isPublicParam === 'true') isPublicFilter = true
+    if (isPublicParam === 'false') isPublicFilter = false
+    const result = await postService.getPostsByUser(userId, req.userId, page, limit, isPublicFilter)
 
     res.json({
       success: true,

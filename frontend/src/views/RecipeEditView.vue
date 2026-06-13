@@ -20,6 +20,7 @@ const formData = ref({
   description: '',
   category: '',
   imageUrl: '',
+  isPublic: true,
   recipe: {
     servings: 0,
     prepTime: 0,
@@ -48,6 +49,7 @@ async function loadPost() {
       description: p.description || '',
       category: p.category,
       imageUrl: p.imageUrl || '',
+      isPublic: p.isPublic,
       recipe: {
         servings: p.recipe?.servings || 0,
         prepTime: p.recipe?.prepTime || 0,
@@ -82,6 +84,20 @@ const removeStep = (i: number) => {
   formData.value.recipe.instructions.splice(i, 1)
   // Re-index steps
   formData.value.recipe.instructions.forEach((s, idx) => s.step = idx + 1)
+}
+
+async function handleDelete() {
+  if (!post.value) return
+  if (!confirm('Are you sure you want to delete this recipe? This action cannot be undone.')) return
+  isSaving.value = true
+  try {
+    await postsApi.delete(post.value.id)
+    uiStore.showToast('Recipe deleted successfully', 'success')
+    router.push(`/profile/${post.value.userId}`)
+  } catch (error) {
+    uiStore.showToast('Failed to delete recipe', 'error')
+    isSaving.value = false
+  }
 }
 
 async function handleUpdate() {
@@ -202,7 +218,19 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
                </div>
             </div>
 
-            <div class="pt-6 flex gap-4">
+            <div class="space-y-2">
+               <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Visibility</label>
+               <div class="flex items-center gap-3 bg-background border border-border rounded-2xl px-6 py-4">
+                 <div class="relative inline-block w-12 align-middle select-none transition duration-200 ease-in">
+                     <input type="checkbox" name="toggle" id="toggleEdit" v-model="formData.isPublic" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-background-secondary checked:right-0 checked:border-orange"/>
+                     <label for="toggleEdit" class="toggle-label block overflow-hidden h-6 rounded-full bg-background-secondary cursor-pointer" :class="{'bg-orange': formData.isPublic}"></label>
+                 </div>
+                 <span class="text-sm font-bold">{{ formData.isPublic ? 'Public Recipe' : 'Private Recipe' }}</span>
+                 <span class="text-xs text-text-muted ml-auto">{{ formData.isPublic ? 'Visible to everyone on the platform' : 'Only visible to you' }}</span>
+               </div>
+            </div>
+
+            <div class="pt-6 flex flex-col sm:flex-row gap-4">
                <button
                  type="submit"
                  :disabled="isSaving"
@@ -214,9 +242,17 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
                <button
                  type="button"
                  @click="router.back()"
-                 class="btn-secondary px-10 h-14"
+                 class="btn-secondary px-8 h-14"
                >
                  Cancel
+               </button>
+               <button
+                 type="button"
+                 @click="handleDelete"
+                 :disabled="isSaving"
+                 class="btn-secondary px-8 h-14 !text-red-500 !border-red-500/30 hover:!bg-red-500/10"
+               >
+                 Delete Recipe
                </button>
             </div>
          </form>

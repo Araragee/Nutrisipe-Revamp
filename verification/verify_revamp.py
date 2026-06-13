@@ -20,41 +20,12 @@ async def verify_revamp():
         ))
 
         # Mock Feed API
-        mock_posts = [
-            {
-                "id": "post-1",
-                "userId": "user-123",
-                "title": "Avocado Toast",
-                "description": "Healthy breakfast",
-                "imageUrl": "https://images.unsplash.com/photo-1525351484163-7529414344d8",
-                "category": "recipe",
-                "tags": ["healthy", "quick"],
-                "likeCount": 42,
-                "saveCount": 10,
-                "commentCount": 5,
-                "isPublic": True,
-                "createdAt": "2023-01-01T00:00:00Z",
-                "updatedAt": "2023-01-01T00:00:00Z",
-                "user": {
-                    "id": "user-123",
-                    "displayName": "Demo Chef",
-                    "username": "demochef",
-                    "avatarUrl": None
-                },
-                "isLiked": False,
-                "isSaved": False,
-                "recipe": {
-                    "ingredients": [{"name": "Avocado", "qty": "1"}],
-                    "instructions": [{"step": 1, "text": "Toast bread"}],
-                    "nutrition": {"calories": 300}
-                }
-            }
-        ]
+        mock_posts = '[{"id":"post-1","userId":"user-123","title":"Avocado Toast","description":"Healthy breakfast","imageUrl":"https://images.unsplash.com/photo-1525351484163-7529414344d8","category":"recipe","tags":["healthy","quick"],"likeCount":42,"saveCount":10,"commentCount":5,"isPublic":true,"createdAt":"2023-01-01T00:00:00Z","updatedAt":"2023-01-01T00:00:00Z","user":{"id":"user-123","displayName":"Demo Chef","username":"demochef","avatarUrl":null},"isLiked":false,"isSaved":false,"recipe":{"ingredients":[{"name":"Avocado","qty":"1"}],"instructions":[{"step":1,"text":"Toast bread"}],"nutrition":{"calories":300}}}]'
 
         await page.route("**/api/posts/feed**", lambda route: route.fulfill(
             status=200,
             content_type="application/json",
-            body='{"success": true, "data": ' + str(mock_posts).replace('True', 'true').replace('False', 'false').replace('None', 'null') + ', "pagination": {"total": 1, "page": 1, "limit": 20, "totalPages": 1}}'
+            body='{"success": true, "data": ' + mock_posts + ', "pagination": {"total": 1, "page": 1, "limit": 20, "totalPages": 1}}'
         ))
 
         print("Starting verification...")
@@ -72,9 +43,9 @@ async def verify_revamp():
         shell_visible = await page.locator(".app-shell").is_visible()
         print(f"App shell visible: {shell_visible}")
 
-        # Check for recipe card
+        # Check for recipe card (pin-card in PinGrid)
         try:
-            await page.wait_for_selector(".recipe-card", timeout=10000)
+            await page.wait_for_selector(".pin-card, .recipe-card", timeout=10000)
             print("Recipe cards rendered successfully")
         except:
             print("FAILED: Recipe cards not found")
