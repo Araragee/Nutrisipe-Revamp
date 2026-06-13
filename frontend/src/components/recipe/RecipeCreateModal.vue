@@ -186,14 +186,6 @@ function handleClose() {
                   <input v-model="form.servings" type="number" class="w-full bg-background-secondary border-1.5 border-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="e.g. 2" />
                 </div>
               </div>
-              <div class="flex items-center gap-3 pt-2">
-                <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider block">Make recipe public?</label>
-                <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                    <input type="checkbox" name="toggle" id="toggle" v-model="form.isPublic" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-background-secondary checked:right-0 checked:border-orange"/>
-                    <label for="toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-background-secondary cursor-pointer" :class="{'bg-orange': form.isPublic}"></label>
-                </div>
-                <span class="text-xs text-text-muted">{{ form.isPublic ? 'Visible to everyone' : 'Only visible to you' }}</span>
-              </div>
             </div>
           </div>
 
@@ -249,6 +241,36 @@ function handleClose() {
                 <BaseIcons :name="n.i" size="md" class="mx-auto text-text-dim" />
                 <div class="font-montserrat font-extrabold text-lg text-text">{{ n.v.toFixed(n.d) }}</div>
                 <div class="text-[10px] font-bold text-text-dim uppercase tracking-wider">{{ n.l }} ({{ n.u }})</div>
+              </div>
+            </div>
+            
+            <div class="pt-2">
+              <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider mb-3 block">Visibility Settings</label>
+              <div 
+                @click="form.isPublic = !form.isPublic"
+                class="group flex items-center gap-4 p-4 rounded-2xl border-1.5 cursor-pointer transition-all duration-200"
+                :class="form.isPublic ? 'bg-orange/5 border-orange/30 hover:border-orange' : 'bg-background-secondary border-border hover:border-text-dim'"
+              >
+                <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors shadow-sm"
+                  :class="form.isPublic ? 'bg-orange text-white' : 'bg-background border-1.5 border-border text-text-dim'">
+                  <BaseIcons :name="form.isPublic ? 'globe-alt' : 'lock-closed'" size="sm" />
+                </div>
+                
+                <div class="flex-1">
+                  <div class="font-bold text-[15px] mb-0.5" :class="form.isPublic ? 'text-orange-deep dark:text-orange' : 'text-text'">
+                    {{ form.isPublic ? 'Public Recipe' : 'Private Recipe' }}
+                  </div>
+                  <div class="text-xs text-text-muted">
+                    {{ form.isPublic ? 'Anyone can discover, view, and save this recipe.' : 'Only visible to you on your profile.' }}
+                  </div>
+                </div>
+
+                <div class="relative inline-block w-12 h-7 align-middle select-none shrink-0 pointer-events-none">
+                  <div class="block overflow-hidden h-7 rounded-full transition-colors duration-200"
+                       :class="form.isPublic ? 'bg-orange' : 'bg-border dark:bg-[#2A2A2A]'"></div>
+                  <div class="absolute top-1 left-1 bg-white w-5 h-5 rounded-full transition-transform duration-200 shadow-sm"
+                       :class="form.isPublic ? 'translate-x-5' : 'translate-x-0'"></div>
+                </div>
               </div>
             </div>
           </div>

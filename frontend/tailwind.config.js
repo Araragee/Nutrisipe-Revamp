@@ -52,6 +52,13 @@ module.exports = {
           glow: 'var(--orange-glow)',
           soft: 'var(--orange-soft)',
         },
+        green: {
+          DEFAULT: alphaVar('--green'),
+          light: alphaVar('--green-light'),
+          deep: alphaVar('--green-deep'),
+          glow: 'var(--green-glow)',
+          soft: 'var(--green-soft)',
+        },
         border: alphaVar('--border'),
         background: {
           DEFAULT: alphaVar('--bg'),
