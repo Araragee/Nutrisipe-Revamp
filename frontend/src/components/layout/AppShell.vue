@@ -13,6 +13,7 @@ import { resolveImage } from '@/utils/imageUrl'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import BaseIcons from '@/components/base/BaseIcons.vue'
 import NotificationDropdown from '@/components/notifications/NotificationDropdown.vue'
+import AccountDropdown from '@/components/layout/AccountDropdown.vue'
 
 interface NavItem {
   id: string
@@ -203,34 +204,7 @@ onUnmounted(() => {
           </RouterLink>
         </div>
 
-        <p class="px-3 pt-5 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-dim dark:text-text-dim">Account</p>
-        <div class="flex flex-col gap-0.5">
-          <RouterLink
-            v-for="item in secondaryNav" :key="item.id"
-            :to="item.path"
-            :class="['flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors', navItemClass(item)]"
-          >
-            <BaseIcons :name="item.icon" size="sm" :solid="isActive(item)" />
-            <span>{{ item.label }}</span>
-          </RouterLink>
-        </div>
       </nav>
-
-      <!-- User card -->
-      <div v-if="authStore.user" class="shrink-0 border-t border-border px-4 py-3 flex items-center gap-2.5">
-        <UserAvatar :user="authStore.user" size="sm" class="shrink-0" />
-        <div class="flex-1 min-w-0">
-          <p class="font-semibold text-[13px] text-text dark:text-text truncate">{{ authStore.user.displayName }}</p>
-          <p class="text-[11px] text-text-dim dark:text-text-dim truncate">@{{ authStore.user.username }}</p>
-        </div>
-        <button
-          @click="handleLogout"
-          class="w-8 h-8 rounded-lg text-text-dim hover:text-orange hover:bg-orange-soft flex items-center justify-center transition-colors"
-          aria-label="Logout"
-        >
-          <BaseIcons name="arrow-right-on-rectangle" size="sm" />
-        </button>
-      </div>
     </aside>
 
     <!-- ── Main column: top bar + content + right rail ── -->
@@ -277,14 +251,20 @@ onUnmounted(() => {
             </PopoverPanel>
           </Popover>
 
-          <RouterLink
-            v-if="authStore.user"
-            :to="`/profile/${authStore.user.id}`"
-            class="w-9 h-9 rounded-full overflow-hidden ring-2 ring-transparent hover:ring-orange transition-all shrink-0"
-            aria-label="Your profile"
-          >
-            <UserAvatar :user="authStore.user" size="sm" class="!w-full !h-full" />
-          </RouterLink>
+          <Popover v-if="authStore.user" v-slot="{ open, close }" class="relative">
+            <PopoverButton
+              :class="[
+                'w-9 h-9 rounded-full overflow-hidden ring-2 transition-all shrink-0 focus:outline-none block',
+                open ? 'ring-orange' : 'ring-transparent hover:ring-orange'
+              ]"
+              aria-label="Your account"
+            >
+              <UserAvatar :user="authStore.user" size="sm" class="!w-full !h-full block" />
+            </PopoverButton>
+            <PopoverPanel class="absolute right-0 top-12 z-50">
+              <AccountDropdown @close="close" />
+            </PopoverPanel>
+          </Popover>
         </div>
       </header>
 
