@@ -145,7 +145,7 @@ const recipeImage = computed(() =>
 
 <template>
   <div
-    v-if="show"
+    v-if="show && (isLoading || post)"
     class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 bg-black/60 animate-revamp"
     @click.self="emit('close')"
   >
