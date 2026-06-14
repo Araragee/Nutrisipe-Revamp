@@ -8,12 +8,13 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: () => import('@/views/HomeView.vue'),
+      meta: { title: 'Discover' },
     },
     {
       path: '/login',
       name: 'login',
       component: () => import('@/views/LoginView.vue'),
-      meta: { requiresGuest: true },
+      meta: { requiresGuest: true, title: 'Sign In' },
     },
     {
       path: '/register',
@@ -24,31 +25,31 @@ const router = createRouter({
       path: '/onboarding',
       name: 'onboarding',
       component: () => import('@/views/OnboardingView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, title: 'Welcome' },
     },
     {
       path: '/profile/:userId',
       name: 'profile',
       component: () => import('@/views/ProfileView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, title: 'Profile' },
     },
     {
       path: '/settings',
       name: 'settings',
       component: () => import('@/views/SettingsView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, title: 'Settings' },
     },
     {
       path: '/explore',
       name: 'explore',
       component: () => import('@/views/ExploreView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, title: 'Explore Recipes' },
     },
     {
       path: '/messages',
       name: 'messages',
       component: () => import('@/views/MessagesView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, title: 'Messages' },
     },
     {
       path: '/recipes',
@@ -60,17 +61,19 @@ const router = createRouter({
       path: '/recipes/:id',
       name: 'recipe-detail',
       component: () => import('@/views/RecipeDetailView.vue'),
+      meta: { title: 'Recipe' },
     },
     {
       path: '/recipes/:id/edit',
       name: 'recipe-edit',
       component: () => import('@/views/RecipeEditView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, title: 'Edit Recipe' },
     },
     {
       path: '/recipes/:id/variations/compare',
       name: 'recipe-variation-compare',
       component: () => import('@/views/VariationView.vue'),
+      meta: { title: 'Compare Variations' },
     },
     {
       path: '/users/:id',
@@ -81,25 +84,25 @@ const router = createRouter({
       path: '/saved',
       name: 'saved-recipes',
       component: () => import('@/views/SavedRecipesView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, title: 'Saved Recipes' },
     },
     {
       path: '/plan',
       name: 'meal-plan',
       component: () => import('@/views/MealPlanView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, title: 'Meal Plan' },
     },
     {
       path: '/groceries',
       name: 'grocery-list',
       component: () => import('@/views/GroceryView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, title: 'Shopping List' },
     },
     {
       path: '/collections/:id',
       name: 'collection-detail',
       component: () => import('@/views/CollectionDetailView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, title: 'Collection' },
     },
     {
       path: '/following',
@@ -110,31 +113,31 @@ const router = createRouter({
       path: '/ingredients',
       name: 'ingredients',
       component: () => import('@/views/IngredientsView.vue'),
-      meta: { requiresAdmin: true },
+      meta: { requiresAdmin: true, title: 'Nutrition Database' },
     },
     {
       path: '/admin',
       name: 'admin',
       component: () => import('@/views/admin/AdminDashboardView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true },
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin Command Center' },
     },
     {
       path: '/admin/users',
       name: 'admin-users',
       component: () => import('@/views/admin/AdminUsersView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true },
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Citizen Management' },
     },
     {
       path: '/admin/reports',
       name: 'admin-reports',
       component: () => import('@/views/admin/AdminReportsView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true },
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Content Moderation' },
     },
     {
       path: '/admin/analytics',
       name: 'admin-analytics',
       component: () => import('@/views/admin/AdminAnalyticsView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true },
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Platform Insights' },
     },
   ],
 })
@@ -156,6 +159,12 @@ router.beforeEach(async (to, from, next) => {
   } else {
     next()
   }
+})
+
+router.afterEach((to) => {
+  const baseTitle = 'Nutrisipe — Share, Discover, and Plan Recipes'
+  const sectionTitle = to.meta.title as string
+  document.title = sectionTitle ? `${sectionTitle} | Nutrisipe` : baseTitle
 })
 
 export default router
