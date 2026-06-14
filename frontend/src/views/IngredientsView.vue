@@ -399,8 +399,8 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="min-h-screen bg-background py-8 px-6 md:px-8">
-    <div class="max-w-[1480px] mx-auto">
+  <div class="h-screen bg-background py-8 px-6 md:px-8 flex flex-col">
+    <div class="max-w-[1480px] mx-auto flex-1 flex flex-col min-h-0 w-full">
       <!-- Header -->
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6 flex-wrap">
         <div>
@@ -428,7 +428,7 @@ onMounted(load)
 
       <!-- Stats -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-        <div v-for="s in statCards" :key="s.lbl" @click="activeModal = s.id" class="p-4 rounded-2xl bg-surface dark:bg-zinc-800/40 border border-border relative overflow-hidden cursor-pointer hover:border-orange transition-all hover:-translate-y-1">
+        <div v-for="s in statCards" :key="s.lbl" @click="activeModal = s.id" class="p-4 rounded-2xl bg-surface dark:bg-zinc-800/40 border border-border relative overflow-hidden cursor-pointer hover:border-orange transition-all">
           <div class="flex items-center gap-2 mb-2 text-[11px] font-bold uppercase tracking-wider text-text-dim font-montserrat">
             <span class="w-[22px] h-[22px] rounded-lg inline-flex items-center justify-center" :style="{ background: s.color + '22', color: s.color }">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -445,9 +445,9 @@ onMounted(load)
       </div>
 
       <!-- Master-detail -->
-      <div v-else class="grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-3.5">
+      <div v-else class="grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-3.5 flex-1 min-h-0">
         <!-- LEFT: list card -->
-        <aside class="bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] overflow-hidden flex flex-col min-h-[640px]">
+        <aside class="bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] overflow-hidden flex flex-col min-h-0">
           <div class="p-3.5 border-b border-border">
             <div class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-background-secondary border-1.5 border-transparent focus-within:border-orange focus-within:bg-background transition-colors">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="text-text-dim shrink-0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -498,7 +498,7 @@ onMounted(load)
         </aside>
 
         <!-- RIGHT: editor card -->
-        <section v-if="draft" class="bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] overflow-hidden flex flex-col relative min-h-[640px]">
+        <section v-if="draft" class="bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] overflow-hidden flex flex-col relative min-h-0">
           <!-- Editor head -->
           <div class="flex items-center gap-4 p-5 border-b border-border">
             <div class="w-16 h-16 rounded-2xl bg-background-secondary border border-border flex items-center justify-center text-3xl shrink-0">
@@ -770,7 +770,7 @@ onMounted(load)
           </transition>
         </section>
 
-        <section v-else class="bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] p-12 text-center text-text-dim">
+        <section v-else class="bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] p-12 text-center text-text-dim flex items-center justify-center min-h-0">
           Pick an ingredient to begin editing.
         </section>
       </div>
