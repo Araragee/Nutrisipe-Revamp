@@ -190,6 +190,7 @@ export async function getRelatedPosts(postId: string, userId?: string, limit: nu
     where: {
       id: { not: postId },
       isPublic: true,
+      user: { isBanned: false },
       OR: [
         { category: post.category },
         ...tags.map((tag: string) => ({ tags: { contains: tag, mode: 'insensitive' as const } })),
@@ -413,13 +414,14 @@ export async function getPostById(postId: string, userId?: string) {
           bio: true,
           followerCount: true,
           followingCount: true,
+          isBanned: true,
         },
       },
       recipe: true,
     },
   })
 
-  if (!post) {
+  if (!post || post.user.isBanned) {
     throw new AppError(404, 'Post not found')
   }
 
@@ -672,6 +674,7 @@ export async function searchPosts(
 
   const where: any = {
     isPublic: true,
+    user: { isBanned: false },
     OR: [
       { title: { contains: query, mode: 'insensitive' } },
       { description: { contains: query, mode: 'insensitive' } },
@@ -768,6 +771,7 @@ export async function getPostsByTag(tag: string, userId?: string, page: number =
 
   const where: any = {
     isPublic: true,
+    user: { isBanned: false },
     tags: { contains: tag, mode: 'insensitive' },
   }
 
@@ -839,22 +843,25 @@ export async function getRecommendations(userId: string, page: number = 1, limit
   const prefCuisines = preferences ? JSON.parse(preferences.cuisines || '[]') : []
   const dislikedIngredients = preferences ? JSON.parse(preferences.allergies || '[]') : []
 
-  // 2. Fetch public posts that don't contain disliked ingredients
+  // 2. Fetch candidate set selecting ONLY minimal fields needed for scoring
   const allPublicPosts = await prisma.post.findMany({
     where: {
       isPublic: true,
       NOT: { userId }, // Don't recommend own posts
+      user: { isBanned: false }, // Exclude posts by banned users
     },
-    include: {
-      user: {
+    select: {
+      id: true,
+      category: true,
+      tags: true,
+      averageRating: true,
+      createdAt: true,
+      userId: true,
+      recipe: {
         select: {
-          id: true,
-          username: true,
-          displayName: true,
-          avatarUrl: true,
+          ingredients: true,
         },
       },
-      recipe: true,
     },
     orderBy: { createdAt: 'desc' },
     take: 100, // Pull a candidate set
@@ -888,7 +895,7 @@ export async function getRecommendations(userId: string, page: number = 1, limit
       score -= 50
     }
 
-    return { ...post, score }
+    return { id: post.id, score }
   })
 
   const sortedPosts = scoredPosts
@@ -896,28 +903,51 @@ export async function getRecommendations(userId: string, page: number = 1, limit
     .sort((a, b) => b.score - a.score)
     .slice(skip, skip + limit)
 
-  // 4. Transform and check engagement
-  const postIds = sortedPosts.map((p) => p.id)
+  // 4. Fetch full post details only for the top candidate IDs
+  const topPostIds = sortedPosts.map((p) => p.id)
+  const posts = await prisma.post.findMany({
+    where: { id: { in: topPostIds } },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          displayName: true,
+          avatarUrl: true,
+        },
+      },
+      recipe: true,
+    },
+  })
+
+  // Re-sort the fetched posts to match the sorted score order
+  const postsMap = new Map(posts.map((p) => [p.id, p]))
+  const orderedPosts = sortedPosts
+    .map((sp) => postsMap.get(sp.id))
+    .filter((p): p is NonNullable<typeof p> => !!p)
+
+  // 5. Transform and check engagement
   const [likes, saves] = await Promise.all([
     prisma.like.findMany({
-      where: { userId, postId: { in: postIds } },
+      where: { userId, postId: { in: topPostIds } },
       select: { postId: true },
     }),
     prisma.save.findMany({
-      where: { userId, postId: { in: postIds } },
+      where: { userId, postId: { in: topPostIds } },
       select: { postId: true },
     }),
   ])
 
   const likedPostIds = new Set(likes.map((l) => l.postId))
   const savedPostIds = new Set(saves.map((s) => s.postId))
+  const relevanceScoreMap = new Map(sortedPosts.map((sp) => [sp.id, sp.score]))
 
   return {
-    posts: sortedPosts.map((post) => ({
+    posts: orderedPosts.map((post) => ({
       ...transformPost(post),
       isLiked: likedPostIds.has(post.id),
       isSaved: savedPostIds.has(post.id),
-      relevanceScore: post.score,
+      relevanceScore: relevanceScoreMap.get(post.id),
     })),
     pagination: {
       page,

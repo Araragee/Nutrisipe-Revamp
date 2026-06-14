@@ -39,11 +39,16 @@ export async function auth(
         email: true,
         username: true,
         role: true,
+        isBanned: true,
       },
     })
 
     if (!user) {
       throw new AppError(401, 'User not found')
+    }
+
+    if (user.isBanned) {
+      throw new AppError(403, 'Your account has been banned')
     }
 
     req.user = user
@@ -73,10 +78,10 @@ export async function optionalAuthenticate(
 
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
-      select: { id: true, email: true, username: true, role: true },
+      select: { id: true, email: true, username: true, role: true, isBanned: true },
     })
 
-    if (user) {
+    if (user && !user.isBanned) {
       req.user = user
       req.userId = payload.userId
     }

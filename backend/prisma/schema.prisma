@@ -55,6 +55,7 @@ model User {
   @@index([username])
   @@index([email])
   @@index([role])
+  @@index([followerCount, createdAt])
 }
 
 model Post {
@@ -96,6 +97,7 @@ model Post {
   @@index([createdAt])
   @@index([category])
   @@index([userId, createdAt])
+  @@index([likeCount, saveCount, createdAt])
 }
 
 model Recipe {

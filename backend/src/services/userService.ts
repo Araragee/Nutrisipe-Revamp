@@ -54,6 +54,8 @@ export async function searchUsers(
   const [users, total] = await Promise.all([
     prisma.user.findMany({
       where: {
+        isActive: true,
+        isBanned: false,
         OR: [
           { username: { contains: query, mode: 'insensitive' } },
           { displayName: { contains: query, mode: 'insensitive' } },
@@ -74,6 +76,8 @@ export async function searchUsers(
     }),
     prisma.user.count({
       where: {
+        isActive: true,
+        isBanned: false,
         OR: [
           { username: { contains: query, mode: 'insensitive' } },
           { displayName: { contains: query, mode: 'insensitive' } },
@@ -335,6 +339,8 @@ export async function getSuggestedUsers(userId: string, limit: number = 10) {
   const suggestedUsers = await prisma.user.findMany({
     where: {
       id: { not: userId, notIn: followedUserIds },
+      isActive: true,
+      isBanned: false,
     },
     take: limit * 3,
     orderBy: { followerCount: 'desc' },
