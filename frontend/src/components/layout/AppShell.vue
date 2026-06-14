@@ -83,6 +83,7 @@ const mobileSecondary = computed(() =>
 )
 
 const showRightRail = computed(() => route.path === '/')
+const isExplore = computed(() => route.path === '/explore')
 
 const lastActiveTab = ref(sessionStorage.getItem('lastActiveTab') || 'home')
 
@@ -239,20 +240,36 @@ onUnmounted(() => {
     </aside>
 
     <!-- ── Main column: top bar + content + right rail ── -->
-    <div class="flex-1 flex flex-col min-w-0">
+    <div class="flex-1 flex flex-col min-w-0 relative">
       <!-- Top bar (desktop) -->
-      <header class="hidden md:flex items-center gap-4 px-6 h-16 shrink-0 bg-surface dark:bg-surface border-b border-border z-40">
-        <form @submit.prevent="submitSearch" class="flex-1 max-w-md">
-          <div class="relative">
-            <BaseIcons name="magnifying-glass" size="sm" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim pointer-events-none" />
-            <input
-              v-model="searchQuery"
-              type="search"
-              placeholder="Search recipes, chefs, tags…"
-              class="w-full bg-background dark:bg-background-secondary border border-transparent rounded-full pl-10 pr-4 py-2 text-sm text-text dark:text-text outline-none focus:border-orange focus:bg-surface dark:focus:bg-surface transition-colors placeholder:text-text-dim"
-            />
-          </div>
-        </form>
+      <header 
+        :class="[
+          'hidden md:flex items-center gap-4 shrink-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
+          isExplore 
+            ? 'absolute top-4 right-6 h-14 bg-surface/60 dark:bg-zinc-800/60 backdrop-blur-md rounded-full shadow-lg border border-border/50 px-3' 
+            : 'relative w-full h-16 bg-surface dark:bg-surface border-b border-border px-6'
+        ]"
+      >
+        <transition
+          enter-active-class="transition-all duration-500 ease-out overflow-hidden"
+          enter-from-class="max-w-0 opacity-0"
+          enter-to-class="max-w-md opacity-100"
+          leave-active-class="transition-all duration-300 ease-in overflow-hidden"
+          leave-from-class="max-w-md opacity-100"
+          leave-to-class="max-w-0 opacity-0"
+        >
+          <form v-show="!isExplore" @submit.prevent="submitSearch" class="flex-1 w-full shrink-0 min-w-0">
+            <div class="relative w-full min-w-[200px]">
+              <BaseIcons name="magnifying-glass" size="sm" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim pointer-events-none" />
+              <input
+                v-model="searchQuery"
+                type="search"
+                placeholder="Search recipes, chefs, tags…"
+                class="w-full bg-background dark:bg-background-secondary border border-transparent rounded-full pl-10 pr-4 py-2 text-sm text-text dark:text-text outline-none focus:border-orange focus:bg-surface dark:focus:bg-surface transition-colors placeholder:text-text-dim"
+              />
+            </div>
+          </form>
+        </transition>
 
         <div class="ml-auto flex items-center gap-2.5">
           <button
