@@ -11,21 +11,8 @@ const POST_CATEGORIES = {
   COOKING_TECHNIQUE: 'cooking_technique',
 }
 
-const FIRST_NAMES = [
-  'Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Ethan', 'Sophia', 'Mason', 'Isabella', 'William',
-  'Mia', 'James', 'Charlotte', 'Benjamin', 'Amelia', 'Lucas', 'Harper', 'Henry', 'Evelyn', 'Alexander',
-  'Abigail', 'Michael', 'Emily', 'Daniel', 'Elizabeth', 'Matthew', 'Sofia', 'Jackson', 'Avery', 'Sebastian',
-  'Ella', 'Aiden', 'Scarlett', 'David', 'Grace', 'Joseph', 'Chloe', 'Samuel', 'Victoria', 'Carter',
-  'Riley', 'Owen', 'Aria', 'Wyatt', 'Lily', 'John', 'Aubrey', 'Jack', 'Zoey', 'Luke'
-]
-
-const LAST_NAMES = [
-  'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez',
-  'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin',
-  'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson',
-  'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores',
-  'Green', 'Adams', 'Nelson', 'Baker', 'Hall', 'Rivera', 'Campbell', 'Mitchell', 'Carter', 'Roberts'
-]
+import { REAL_USERS } from './users.data'
+import { REAL_RECIPES } from './recipes.data'
 
 const CATEGORY_POSTS: Record<string, { titles: string[]; tags: string[]; descriptions: string[] }> = {
   recipe: {
@@ -236,31 +223,28 @@ async function main() {
     usersData.push({ id: testUser.id, username: testUser.username })
   }
 
-  for (let i = 0; i < 49; i++) {
-    const firstName = randomElement(FIRST_NAMES)
-    const lastName = randomElement(LAST_NAMES)
-    const username = `${firstName.toLowerCase()}${lastName.toLowerCase()}${i + 1}`
+  for (const ru of REAL_USERS) {
     const userId = randomUUID()
     await prisma.user.create({
       data: {
         id: userId,
-        username,
-        email: `${username}@nutrisipe.com`,
+        username: ru.username,
+        email: `${ru.username}@nutrisipe.com`,
         passwordHash,
-        displayName: `${firstName} ${lastName}`,
-        avatarUrl: `https://i.pravatar.cc/150?u=${username}`,
-        bio: i % 3 === 0 ? 'Food enthusiast and home cook.' : null,
+        displayName: ru.displayName,
+        avatarUrl: ru.avatarUrl,
+        bio: ru.bio,
         role: 'USER',
         preferences: {
           create: {
-            cuisines: JSON.stringify(randomElements(['Italian', 'Mexican', 'Asian', 'Mediterranean', 'American'], randomInt(1, 3))),
+            cuisines: JSON.stringify(randomElements(['Filipino', 'Asian', 'Italian', 'Mexican', 'American'], randomInt(1, 3))),
             dietary: JSON.stringify(randomElements(['Vegan', 'Keto', 'Gluten-Free', 'Low-Carb'], randomInt(0, 2))),
             allergies: JSON.stringify(randomElements(['Nuts', 'Dairy', 'Soy', 'Shellfish'], randomInt(0, 1))),
           }
         }
       }
     })
-    usersData.push({ id: userId, username })
+    usersData.push({ id: userId, username: ru.username })
   }
 
   console.log(`✅ Created ${usersData.length} users`)
@@ -271,68 +255,90 @@ async function main() {
   console.log(`📝 Preparing ${totalPosts} posts (${POSTS_PER_CATEGORY} per category)...`)
 
   let postIndex = 0
+  let recipeCount = 0
+  let otherPostCount = 0
+
   for (const categoryKey of categoryKeys) {
-    const cfg = CATEGORY_POSTS[categoryKey]
-    const images = CATEGORY_IMAGES[categoryKey]
+    const isRecipeCategory = categoryKey === 'recipe'
+    
+    if (isRecipeCategory) {
+      const images = CATEGORY_IMAGES[categoryKey]
+      
+      for (let i = 0; i < REAL_RECIPES.length; i++) {
+        const recipeData = REAL_RECIPES[i]
+        const postId = randomUUID()
+        const user = randomElement(usersData)
+        const photoId = images[i % images.length]
+        const width = 800
+        const heights = [1000, 1100, 1200, 900, 1050]
+        const height = heights[postIndex % heights.length]
+        const imageUrl = `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=${width}&h=${height}&q=80&sig=${postIndex}`
 
-    for (let i = 0; i < POSTS_PER_CATEGORY; i++) {
-      const postId = randomUUID()
-      const user = randomElement(usersData)
-      const title = cfg.titles[i % cfg.titles.length]
-      const photoId = images[i % images.length]
-      const width = 800
-      const heights = [1000, 1100, 1200, 900, 1050]
-      const height = heights[postIndex % heights.length]
-      const imageUrl = `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=${width}&h=${height}&q=80&sig=${postIndex}`
-      const isRecipeCategory = categoryKey === 'recipe'
-
-      await prisma.post.create({
-        data: {
-          id: postId,
-          userId: user.id,
-          title,
-          description: randomElement(cfg.descriptions),
-          imageUrl,
-          category: categoryKey,
-          tags: JSON.stringify(randomElements(cfg.tags, randomInt(2, 4))),
-          createdAt: new Date(Date.now() - randomInt(1, 90) * 24 * 60 * 60 * 1000),
-          recipe: isRecipeCategory ? {
-            create: {
-              servings: randomInt(2, 6),
-              prepTime: randomInt(5, 25),
-              cookTime: randomInt(10, 60),
-              difficulty: randomElement(DIFFICULTIES),
-              ingredients: JSON.stringify([
-                { name: 'Olive oil', quantity: '2 tbsp' },
-                { name: 'Garlic, raw', quantity: '3 cloves, minced' },
-                { name: 'Onion, red, raw', quantity: '1 medium, diced' },
-                { name: 'Chicken breast, skinless, raw', quantity: '500g' },
-                { name: 'Salt, iodized', quantity: '1 tsp' },
-                { name: 'Soy sauce', quantity: '2 tbsp' },
-              ]),
-              instructions: JSON.stringify([
-                { step: 1, text: 'Mise en place — prep and measure all ingredients.' },
-                { step: 2, text: 'Heat oil in pan over medium-high heat.' },
-                { step: 3, text: 'Add aromatics, cook until fragrant (~2 min).' },
-                { step: 4, text: 'Add main ingredients, cook through.' },
-                { step: 5, text: 'Season, plate, and serve immediately.' },
-              ]),
-              nutrition: JSON.stringify({
-                calories: randomInt(280, 720).toString(),
-                protein: randomInt(15, 45).toString(),
-                carbs: randomInt(20, 70).toString(),
-                fat: randomInt(8, 30).toString(),
-                fiber: randomInt(2, 12).toString(),
-              }),
+        await prisma.post.create({
+          data: {
+            id: postId,
+            userId: user.id,
+            title: recipeData.title,
+            description: recipeData.description,
+            imageUrl,
+            category: categoryKey,
+            tags: JSON.stringify(recipeData.tags),
+            createdAt: new Date(Date.now() - randomInt(1, 90) * 24 * 60 * 60 * 1000),
+            recipe: {
+              create: {
+                servings: randomInt(2, 6),
+                prepTime: randomInt(10, 30),
+                cookTime: randomInt(15, 60),
+                difficulty: randomElement(DIFFICULTIES),
+                ingredients: JSON.stringify(recipeData.ingredients),
+                instructions: JSON.stringify(recipeData.instructions),
+                nutrition: JSON.stringify({
+                  calories: randomInt(280, 720).toString(),
+                  protein: randomInt(15, 45).toString(),
+                  carbs: randomInt(20, 70).toString(),
+                  fat: randomInt(8, 30).toString(),
+                  fiber: randomInt(2, 12).toString(),
+                }),
+              },
             },
-          } : undefined,
-        },
-      })
-      postIndex++
+          },
+        })
+        postIndex++
+        recipeCount++
+      }
+    } else {
+      const cfg = CATEGORY_POSTS[categoryKey]
+      const images = CATEGORY_IMAGES[categoryKey]
+
+      for (let i = 0; i < POSTS_PER_CATEGORY; i++) {
+        const postId = randomUUID()
+        const user = randomElement(usersData)
+        const title = cfg.titles[i % cfg.titles.length]
+        const photoId = images[i % images.length]
+        const width = 800
+        const heights = [1000, 1100, 1200, 900, 1050]
+        const height = heights[postIndex % heights.length]
+        const imageUrl = `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=${width}&h=${height}&q=80&sig=${postIndex}`
+
+        await prisma.post.create({
+          data: {
+            id: postId,
+            userId: user.id,
+            title,
+            description: randomElement(cfg.descriptions),
+            imageUrl,
+            category: categoryKey,
+            tags: JSON.stringify(randomElements(cfg.tags, randomInt(2, 4))),
+            createdAt: new Date(Date.now() - randomInt(1, 90) * 24 * 60 * 60 * 1000),
+          },
+        })
+        postIndex++
+        otherPostCount++
+      }
     }
   }
 
-  console.log(`✅ Created ${totalPosts} posts across ${categoryKeys.length} categories`)
+  console.log(`✅ Created ${recipeCount} recipes and ${otherPostCount} other posts`)
 
   console.log('🤝 Creating follows...')
   for (const user of usersData) {
