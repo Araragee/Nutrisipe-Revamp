@@ -343,6 +343,72 @@ onMounted(() => {
           onEnterBack: activate,
         })
       })
+    } else {
+      // ── Mobile: pin section, stack step cards one-by-one then unpin ──
+      const howSection = document.querySelector<HTMLElement>('.section-how')!
+      const mStepEls = gsap.utils.toArray<HTMLElement>('.how-step')
+      const plateWrapper = document.querySelector<HTMLElement>('.plate-stage > div')!
+      const vh = window.innerHeight
+      const N = mStepEls.length - 1 // transitions needed = 2
+
+      // Compact layout so bowl + all 3 cards fit in one viewport
+      gsap.set(howSection, { paddingTop: 32, paddingBottom: 0 })
+      gsap.set('.section-how .max-w-2xl', { marginBottom: 12 })
+      gsap.set(plateWrapper, { maxWidth: '200px' })
+      gsap.set('.section-how .grid', { rowGap: 16 })
+
+      // Bowl layers
+      gsap.set('.pl-item', { opacity: 0, scale: 0.4, transformBox: 'fill-box', transformOrigin: 'center' })
+      gsap.set('.pl-fork', { opacity: 0, y: 28, transformBox: 'fill-box', transformOrigin: 'center' })
+
+      const mStages: string[][] = [
+        ['.pl-base'],
+        ['.pl-grain', '.pl-top'],
+        ['.pl-garnish', '.pl-fork'],
+      ]
+      let mReached = -1
+      const revealM = (i: number) => {
+        for (let s = mReached + 1; s <= i; s++) {
+          const sel = mStages[s]
+          if (sel.includes('.pl-fork'))
+            gsap.to('.pl-fork', { opacity: 1, y: 0, duration: 0.6, ease: 'back.out(1.6)' })
+          const itemSel = sel.filter((x) => x !== '.pl-fork').map((x) => `${x} .pl-item`).join(',')
+          if (itemSel) gsap.to(itemSel, { opacity: 1, scale: 1, duration: 0.5, stagger: 0.05, ease: 'back.out(1.7)' })
+        }
+        mReached = Math.max(mReached, i)
+      }
+
+      // Card 01 visible; cards 02+ hidden below their natural positions
+      mStepEls.forEach((el, i) => {
+        gsap.set(el, {
+          paddingTop: 10, paddingBottom: 10,
+          opacity: i === 0 ? 1 : 0,
+          y: i === 0 ? 0 : 40,
+        })
+      })
+      revealM(0)
+
+      const mShown = new Set<number>([0])
+
+      // Pin for (N+1) × 40vh; cards reveal at each 40vh, last interval holds all 3 before unpin
+      ScrollTrigger.create({
+        trigger: howSection,
+        start: 'top top',
+        end: `+=${(N + 1) * vh * 0.4}`,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        onUpdate: (self) => {
+          const numVisible = 1 + Math.min(Math.floor(self.progress * (N + 1) + 0.001), N)
+          for (let i = 1; i < numVisible; i++) {
+            if (!mShown.has(i)) {
+              mShown.add(i)
+              gsap.to(mStepEls[i], { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out', delay: i === N ? 0.35 : 0 })
+              revealM(i)
+            }
+          }
+        },
+      })
     }
   }, pageRef.value ?? undefined)
 })
@@ -656,7 +722,7 @@ onBeforeUnmount(() => gsapCtx?.revert())
         <div class="grid md:grid-cols-2 gap-12 md:gap-16 items-start">
           <!-- Sticky bowl — stays put while the steps scroll past, filling layer by layer -->
           <div class="plate-stage md:sticky md:top-24">
-            <div class="relative mx-auto w-full max-w-[380px] aspect-square">
+            <div class="relative mx-auto w-full max-w-[380px] md:max-w-[520px] aspect-square">
               <div class="plate-glow"></div>
               <IngredientPlate class="relative" />
             </div>
