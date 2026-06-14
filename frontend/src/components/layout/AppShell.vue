@@ -271,16 +271,12 @@ onUnmounted(() => {
           navState === 'shrunk' ? 'absolute top-4 right-6 w-[280px] h-14 bg-surface/70 dark:bg-zinc-800/70 backdrop-blur-lg rounded-full shadow-lg border border-white/20 dark:border-white/10 px-3' : '',
         ]"
       >
-        <transition
-          enter-active-class="transition-all duration-500 ease-out overflow-hidden"
-          enter-from-class="max-w-0 opacity-0"
-          enter-to-class="max-w-md opacity-100"
-          leave-active-class="transition-all duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] overflow-hidden"
-          leave-from-class="max-w-md opacity-100"
-          leave-to-class="max-w-0 opacity-0"
+        <div 
+          class="transition-all duration-[450ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] overflow-hidden shrink-0 flex items-center"
+          :class="navState === 'shrunk' ? 'max-w-0 opacity-0 pointer-events-none' : 'max-w-[450px] w-full opacity-100'"
         >
-          <form v-show="navState !== 'shrunk'" @submit.prevent="submitSearch" class="flex-1 w-full shrink-0 min-w-0">
-            <div class="relative w-full min-w-[200px]">
+          <form @submit.prevent="submitSearch" class="w-[450px] max-w-[calc(100vw-300px)] shrink-0 min-w-[250px]">
+            <div class="relative w-full">
               <BaseIcons name="magnifying-glass" size="sm" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim pointer-events-none" />
               <input
                 v-model="searchQuery"
@@ -290,7 +286,7 @@ onUnmounted(() => {
               />
             </div>
           </form>
-        </transition>
+        </div>
 
         <div class="ml-auto flex items-center gap-2.5">
           <button
