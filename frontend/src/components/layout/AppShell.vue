@@ -92,14 +92,14 @@ watch(isExploreRoute, (val, oldVal) => {
       navState.value = 'shrunk'
     } else {
       navState.value = 'detached'
-      setTimeout(() => { navState.value = 'shrunk' }, 350)
+      setTimeout(() => { navState.value = 'shrunk' }, 150)
     }
   } else {
     if (oldVal === undefined) {
       navState.value = 'default'
     } else {
       navState.value = 'detached'
-      setTimeout(() => { navState.value = 'default' }, 450)
+      setTimeout(() => { navState.value = 'default' }, 250)
     }
   }
 }, { immediate: true })
@@ -260,18 +260,18 @@ onUnmounted(() => {
 
     <!-- ── Main column: top bar + content + right rail ── -->
     <div class="flex-1 flex flex-col min-w-0 relative">
-      <div class="hidden md:block shrink-0 transition-all duration-[450ms] ease-out" :class="navState === 'shrunk' ? 'h-0' : 'h-16'"></div>
+      <div class="hidden md:block shrink-0 transition-all duration-[250ms] ease-out" :class="navState === 'shrunk' ? 'h-0' : 'h-16'"></div>
 
       <header 
         :class="[
-          'hidden md:flex items-center gap-4 shrink-0 z-50 transition-all duration-[450ms] ease-out',
+          'hidden md:flex items-center gap-4 shrink-0 z-50 transition-all duration-[250ms] ease-out',
           navState === 'default' ? 'absolute top-0 right-0 w-full h-16 bg-surface dark:bg-surface border-b border-border px-6' : '',
           navState === 'detached' ? 'absolute top-4 right-6 w-[calc(100%-3rem)] h-14 bg-surface/70 dark:bg-zinc-800/70 backdrop-blur-lg rounded-[24px] shadow-lg border border-white/20 dark:border-white/10 px-6' : '',
-          navState === 'shrunk' ? 'absolute top-4 right-6 w-[250px] h-14 bg-surface/70 dark:bg-zinc-800/70 backdrop-blur-lg rounded-full shadow-lg border border-white/20 dark:border-white/10 px-3' : '',
+          navState === 'shrunk' ? 'absolute top-4 right-6 w-[270px] h-14 bg-surface/70 dark:bg-zinc-800/70 backdrop-blur-lg rounded-full shadow-lg border border-white/20 dark:border-white/10 px-3' : '',
         ]"
       >
         <div 
-          class="transition-all duration-[450ms] ease-out overflow-hidden shrink-0 flex items-center"
+          class="transition-all duration-[250ms] ease-out overflow-hidden shrink-0 flex items-center"
           :class="navState === 'shrunk' ? 'max-w-0 opacity-0 pointer-events-none' : 'max-w-[450px] w-full opacity-100'"
         >
           <form @submit.prevent="submitSearch" class="w-[450px] max-w-[calc(100vw-300px)] shrink-0 min-w-[250px]">
@@ -290,7 +290,7 @@ onUnmounted(() => {
         <div class="ml-auto flex items-center gap-2.5">
           <button
             @click="uiStore.openCreateModal()"
-            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-orange text-white font-semibold text-sm hover:bg-orange-deep transition-colors"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-orange text-white font-semibold text-sm hover:bg-orange-deep transition-colors whitespace-nowrap shrink-0"
           >
             <BaseIcons name="plus" size="sm" />
             Share recipe
