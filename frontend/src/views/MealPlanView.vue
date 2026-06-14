@@ -305,6 +305,55 @@ const weekLabel = computed(() => {
   const to = toDate.toLocaleDateString(undefined, opts)
   return `${from} – ${to}`
 })
+
+const weekNutrition = computed(() => {
+  const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 }
+  const byDay: Record<string, { calories: number; protein: number; carbs: number; fat: number }> = {}
+  let hasAny = false
+
+  for (const plan of plans.value) {
+    const n = plan.post?.recipe?.nutrition
+    if (!n) continue
+    const cal = parseFloat(String(n.calories ?? 0))
+    const pro = parseFloat(String(n.protein ?? 0))
+    const carb = parseFloat(String(n.carbs ?? 0))
+    const fat = parseFloat(String(n.fat ?? 0))
+    if (!cal && !pro && !carb && !fat) continue
+    hasAny = true
+
+    const baseServings = plan.post?.recipe?.servings ?? plan.servings
+    const factor = baseServings > 0 ? plan.servings / baseServings : 1
+
+    totals.calories += cal * factor
+    totals.protein += pro * factor
+    totals.carbs += carb * factor
+    totals.fat += fat * factor
+
+    const key = fmtIso(new Date(plan.date))
+    if (!byDay[key]) byDay[key] = { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    byDay[key].calories += cal * factor
+    byDay[key].protein += pro * factor
+    byDay[key].carbs += carb * factor
+    byDay[key].fat += fat * factor
+  }
+
+  if (!hasAny) return null
+
+  const plannedDays = Object.keys(byDay).length
+  const maxDayCal = Math.max(...Object.values(byDay).map((d) => d.calories), 1)
+
+  return {
+    totals: {
+      calories: Math.round(totals.calories),
+      protein: Math.round(totals.protein),
+      carbs: Math.round(totals.carbs),
+      fat: Math.round(totals.fat),
+    },
+    byDay,
+    dailyAvg: plannedDays > 0 ? Math.round(totals.calories / plannedDays) : null,
+    maxDayCal,
+  }
+})
 </script>
 
 <template>
@@ -387,6 +436,61 @@ const weekLabel = computed(() => {
             @click="openPicker(d, slot)"
             class="w-full h-full min-h-[100px] flex items-center justify-center text-text-dim text-2xl opacity-30 group-hover:opacity-100 group-hover:text-orange transition-all"
           >+</button>
+        </div>
+      </div>
+
+      <!-- Weekly nutrition summary -->
+      <div v-if="weekNutrition" class="mt-8 p-6 rounded-3xl bg-background-secondary/40 border-1.5 border-border">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <p class="text-orange text-[11px] font-bold uppercase tracking-[0.3em] mb-1">Nutrition</p>
+            <h2 class="font-montserrat font-extrabold text-xl">Weekly macros</h2>
+          </div>
+          <p v-if="weekNutrition.dailyAvg" class="text-xs text-text-dim">
+            avg <span class="font-bold text-text">{{ weekNutrition.dailyAvg }} kcal</span> / day
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          <div
+            v-for="m in [
+              { label: 'Calories', value: weekNutrition.totals.calories, unit: 'kcal', color: 'text-orange' },
+              { label: 'Protein', value: weekNutrition.totals.protein, unit: 'g', color: 'text-blue-400 dark:text-blue-300' },
+              { label: 'Carbs', value: weekNutrition.totals.carbs, unit: 'g', color: 'text-amber-500 dark:text-amber-400' },
+              { label: 'Fat', value: weekNutrition.totals.fat, unit: 'g', color: 'text-teal-600 dark:text-teal-400' },
+            ]"
+            :key="m.label"
+            class="p-4 rounded-2xl bg-surface border border-border"
+          >
+            <p class="text-[10px] font-bold uppercase tracking-widest text-text-dim mb-1">{{ m.label }}</p>
+            <p :class="['font-montserrat font-extrabold text-2xl tabular-nums leading-none', m.color]">{{ m.value }}</p>
+            <p class="text-[10px] text-text-dim mt-1">{{ m.unit }} · week</p>
+          </div>
+        </div>
+
+        <!-- Per-day calorie bars -->
+        <div class="grid grid-cols-7 gap-1.5 items-end" style="height: 96px;">
+          <div v-for="d in days" :key="d.toISOString()" class="flex flex-col items-center gap-1 h-full justify-end">
+            <p v-if="weekNutrition.byDay[fmtIso(d)]" class="text-[9px] tabular-nums text-text-dim leading-none mb-0.5">
+              {{ Math.round(weekNutrition.byDay[fmtIso(d)].calories) }}
+            </p>
+            <div
+              class="w-full rounded-t-lg transition-all duration-500 min-h-[4px]"
+              :style="{
+                height: weekNutrition.byDay[fmtIso(d)]
+                  ? `${Math.max(8, (weekNutrition.byDay[fmtIso(d)].calories / weekNutrition.maxDayCal) * 60)}px`
+                  : '4px',
+                background: isToday(d)
+                  ? 'var(--orange)'
+                  : weekNutrition.byDay[fmtIso(d)]
+                    ? 'rgb(251 146 60 / 0.45)'
+                    : 'var(--border)',
+              }"
+            ></div>
+            <p :class="['text-[9px] font-bold uppercase leading-none mt-1', isToday(d) ? 'text-orange' : 'text-text-dim']">
+              {{ fmtDay(d) }}
+            </p>
+          </div>
         </div>
       </div>
 

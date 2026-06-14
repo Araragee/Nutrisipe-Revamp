@@ -7,6 +7,8 @@ import { useUiStore } from '@/stores/ui'
 import ImageUpload from '@/components/ui/ImageUpload.vue'
 import IngredientAutocomplete from '@/components/recipe/IngredientAutocomplete.vue'
 import type { Post } from '@/typescript/interface/Post'
+import type { Ingredient } from '@/typescript/interface/Ingredient'
+import { calcRow } from '@/composables/useNutritionCalc'
 
 const route = useRoute()
 const router = useRouter()
@@ -84,8 +86,67 @@ async function loadPost() {
   }
 }
 
+// FCT ingredient linkage — keyed by ingredient array index
+const linkedFct = ref<Map<number, Ingredient>>(new Map())
+
+function onSelectIngredient(index: number, ing: Ingredient) {
+  const next = new Map(linkedFct.value)
+  next.set(index, ing)
+  linkedFct.value = next
+}
+
+function onClearIngredient(index: number) {
+  const next = new Map(linkedFct.value)
+  next.delete(index)
+  linkedFct.value = next
+}
+
+const fctMatchCount = computed(() => linkedFct.value.size)
+
+function autoFillNutrition() {
+  const ingredients = formData.value.recipe.ingredients
+  let totalEnergy = 0, totalProtein = 0, totalCarb = 0, totalFat = 0
+  let matched = 0
+
+  for (let i = 0; i < ingredients.length; i++) {
+    const fct = linkedFct.value.get(i)
+    if (!fct) continue
+    const qty = ingredients[i].quantity ?? ''
+    const gramsMatch = qty.match(/^(\d+(?:\.\d+)?)\s*g(?:r(?:ams?)?)?/i)
+    if (!gramsMatch) continue
+    const grams = parseFloat(gramsMatch[1])
+    const row = calcRow(fct, grams)
+    totalEnergy += row.energy
+    totalProtein += row.protein
+    totalCarb += row.carb
+    totalFat += row.fat
+    matched++
+  }
+
+  if (matched === 0) {
+    uiStore.showToast('No FCT-matched ingredients with gram quantities found', 'error')
+    return
+  }
+
+  const servings = formData.value.recipe.servings || 1
+  formData.value.recipe.nutrition.calories = Math.round(totalEnergy / servings)
+  formData.value.recipe.nutrition.protein = Math.round(totalProtein / servings)
+  formData.value.recipe.nutrition.carbs = Math.round(totalCarb / servings)
+  formData.value.recipe.nutrition.fat = Math.round(totalFat / servings)
+  uiStore.showToast(`Filled from ${matched} FCT-matched ingredient${matched > 1 ? 's' : ''}`, 'success')
+}
+
 const addIngredient = () => formData.value.recipe.ingredients.push({ name: '', quantity: '' })
-const removeIngredient = (i: number) => formData.value.recipe.ingredients.splice(i, 1)
+const removeIngredient = (i: number) => {
+  formData.value.recipe.ingredients.splice(i, 1)
+  // Rebuild index map after removal
+  const next = new Map<number, Ingredient>()
+  for (const [k, v] of linkedFct.value) {
+    if (k < i) next.set(k, v)
+    else if (k > i) next.set(k - 1, v)
+  }
+  linkedFct.value = next
+}
 
 const addStep = () => {
   const nextStep = formData.value.recipe.instructions.length + 1
@@ -201,10 +262,30 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
             <!-- Ingredients -->
             <div class="space-y-4 pt-4">
                <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Ingredients</label>
-               <div v-for="(ing, i) in formData.recipe.ingredients" :key="i" class="flex gap-3">
-                  <IngredientAutocomplete v-model="ing.name" :placeholder="`Ingredient ${i+1}`" class="flex-1" />
-                  <input v-model="ing.quantity" class="w-24 bg-background border border-border rounded-xl p-3.5 text-sm outline-none focus:border-orange transition-all font-medium" placeholder="Amount" />
-                  <button type="button" @click="removeIngredient(i)" class="w-10 h-10 shrink-0 border border-border rounded-full flex items-center justify-center text-text-dim hover:border-red-500 hover:text-red-500 transition-all">✕</button>
+               <div v-for="(ing, i) in formData.recipe.ingredients" :key="i" class="space-y-1">
+                 <div class="flex gap-3">
+                   <IngredientAutocomplete
+                     v-model="ing.name"
+                     :placeholder="`Ingredient ${i+1}`"
+                     class="flex-1"
+                     @select-ingredient="(fct) => onSelectIngredient(i, fct)"
+                     @clear-ingredient="onClearIngredient(i)"
+                   />
+                   <input v-model="ing.quantity" class="w-24 bg-background border border-border rounded-xl p-3.5 text-sm outline-none focus:border-orange transition-all font-medium" placeholder="Amount" />
+                   <button type="button" @click="removeIngredient(i)" class="w-10 h-10 shrink-0 border border-border rounded-full flex items-center justify-center text-text-dim hover:border-red-500 hover:text-red-500 transition-all">✕</button>
+                 </div>
+                 <div v-if="linkedFct.get(i)" class="ml-1 flex items-center gap-2 text-[10px] text-text-dim">
+                   <span class="inline-flex items-center gap-1 text-green-600 dark:text-green-400 font-bold">
+                     <span>✓ FCT</span>
+                   </span>
+                   <span class="tabular-nums">
+                     {{ linkedFct.get(i)!.energy }} kcal ·
+                     P {{ linkedFct.get(i)!.protein }}g ·
+                     C {{ linkedFct.get(i)!.carb }}g ·
+                     F {{ linkedFct.get(i)!.fat }}g
+                   </span>
+                   <span class="text-text-dim/50">per 100g</span>
+                 </div>
                </div>
                <button type="button" @click="addIngredient" class="w-full py-3.5 border border-dashed border-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add ingredient</button>
             </div>
@@ -222,7 +303,17 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
 
             <!-- Nutrition -->
             <div class="space-y-4 pt-4">
-               <label class="text-xs font-bold uppercase tracking-widest text-text-dim ml-4">Nutrition (per serving)</label>
+               <div class="flex items-center justify-between ml-4">
+                 <label class="text-xs font-bold uppercase tracking-widest text-text-dim">Nutrition (per serving)</label>
+                 <button
+                   v-if="fctMatchCount > 0"
+                   type="button"
+                   @click="autoFillNutrition"
+                   class="text-[11px] font-bold text-green-600 dark:text-green-400 hover:underline"
+                 >
+                   ✦ Fill from {{ fctMatchCount }} FCT match{{ fctMatchCount > 1 ? 'es' : '' }}
+                 </button>
+               </div>
                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div v-for="n in [
                     {k:'calories', l:'Calories', u:'kcal'},
