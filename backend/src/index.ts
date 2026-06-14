@@ -50,7 +50,13 @@ app.set('trust proxy', 1)
 const httpServer = createServer(app)
 
 app.use(cors({
-  origin: env.CORS_ORIGIN,
+  origin: (origin, callback) => {
+    if (!origin || origin === env.CORS_ORIGIN || origin.endsWith('.onrender.com')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }))
 

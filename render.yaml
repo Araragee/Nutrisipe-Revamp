@@ -1,0 +1,39 @@
+services:
+  # The Node.js Express Backend (Render Free Tier)
+  - type: web
+    name: nutrisipe-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build && npx prisma generate && npx prisma migrate deploy
+    startCommand: npm start
+    envVars:
+      # You will paste your Supabase connection string in the Render Dashboard
+      - key: DATABASE_URL
+        sync: false 
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+      # We'll use these later if you want to use Supabase Storage for uploads
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+
+  # The Vue 3 Vite Frontend (Render Free Tier)
+  - type: web
+    name: nutrisipe-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishPath: dist
+    envVars:
+      - key: VITE_BACKEND_URL
+        fromService:
+          type: web
+          name: nutrisipe-backend
+          envVarKey: RENDER_EXTERNAL_URL
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
