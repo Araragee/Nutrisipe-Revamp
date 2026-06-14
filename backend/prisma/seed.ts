@@ -179,10 +179,12 @@ async function main() {
   console.log('👥 Preparing users...')
   const usersData = []
   
-  // Fixed Admin
+  // Fixed Admin — upsert so re-seeding is idempotent
   const adminId = randomUUID()
-  await prisma.user.create({
-    data: {
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@nutrisipe.com' },
+    update: { passwordHash, role: 'ADMIN' },
+    create: {
       id: adminId,
       username: 'admin',
       email: 'admin@nutrisipe.com',
@@ -200,10 +202,9 @@ async function main() {
       }
     }
   })
-  usersData.push({ id: adminId, username: 'admin' })
+  usersData.push({ id: admin.id, username: admin.username })
 
-  // ── TEST ACCOUNTS (deterministic) — remove before production ──
-  // Fixed emails so the login page quick-login buttons always resolve after any reseed.
+  // ── TEST ACCOUNTS (deterministic) — upsert so re-seeding is idempotent ──
   const TEST_USERS = [
     { username: 'cook', displayName: 'Test Cook' },
     { username: 'chef', displayName: 'Test Chef' },
@@ -211,8 +212,10 @@ async function main() {
   ]
   for (const t of TEST_USERS) {
     const testId = randomUUID()
-    await prisma.user.create({
-      data: {
+    const testUser = await prisma.user.upsert({
+      where: { email: `${t.username}@nutrisipe.com` },
+      update: { passwordHash },
+      create: {
         id: testId,
         username: t.username,
         email: `${t.username}@nutrisipe.com`,
@@ -230,7 +233,7 @@ async function main() {
         }
       }
     })
-    usersData.push({ id: testId, username: t.username })
+    usersData.push({ id: testUser.id, username: testUser.username })
   }
 
   for (let i = 0; i < 49; i++) {
