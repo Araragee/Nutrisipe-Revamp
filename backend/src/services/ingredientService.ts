@@ -96,3 +96,7 @@ export function updateIngredient(id: string, data: Partial<IngredientInput>) {
 export function deleteIngredient(id: string) {
   return prisma.ingredient.delete({ where: { id } })
 }
+
+export function bulkCreateIngredients(data: IngredientInput[]) {
+  return prisma.ingredient.createMany({ data })
+}

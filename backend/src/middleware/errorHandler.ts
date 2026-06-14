@@ -18,9 +18,7 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ) {
-  if (env.NODE_ENV === 'development') {
-    logger.error('Error:', err)
-  }
+  logger.error('Error:', err)
 
   if (err instanceof AppError) {
     res.status(err.statusCode).json({

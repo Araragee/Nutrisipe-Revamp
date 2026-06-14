@@ -70,6 +70,8 @@ function ensureExtras(it: Ingredient): UiExtras {
     const e = blankExtras()
     e.status = autoStatus(it)
     e.description = it.alt_name ?? ''
+    if (it.category) e.category = it.category
+    if (it.source) e.source = it.source
     extras.set(key, e)
   }
   return extras.get(key)!
@@ -79,10 +81,12 @@ const emptyDraft = (): Ingredient => ({
   id: '',
   food_item: '',
   alt_name: '',
+  category: 'Vegetable',
   edible_portion: 100,
   energy: 0, protein: 0, fat: 0, carb: 0,
   calcium: 0, phos: 0, iron: 0, vit_a: 0,
   thia: 0, ribo: 0, nia: 0, vit_c: 0,
+  source: '',
 })
 
 const load = async () => {
@@ -192,6 +196,9 @@ const newItem = () => {
 const save = async () => {
   if (!draft.value) return
   try {
+    draft.value.category = draftExtras.value.category
+    draft.value.source = draftExtras.value.source
+
     if (isCreating.value || !draft.value.id) {
       const { id: _omit, ...payload } = draft.value
       const res = await ingredientsApi.create(payload as any)
@@ -212,6 +219,98 @@ const save = async () => {
   } catch {
     uiStore.showToast('Save failed', 'error')
   }
+}
+
+const csvInput = ref<HTMLInputElement | null>(null)
+
+const triggerCsvInput = () => {
+  csvInput.value?.click()
+}
+
+const handleCsvUpload = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = async (e) => {
+    const text = e.target?.result as string
+    try {
+      const parsed = parseCSV(text)
+      if (parsed.length === 0) {
+        uiStore.showToast('No valid ingredients found in CSV', 'error')
+        return
+      }
+      
+      const res = await ingredientsApi.bulkCreate(parsed)
+      const count = (res.data as any)?.count ?? parsed.length
+      uiStore.showToast(`Successfully imported ${count} ingredients`, 'success')
+      
+      await load()
+    } catch (err: any) {
+      const errMsg = err.response?.data?.message || 'CSV Import failed. Check format.'
+      uiStore.showToast(errMsg, 'error')
+    } finally {
+      target.value = ''
+    }
+  }
+  reader.readAsText(file)
+}
+
+function parseCSV(text: string): Partial<Ingredient>[] {
+  const lines = text.split(/\r?\n/)
+  if (lines.length < 2) return []
+
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, '').toLowerCase())
+  const results: any[] = []
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim()
+    if (!line) continue
+
+    const values: string[] = []
+    let current = ''
+    let inQuotes = false
+    for (let j = 0; j < line.length; j++) {
+      const char = line[j]
+      if (char === '"') {
+        inQuotes = !inQuotes
+      } else if (char === ',' && !inQuotes) {
+        values.push(current.trim())
+        current = ''
+      } else {
+        current += char
+      }
+    }
+    values.push(current.trim())
+
+    if (values.length < headers.length) continue
+
+    const item: any = {}
+    headers.forEach((header, index) => {
+      let val = values[index]
+      if (!val) return
+      val = val.replace(/^["']|["']$/g, '').trim()
+      
+      if (header === 'food_item') {
+        item.food_item = val
+      } else if (header === 'alt_name') {
+        item.alt_name = val || null
+      } else if (header === 'category') {
+        item.category = val || null
+      } else if (header === 'source') {
+        item.source = val || null
+      } else {
+        item[header] = val === '' ? 0 : Number(val) || 0
+      }
+    })
+
+    if (item.food_item) {
+      results.push(item)
+    }
+  }
+
+  return results
 }
 
 const discard = () => {
@@ -291,7 +390,8 @@ onMounted(load)
           </p>
         </div>
         <div class="flex gap-2.5">
-          <button class="px-4 py-2.5 rounded-xl border-1.5 border-border bg-surface dark:bg-zinc-800 text-text font-montserrat font-bold text-[13px] inline-flex items-center gap-2 transition-all hover:border-orange hover:text-orange">
+          <input type="file" ref="csvInput" accept=".csv" @change="handleCsvUpload" class="hidden" />
+          <button @click="triggerCsvInput" class="px-4 py-2.5 rounded-xl border-1.5 border-border bg-surface dark:bg-zinc-800 text-text font-montserrat font-bold text-[13px] inline-flex items-center gap-2 transition-all hover:border-orange hover:text-orange">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             Import CSV
           </button>

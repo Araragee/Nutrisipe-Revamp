@@ -16,5 +16,8 @@ export const ingredientsApi = {
 
   delete: (id: string) => httpClient.delete<ApiResponse<void>>(`/ingredients/${id}`),
 
+  bulkCreate: (data: Partial<Ingredient>[]) =>
+    httpClient.post<ApiResponse<{ count: number }>>('/ingredients/bulk', data),
+
   getNames: () => httpClient.get<ApiResponse<string[]>>('/posts/ingredients'),
 }

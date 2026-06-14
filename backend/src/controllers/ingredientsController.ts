@@ -92,3 +92,17 @@ export async function deleteHandler(req: Request, res: Response, next: NextFunct
     next(error)
   }
 }
+
+export async function bulkCreateHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    const validated = z.array(ingredientSchema).parse(req.body)
+    const result = await ingredientService.bulkCreateIngredients(validated)
+    res.status(201).json({ success: true, count: result.count })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      next(new AppError(400, error.errors[0].message))
+    } else {
+      next(error)
+    }
+  }
+}

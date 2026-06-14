@@ -8,6 +8,7 @@ const router = Router()
 router.get('/', ingredientsController.listHandler)
 router.get('/:id', ingredientsController.getByIdHandler)
 router.post('/', authenticate, adminOnly, ingredientsController.createHandler)
+router.post('/bulk', authenticate, adminOnly, ingredientsController.bulkCreateHandler)
 router.put('/:id', authenticate, adminOnly, ingredientsController.updateHandler)
 router.delete('/:id', authenticate, adminOnly, ingredientsController.deleteHandler)
 
