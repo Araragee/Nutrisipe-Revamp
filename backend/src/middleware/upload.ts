@@ -1,17 +1,27 @@
 // @ts-ignore
 import multer from 'multer'
 import path from 'path'
+import fs from 'fs'
 import { AppError } from './errorHandler'
+import { env } from '../config/env'
+
+const TEMP_DIR = path.join(env.UPLOAD_DIR || 'uploads', 'temp')
+
+// Ensure directory exists to prevent multer errors
+if (!fs.existsSync(TEMP_DIR)) {
+  fs.mkdirSync(TEMP_DIR, { recursive: true })
+}
 
 // Configure storage
 const storage = multer.diskStorage({
   destination: (_req: any, _file: any, cb: any) => {
-    // TODO(audit:B-13) [MEDIUM] Hardcoded 'uploads/temp' is never created/verified at startup — multer errors if it's missing; ensure dir exists and resolve from a config path.
-    cb(null, 'uploads/temp')
+    cb(null, TEMP_DIR)
   },
   filename: (_req: any, file: any, cb: any) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname))
+    // Sanitize extension to prevent injection via malicious filenames
+    const ext = path.extname(file.originalname).replace(/[^a-zA-Z0-9.]/g, '')
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext)
   }
 })
 
