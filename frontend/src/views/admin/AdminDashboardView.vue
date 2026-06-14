@@ -4,7 +4,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { adminApi } from '@/http/endpoints/admin'
-import { MEDIA_BASE } from '@/utils/imageUrl'
+import { API_URL } from '@/utils/constants'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -36,7 +36,7 @@ async function loadStats() {
 
 async function pingHealth() {
   try {
-    const r = await fetch(`${MEDIA_BASE}/health`, { method: 'GET' })
+    const r = await fetch(`${API_URL}/health`, { method: 'GET' })
     serverHealthy.value = r.ok
   } catch {
     serverHealthy.value = false
