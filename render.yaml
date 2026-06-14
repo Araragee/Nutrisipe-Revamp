@@ -4,7 +4,7 @@ services:
     name: nutrisipe-backend
     env: node
     rootDir: backend
-    buildCommand: npm install && npm run build && npx prisma generate && npx prisma migrate deploy
+    buildCommand: npm install --include=dev && npm run build && npx prisma generate && npx prisma migrate deploy
     startCommand: npm start
     envVars:
       # You will paste your Supabase connection string in the Render Dashboard
