@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted, reactive } from 'vue'
 import { ingredientsApi } from '@/http/endpoints/ingredients'
 import { useUiStore } from '@/stores/ui'
 import type { Ingredient } from '@/typescript/interface/Ingredient'
+import StatCardModal from '@/components/StatCardModal.vue'
 
 type Status = 'verified' | 'pending' | 'draft'
 type Conv = { q: number; unit: string; g: number }
@@ -28,6 +29,8 @@ const selectedId = ref<string | null>(null)
 const draft = ref<Ingredient | null>(null)
 const dirty = ref(false)
 const isCreating = ref(false)
+const isEditMode = ref(false)
+const activeModal = ref<string | null>(null)
 
 const CATEGORIES = ['All', 'Protein', 'Grain', 'Vegetable', 'Fruit', 'Dairy', 'Fat', 'Spice'] as const
 const ALLERGEN_OPTS = ['Gluten', 'Dairy', 'Egg', 'Soy', 'Sesame', 'Tree nuts', 'Peanut', 'Fish', 'Shellfish'] as const
@@ -116,6 +119,7 @@ watch(selected, s => {
     draftExtras.value = { ...ensureExtras(s) }
     dirty.value = false
     isCreating.value = false
+    isEditMode.value = false
   }
 })
 
@@ -190,6 +194,7 @@ const newItem = () => {
   draftExtras.value = blankExtras()
   selectedId.value = null
   isCreating.value = true
+  isEditMode.value = true
   dirty.value = true
 }
 
@@ -322,6 +327,7 @@ const discard = () => {
     draftExtras.value = blankExtras()
   }
   dirty.value = false
+  isEditMode.value = false
   if (isCreating.value) isCreating.value = false
 }
 
@@ -357,11 +363,29 @@ const micros = [
 ] as const
 
 const statCards = computed(() => [
-  { lbl: 'Total ingredients', val: stats.value.total, sub: `+ ${Math.max(0, stats.value.total - 0)} curated`, color: '#FF6B35', tone: 'up' as const },
-  { lbl: 'Verified', val: stats.value.verified, sub: stats.value.total ? `${Math.round(stats.value.verified / stats.value.total * 100)}% of database` : '—', color: '#22c55e', tone: 'up' as const },
-  { lbl: 'Pending review', val: stats.value.pending, sub: 'needs your attention', color: '#f59e0b', tone: 'warn' as const },
-  { lbl: 'Drafts', val: stats.value.draft, sub: 'awaiting source', color: '#94a3b8', tone: 'warn' as const },
+  { id: 'total', lbl: 'Total ingredients', val: stats.value.total, sub: `+ ${Math.max(0, stats.value.total - 0)} curated`, color: '#FF6B35', tone: 'up' as const },
+  { id: 'verified', lbl: 'Verified', val: stats.value.verified, sub: stats.value.total ? `${Math.round(stats.value.verified / stats.value.total * 100)}% of database` : '—', color: '#22c55e', tone: 'up' as const },
+  { id: 'pending', lbl: 'Pending review', val: stats.value.pending, sub: 'needs your attention', color: '#f59e0b', tone: 'warn' as const },
+  { id: 'draft', lbl: 'Drafts', val: stats.value.draft, sub: 'awaiting source', color: '#94a3b8', tone: 'warn' as const },
 ])
+
+const modalItems = computed(() => {
+  if (activeModal.value === 'total') return items.value
+  if (activeModal.value === 'verified') return items.value.filter(i => ensureExtras(i).status === 'verified')
+  if (activeModal.value === 'pending') return items.value.filter(i => ensureExtras(i).status === 'pending')
+  if (activeModal.value === 'draft') return items.value.filter(i => ensureExtras(i).status === 'draft')
+  return []
+})
+
+const modalTitle = computed(() => {
+  const card = statCards.value.find(c => c.id === activeModal.value)
+  return card ? card.lbl : ''
+})
+
+const handleModalSelect = (id: string) => {
+  selectedId.value = id
+  activeModal.value = null
+}
 
 const auditLog = [
   { who: 'Dr. Sarah Wong', avatar: 'https://i.pravatar.cc/64?img=47', action: 'Verified macros & micronutrient profile', time: '2 hours ago' },
@@ -404,7 +428,7 @@ onMounted(load)
 
       <!-- Stats -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-        <div v-for="s in statCards" :key="s.lbl" class="p-4 rounded-2xl bg-surface dark:bg-zinc-800/40 border border-border relative overflow-hidden">
+        <div v-for="s in statCards" :key="s.lbl" @click="activeModal = s.id" class="p-4 rounded-2xl bg-surface dark:bg-zinc-800/40 border border-border relative overflow-hidden cursor-pointer hover:border-orange transition-all hover:-translate-y-1">
           <div class="flex items-center gap-2 mb-2 text-[11px] font-bold uppercase tracking-wider text-text-dim font-montserrat">
             <span class="w-[22px] h-[22px] rounded-lg inline-flex items-center justify-center" :style="{ background: s.color + '22', color: s.color }">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -482,11 +506,13 @@ onMounted(load)
             </div>
             <div class="flex-1 min-w-0">
               <input
+                v-if="isEditMode"
                 :value="draft.food_item"
                 @input="setField('food_item', ($event.target as HTMLInputElement).value)"
                 class="w-full bg-transparent border-none outline-none font-montserrat font-extrabold text-[22px] tracking-tight text-text border-b-1.5 border-dashed border-transparent focus:border-orange py-1"
                 placeholder="Ingredient name"
               />
+              <div v-else class="w-full font-montserrat font-extrabold text-[22px] tracking-tight text-text py-1 border-b-1.5 border-transparent">{{ draft.food_item || 'Unnamed Ingredient' }}</div>
               <div class="flex items-center gap-2 text-[11px] text-text-dim mt-1 font-montserrat">
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[9.5px] uppercase tracking-wider"
                   :class="STATUS_PILL[draftExtras.status]">
@@ -498,10 +524,13 @@ onMounted(load)
               </div>
             </div>
             <div class="flex gap-2 ml-auto">
+              <button @click="isEditMode = !isEditMode" class="w-9 h-9 rounded-[10px] border-1.5 border-border text-text-muted transition-all flex items-center justify-center" :class="isEditMode ? 'border-orange text-orange bg-orange/10' : 'hover:border-orange hover:text-orange'" title="Edit mode">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+              </button>
               <button class="w-9 h-9 rounded-[10px] border-1.5 border-border text-text-muted hover:border-orange hover:text-orange transition-all flex items-center justify-center" title="View as recipe ingredient">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
               </button>
-              <button v-if="!isCreating" @click="removeItem" class="w-9 h-9 rounded-[10px] border-1.5 border-border text-text-muted hover:border-red-500 hover:text-red-500 transition-all flex items-center justify-center" title="Delete">
+              <button v-if="!isCreating && isEditMode" @click="removeItem" class="w-9 h-9 rounded-[10px] border-1.5 border-border text-text-muted hover:border-red-500 hover:text-red-500 transition-all flex items-center justify-center" title="Delete">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
               </button>
             </div>
@@ -515,44 +544,50 @@ onMounted(load)
               <div class="grid grid-cols-2 gap-3 mb-3">
                 <div class="flex flex-col gap-1.5">
                   <label class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Category</label>
-                  <select :value="draftExtras.category" @change="setExtras('category', ($event.target as HTMLSelectElement).value)"
+                  <select v-if="isEditMode" :value="draftExtras.category" @change="setExtras('category', ($event.target as HTMLSelectElement).value)"
                     class="bg-background-secondary border-1.5 border-transparent rounded-[11px] px-3.5 py-2.5 text-[13px] text-text font-inter outline-none focus:border-orange focus:bg-background transition-all">
                     <option v-for="c in CATEGORIES.filter(c => c !== 'All')" :key="c">{{ c }}</option>
                   </select>
+                  <div v-else class="px-3.5 py-2.5 text-[13px] text-text font-inter bg-background-secondary/40 rounded-[11px]">{{ draftExtras.category || '—' }}</div>
                 </div>
                 <div class="flex flex-col gap-1.5">
                   <label class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Status</label>
-                  <select :value="draftExtras.status" @change="setExtras('status', ($event.target as HTMLSelectElement).value as Status)"
+                  <select v-if="isEditMode" :value="draftExtras.status" @change="setExtras('status', ($event.target as HTMLSelectElement).value as Status)"
                     class="bg-background-secondary border-1.5 border-transparent rounded-[11px] px-3.5 py-2.5 text-[13px] text-text font-inter outline-none focus:border-orange focus:bg-background transition-all">
                     <option value="draft">Draft</option>
                     <option value="pending">Pending review</option>
                     <option value="verified">Verified</option>
                   </select>
+                  <div v-else class="px-3.5 py-2.5 text-[13px] text-text font-inter bg-background-secondary/40 rounded-[11px] capitalize">{{ draftExtras.status || '—' }}</div>
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-3 mb-3">
                 <div class="flex flex-col gap-1.5">
                   <label class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Emoji</label>
-                  <input :value="draftExtras.emoji" @input="setExtras('emoji', ($event.target as HTMLInputElement).value)"
+                  <input v-if="isEditMode" :value="draftExtras.emoji" @input="setExtras('emoji', ($event.target as HTMLInputElement).value)"
                     class="bg-background-secondary border-1.5 border-transparent rounded-[11px] px-3.5 py-2.5 text-[13px] text-text font-inter outline-none focus:border-orange focus:bg-background transition-all" />
+                  <div v-else class="px-3.5 py-2.5 text-[13px] text-text font-inter bg-background-secondary/40 rounded-[11px]">{{ draftExtras.emoji || '—' }}</div>
                 </div>
                 <div class="flex flex-col gap-1.5">
                   <label class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Edible portion (%)</label>
-                  <input type="number" step="0.1" min="0" max="100"
+                  <input v-if="isEditMode" type="number" step="0.1" min="0" max="100"
                     :value="draft.edible_portion"
                     @input="setNum('edible_portion', ($event.target as HTMLInputElement).value)"
                     class="bg-background-secondary border-1.5 border-transparent rounded-[11px] px-3.5 py-2.5 text-[13px] text-text font-inter outline-none focus:border-orange focus:bg-background transition-all" />
+                  <div v-else class="px-3.5 py-2.5 text-[13px] text-text font-inter bg-background-secondary/40 rounded-[11px]">{{ draft.edible_portion }}%</div>
                 </div>
               </div>
               <div class="flex flex-col gap-1.5 mb-3">
                 <label class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Aliases &amp; alternate names</label>
-                <input :value="draft.alt_name || ''" @input="setField('alt_name', ($event.target as HTMLInputElement).value)" placeholder="comma-separated"
+                <input v-if="isEditMode" :value="draft.alt_name || ''" @input="setField('alt_name', ($event.target as HTMLInputElement).value)" placeholder="comma-separated"
                   class="bg-background-secondary border-1.5 border-transparent rounded-[11px] px-3.5 py-2.5 text-[13px] text-text font-inter outline-none focus:border-orange focus:bg-background transition-all" />
+                <div v-else class="px-3.5 py-2.5 text-[13px] text-text font-inter bg-background-secondary/40 rounded-[11px]">{{ draft.alt_name || '—' }}</div>
               </div>
               <div class="flex flex-col gap-1.5">
                 <label class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Description</label>
-                <textarea :value="draftExtras.description" @input="setExtras('description', ($event.target as HTMLTextAreaElement).value)" rows="2"
+                <textarea v-if="isEditMode" :value="draftExtras.description" @input="setExtras('description', ($event.target as HTMLTextAreaElement).value)" rows="2"
                   class="bg-background-secondary border-1.5 border-transparent rounded-[11px] px-3.5 py-2.5 text-[13px] text-text font-inter outline-none focus:border-orange focus:bg-background transition-all resize-y min-h-[70px]"></textarea>
+                <div v-else class="px-3.5 py-2.5 text-[13px] text-text font-inter bg-background-secondary/40 rounded-[11px] min-h-[70px] whitespace-pre-wrap">{{ draftExtras.description || '—' }}</div>
               </div>
             </div>
 
@@ -565,14 +600,16 @@ onMounted(load)
               <div class="grid grid-cols-2 gap-3 mb-3">
                 <div class="flex flex-col gap-1.5 relative">
                   <label class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Energy</label>
-                  <input type="number" :value="draft.energy" @input="setNum('energy', ($event.target as HTMLInputElement).value)"
+                  <input v-if="isEditMode" type="number" :value="draft.energy" @input="setNum('energy', ($event.target as HTMLInputElement).value)"
                     class="bg-background-secondary border-1.5 border-transparent rounded-[11px] px-3.5 py-2.5 pr-12 text-[13px] text-text font-inter outline-none focus:border-orange focus:bg-background transition-all" />
-                  <span class="absolute right-3.5 bottom-2.5 text-xs font-bold text-text-dim pointer-events-none">kcal</span>
+                  <div v-else class="px-3.5 py-2.5 text-[13px] text-text font-inter bg-background-secondary/40 rounded-[11px]">{{ draft.energy }} <span class="text-xs text-text-dim">kcal</span></div>
+                  <span v-if="isEditMode" class="absolute right-3.5 bottom-2.5 text-xs font-bold text-text-dim pointer-events-none">kcal</span>
                 </div>
                 <div class="flex flex-col gap-1.5">
                   <label class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Edible portion</label>
-                  <input type="number" step="0.1" :value="draft.edible_portion" @input="setNum('edible_portion', ($event.target as HTMLInputElement).value)"
+                  <input v-if="isEditMode" type="number" step="0.1" :value="draft.edible_portion" @input="setNum('edible_portion', ($event.target as HTMLInputElement).value)"
                     class="bg-background-secondary border-1.5 border-transparent rounded-[11px] px-3.5 py-2.5 text-[13px] text-text font-inter outline-none focus:border-orange focus:bg-background transition-all" />
+                  <div v-else class="px-3.5 py-2.5 text-[13px] text-text font-inter bg-background-secondary/40 rounded-[11px]">{{ draft.edible_portion }}%</div>
                 </div>
               </div>
 
@@ -583,8 +620,9 @@ onMounted(load)
                     <span class="w-2 h-2 rounded-full" :style="{ background: m.color }"></span>{{ m.lbl }}
                   </div>
                   <div class="flex items-baseline gap-1">
-                    <input type="number" step="0.1" :value="(draft as any)[m.k]" @input="setNum(m.k as keyof Ingredient, ($event.target as HTMLInputElement).value)"
+                    <input v-if="isEditMode" type="number" step="0.1" :value="(draft as any)[m.k]" @input="setNum(m.k as keyof Ingredient, ($event.target as HTMLInputElement).value)"
                       class="w-full bg-transparent border-none outline-none font-montserrat font-extrabold text-[22px] text-text" />
+                    <div v-else class="w-full font-montserrat font-extrabold text-[22px] text-text">{{ (draft as any)[m.k] }}</div>
                     <span class="text-xs font-bold text-text-dim">{{ m.unit }}</span>
                   </div>
                 </div>
@@ -616,24 +654,29 @@ onMounted(load)
                 <div v-for="(row, idx) in draftExtras.conv" :key="idx"
                   class="grid grid-cols-[1fr_28px_1fr_32px] gap-2 items-center px-2.5 py-2 rounded-[11px] bg-background-secondary">
                   <div class="flex items-center gap-1.5">
-                    <input type="number" step="0.25" :value="row.q" @input="updateConv(idx, 'q', ($event.target as HTMLInputElement).value)"
+                    <input v-if="isEditMode" type="number" step="0.25" :value="row.q" @input="updateConv(idx, 'q', ($event.target as HTMLInputElement).value)"
                       class="w-[50px] text-right bg-transparent border-none outline-none text-xs font-bold text-text font-inter px-1.5 py-1 rounded-md focus:bg-background" />
-                    <select :value="row.unit" @change="updateConv(idx, 'unit', ($event.target as HTMLSelectElement).value)"
+                    <div v-else class="text-xs font-bold text-text text-right w-[50px]">{{ row.q }}</div>
+                    
+                    <select v-if="isEditMode" :value="row.unit" @change="updateConv(idx, 'unit', ($event.target as HTMLSelectElement).value)"
                       class="bg-transparent border-none outline-none text-xs font-bold text-text font-inter px-1.5 py-1 rounded-md focus:bg-background">
                       <option v-for="u in UNIT_OPTS" :key="u">{{ u }}</option>
                     </select>
+                    <div v-else class="text-xs font-bold text-text">{{ row.unit }}</div>
                   </div>
                   <div class="text-xs font-extrabold text-text-dim text-center font-montserrat">=</div>
                   <div class="flex items-center gap-1.5">
-                    <input type="number" :value="row.g" @input="updateConv(idx, 'g', ($event.target as HTMLInputElement).value)"
+                    <input v-if="isEditMode" type="number" :value="row.g" @input="updateConv(idx, 'g', ($event.target as HTMLInputElement).value)"
                       class="w-[70px] text-right bg-transparent border-none outline-none text-xs font-bold text-text font-inter px-1.5 py-1 rounded-md focus:bg-background" />
+                    <div v-else class="text-xs font-bold text-text text-right w-[70px]">{{ row.g }}</div>
                     <span class="text-[11px] font-bold text-text-dim">grams</span>
                   </div>
-                  <button @click="removeConv(idx)" class="w-7 h-7 rounded-[10px] border-1.5 border-border text-text-muted hover:border-red-500 hover:text-red-500 transition-all flex items-center justify-center">
+                  <button v-if="isEditMode" @click="removeConv(idx)" class="w-7 h-7 rounded-[10px] border-1.5 border-border text-text-muted hover:border-red-500 hover:text-red-500 transition-all flex items-center justify-center">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
+                  <div v-else></div>
                 </div>
-                <button @click="addConv" class="px-3 py-2.5 rounded-[11px] border-1.5 border-dashed border-border bg-transparent text-text-muted text-xs font-bold font-montserrat inline-flex items-center justify-center gap-1.5 hover:border-orange hover:border-solid hover:text-orange transition-all">
+                <button v-if="isEditMode" @click="addConv" class="px-3 py-2.5 rounded-[11px] border-1.5 border-dashed border-border bg-transparent text-text-muted text-xs font-bold font-montserrat inline-flex items-center justify-center gap-1.5 hover:border-orange hover:border-solid hover:text-orange transition-all">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   Add conversion
                 </button>
@@ -644,12 +687,12 @@ onMounted(load)
             <div>
               <div class="font-montserrat font-extrabold text-[12px] uppercase tracking-wider text-text mb-3.5">Allergens &amp; flags</div>
               <div class="flex flex-wrap gap-1.5">
-                <button v-for="a in ALLERGEN_OPTS" :key="a" @click="toggleAllergen(a)"
+                <button v-for="a in ALLERGEN_OPTS" :key="a" @click="isEditMode ? toggleAllergen(a) : null"
                   :class="[
                     'px-3 py-1.5 rounded-full border-1.5 font-montserrat font-semibold text-[11px] transition-all',
                     draftExtras.allergens.includes(a)
                       ? 'bg-red-500/10 border-red-500 text-red-600 dark:text-red-400'
-                      : 'bg-transparent border-border text-text-muted hover:border-red-500 hover:text-red-500',
+                      : (isEditMode ? 'bg-transparent border-border text-text-muted hover:border-red-500 hover:text-red-500' : 'bg-transparent border-border text-text-muted opacity-60 cursor-default'),
                   ]">{{ a }}</button>
               </div>
             </div>
@@ -659,19 +702,22 @@ onMounted(load)
               <div class="font-montserrat font-extrabold text-[12px] uppercase tracking-wider text-text mb-3.5">Source &amp; audit trail</div>
               <div class="flex flex-col gap-1.5 mb-3">
                 <label class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Primary source / citation</label>
-                <input :value="draftExtras.source" @input="setExtras('source', ($event.target as HTMLInputElement).value)" placeholder="e.g. USDA SR Legacy 20137"
+                <input v-if="isEditMode" :value="draftExtras.source" @input="setExtras('source', ($event.target as HTMLInputElement).value)" placeholder="e.g. USDA SR Legacy 20137"
                   class="bg-background-secondary border-1.5 border-transparent rounded-[11px] px-3.5 py-2.5 text-[13px] text-text font-inter outline-none focus:border-orange focus:bg-background transition-all" />
+                <div v-else class="px-3.5 py-2.5 text-[13px] text-text font-inter bg-background-secondary/40 rounded-[11px]">{{ draftExtras.source || '—' }}</div>
               </div>
               <div class="grid grid-cols-2 gap-3 mb-3">
                 <div class="flex flex-col gap-1.5">
                   <label class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Last verified by</label>
-                  <input :value="draftExtras.verifiedBy" @input="setExtras('verifiedBy', ($event.target as HTMLInputElement).value)"
+                  <input v-if="isEditMode" :value="draftExtras.verifiedBy" @input="setExtras('verifiedBy', ($event.target as HTMLInputElement).value)"
                     class="bg-background-secondary border-1.5 border-transparent rounded-[11px] px-3.5 py-2.5 text-[13px] text-text font-inter outline-none focus:border-orange focus:bg-background transition-all" />
+                  <div v-else class="px-3.5 py-2.5 text-[13px] text-text font-inter bg-background-secondary/40 rounded-[11px]">{{ draftExtras.verifiedBy || '—' }}</div>
                 </div>
                 <div class="flex flex-col gap-1.5">
                   <label class="text-[11px] font-bold text-text-muted uppercase tracking-wider">Verification date</label>
-                  <input :value="draftExtras.verifiedDate" @input="setExtras('verifiedDate', ($event.target as HTMLInputElement).value)"
+                  <input v-if="isEditMode" :value="draftExtras.verifiedDate" @input="setExtras('verifiedDate', ($event.target as HTMLInputElement).value)"
                     class="bg-background-secondary border-1.5 border-transparent rounded-[11px] px-3.5 py-2.5 text-[13px] text-text font-inter outline-none focus:border-orange focus:bg-background transition-all" />
+                  <div v-else class="px-3.5 py-2.5 text-[13px] text-text font-inter bg-background-secondary/40 rounded-[11px]">{{ draftExtras.verifiedDate || '—' }}</div>
                 </div>
               </div>
               <div class="mt-3.5">
@@ -692,8 +738,9 @@ onMounted(load)
                 <div v-for="m in micros" :key="m.k" class="p-2.5 rounded-[11px] bg-background-secondary border border-border focus-within:border-orange transition-colors">
                   <label class="block text-[9.5px] font-bold uppercase tracking-wider text-text-dim mb-1">{{ m.lbl }}</label>
                   <div class="flex items-baseline gap-1.5">
-                    <input type="number" step="0.01" min="0" :value="(draft as any)[m.k]" @input="setNum(m.k as keyof Ingredient, ($event.target as HTMLInputElement).value)"
+                    <input v-if="isEditMode" type="number" step="0.01" min="0" :value="(draft as any)[m.k]" @input="setNum(m.k as keyof Ingredient, ($event.target as HTMLInputElement).value)"
                       class="w-full bg-transparent border-none outline-none font-montserrat font-bold text-[15px] text-text" />
+                    <div v-else class="w-full font-montserrat font-bold text-[15px] text-text">{{ (draft as any)[m.k] }}</div>
                     <span class="text-[10px] font-bold text-text-dim shrink-0">{{ m.unit }}</span>
                   </div>
                 </div>
@@ -727,6 +774,15 @@ onMounted(load)
           Pick an ingredient to begin editing.
         </section>
       </div>
+      
+      <StatCardModal
+        :title="modalTitle"
+        :items="modalItems"
+        :extras="extras"
+        :is-open="activeModal !== null"
+        @close="activeModal = null"
+        @select="handleModalSelect"
+      />
     </div>
   </div>
 </template>
