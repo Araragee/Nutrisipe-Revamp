@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import { createServer } from 'http'
 import { mkdirSync, writeFileSync, unlinkSync } from 'fs'
@@ -46,6 +47,10 @@ import { purgeExpired as purgeExpiredStories } from './services/storyService'
 import { purgeScheduledDeletions } from './services/userService'
 
 const app = express()
+
+// Add security headers
+app.use(helmet({ crossOriginResourcePolicy: false }))
+
 app.set('trust proxy', 1)
 const httpServer = createServer(app)
 
