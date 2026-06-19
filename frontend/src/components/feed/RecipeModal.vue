@@ -248,7 +248,7 @@ const recipeImage = computed(() =>
           <!-- Body -->
           <div class="flex-1 overflow-y-auto px-7 pb-7">
             <!-- Nutrition stats -->
-            <div class="grid grid-cols-4 gap-2.5 mb-7">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-7">
               <div
                 v-for="n in nutritionFacts"
                 :key="n.label"
@@ -356,7 +356,7 @@ const recipeImage = computed(() =>
           </div>
 
           <!-- Footer -->
-          <div class="p-5 px-7 border-t border-border bg-surface dark:bg-surface flex gap-2.5">
+          <div class="p-5 px-7 border-t border-border bg-surface dark:bg-surface flex flex-col sm:flex-row gap-2.5">
             <button
               @click="showCollectionModal = true"
               class="flex-1 btn-secondary py-3 !text-sm flex items-center justify-center gap-2"

@@ -284,7 +284,7 @@ const recipeImage = computed(() =>
              </div>
 
              <!-- Nutrition Row -->
-             <div class="grid grid-cols-4 gap-4 mb-10">
+             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
                 <div v-for="n in nutritionFacts" :key="n.label" class="bg-background-secondary/50 rounded-2xl p-4 text-center border border-border">
                    <BaseIcons :name="n.icon" size="md" class="mx-auto mb-1.5 text-text-dim" />
                    <span class="font-montserrat font-extrabold text-lg block leading-none mb-1">{{ n.val }}</span>

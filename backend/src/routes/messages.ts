@@ -12,10 +12,14 @@ router.get('/conversations', auth, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!
 
+    const { page, limit } = parsePagination(req, 50)
+
     const conversations = await prisma.conversation.findMany({
       where: {
         OR: [{ user1Id: userId }, { user2Id: userId }]
       },
+      skip: (page - 1) * limit,
+      take: limit,
       include: {
         user1: {
           select: {

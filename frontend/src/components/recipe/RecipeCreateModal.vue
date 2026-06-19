@@ -176,7 +176,7 @@ function handleClose() {
                 <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider mb-2 block">Description</label>
                 <textarea v-model="form.description" rows="3" class="w-full bg-background-secondary border-1.5 border-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="What makes this dish special?"></textarea>
               </div>
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="text-[11px] font-bold text-text-dim uppercase tracking-wider mb-2 block">Cook time (min)</label>
                   <input v-model="form.time" type="number" class="w-full bg-background-secondary border-1.5 border-border rounded-xl p-4 text-[15px] outline-none focus:border-orange" placeholder="e.g. 25" />
@@ -231,7 +231,7 @@ function handleClose() {
               :yield-amount="form.servings || '1'"
             />
 
-            <div class="grid grid-cols-4 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div v-for="n in [
                 {v: perServing.energy, l: 'Calories', u: 'kcal', d: 0, i: 'fire'},
                 {v: perServing.protein, l: 'Protein', u: 'g', d: 1, i: 'bolt'},

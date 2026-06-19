@@ -3,6 +3,7 @@ import { Router } from 'express';
 import prisma from '../lib/prisma';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { createNotification } from '../services/notificationService';
+import { parsePagination } from '../utils/pagination';
 
 const router = Router();
 
@@ -199,11 +200,14 @@ router.get('/search', authenticate, async (req: AuthRequest, res) => {
 router.get('/post/:postId', authenticate, async (req: AuthRequest, res) => {
   try {
     const { postId } = req.params;
+    const { page, limit } = parsePagination(req, 20);
 
     const mentions = await prisma.mention.findMany({
       where: {
         postId
       },
+      skip: (page - 1) * limit,
+      take: limit,
       include: {
         mentioned: {
           select: {
@@ -237,11 +241,14 @@ router.get('/post/:postId', authenticate, async (req: AuthRequest, res) => {
 router.get('/comment/:commentId', authenticate, async (req: AuthRequest, res) => {
   try {
     const { commentId } = req.params;
+    const { page, limit } = parsePagination(req, 20);
 
     const mentions = await prisma.mention.findMany({
       where: {
         commentId
       },
+      skip: (page - 1) * limit,
+      take: limit,
       include: {
         mentioned: {
           select: {

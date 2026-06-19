@@ -56,6 +56,7 @@ model User {
   @@index([email])
   @@index([role])
   @@index([followerCount, createdAt])
+  @@index([createdAt])
 }
 
 model Post {
@@ -133,6 +134,7 @@ model Follow {
   @@map("follows")
   @@index([followerId])
   @@index([followingId])
+  @@index([createdAt])
 }
 
 model Like {
@@ -148,6 +150,7 @@ model Like {
   @@map("likes")
   @@index([userId])
   @@index([postId])
+  @@index([createdAt])
 }
 
 model Save {
@@ -163,6 +166,7 @@ model Save {
   @@map("saves")
   @@index([userId])
   @@index([postId])
+  @@index([createdAt])
 }
 
 model Comment {
@@ -267,6 +271,7 @@ model CollectionPost {
   @@map("collection_posts")
   @@index([collectionId])
   @@index([postId])
+  @@index([addedAt])
 }
 
 model Conversation {
@@ -363,6 +368,7 @@ model Rating {
 
   @@unique([userId, postId])
   @@map("ratings")
+  @@index([userId])
   @@index([postId])
   @@index([rating])
   @@index([createdAt])
@@ -438,6 +444,7 @@ model MealPlan {
   @@map("meal_plans")
   @@index([userId, date])
   @@index([postId])
+  @@index([createdAt])
 }
 
 model Ingredient {
