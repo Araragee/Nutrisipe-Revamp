@@ -34,7 +34,7 @@ onMounted(loadData)
 </script>
 
 <template>
-  <div class="variation-view min-h-screen bg-background py-16 px-6">
+  <div class="variation-view min-h-screen bg-background md:py-16 px-6 pt-4">
     <div class="max-w-7xl mx-auto">
       <button @click="router.back()" class="mb-12 flex items-center gap-2 text-text-dim font-bold hover:text-orange transition-colors">
         <span>←</span> BACK

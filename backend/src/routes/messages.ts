@@ -1,11 +1,17 @@
 import { logger } from '../utils/logger'
 import { Router, Response } from 'express'
+import { z } from 'zod'
 import { auth } from '../middleware/auth'
 import { AuthRequest } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
 import { parsePagination } from '../utils/pagination'
 
 const router = Router()
+
+const sendMessageSchema = z.object({
+  recipientId: z.string().uuid(),
+  content: z.string().min(1).max(5000),
+})
 
 // Get user's conversations
 router.get('/conversations', auth, async (req: AuthRequest, res: Response) => {
@@ -143,13 +149,11 @@ router.get(
 router.post('/send', auth, async (req: AuthRequest, res: Response) => {
   try {
     const senderId = req.userId!
-    const { recipientId, content } = req.body
-
-    if (!recipientId || !content) {
-      return res
-        .status(400)
-        .json({ error: 'Recipient ID and content are required' })
+    const parsed = sendMessageSchema.safeParse(req.body)
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.errors[0].message })
     }
+    const { recipientId, content } = parsed.data
 
     // Find or create conversation
     let conversation = await prisma.conversation.findFirst({

@@ -96,7 +96,7 @@ const displayPosts = computed(() => {
 </script>
 
 <template>
-  <div class="profile-view min-h-screen bg-background pb-20">
+  <div class="profile-view min-h-screen bg-background md:pb-20">
     <div v-if="isLoading" class="flex items-center justify-center py-20">
        <div class="w-12 h-12 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
     </div>

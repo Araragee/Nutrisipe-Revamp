@@ -80,7 +80,7 @@ onMounted(() => {
       @select-filter="setFilter"
     />
 
-    <div class="px-8 pb-20 max-w-7xl mx-auto">
+    <div class="px-5 sm:px-8 md:pb-20 max-w-7xl mx-auto">
       <TrendingTagsRail
         v-if="trendingTags.length > 0 && !hasResults"
         :tags="trendingTags"

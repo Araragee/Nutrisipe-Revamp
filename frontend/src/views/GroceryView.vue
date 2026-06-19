@@ -137,7 +137,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="grocery-view min-h-screen px-6 md:px-10 py-10">
+  <div class="grocery-view min-h-screen px-6 md:px-10 md:py-10">
     <div class="max-w-3xl mx-auto">
       <header class="mb-8">
         <p class="text-orange text-[11px] font-bold uppercase tracking-[0.3em] mb-2">Groceries</p>

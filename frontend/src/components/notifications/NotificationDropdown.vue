@@ -31,7 +31,7 @@ async function handleNotificationClick(notification: any) {
   if (notification.type === 'follow') {
     router.push(`/profile/${notification.actorId}`)
   } else if (notification.postId) {
-    router.push(`/post/${notification.postId}`)
+    router.push(`/recipes/${notification.postId}`)
   }
 
   emit('close')

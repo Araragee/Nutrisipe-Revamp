@@ -113,7 +113,7 @@ const router = createRouter({
       path: '/ingredients',
       name: 'ingredients',
       component: () => import('@/views/IngredientsView.vue'),
-      meta: { requiresAdmin: true, title: 'Nutrition Database' },
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Nutrition Database' },
     },
     {
       path: '/admin',
@@ -138,6 +138,12 @@ const router = createRouter({
       name: 'admin-analytics',
       component: () => import('@/views/admin/AdminAnalyticsView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true, title: 'Platform Insights' },
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFoundView.vue'),
+      meta: { title: 'Page not found' },
     },
   ],
 })

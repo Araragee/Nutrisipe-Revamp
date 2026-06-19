@@ -212,41 +212,49 @@ const recipeImage = computed(() =>
 
         <!-- Right: Content side -->
         <div class="flex-1 flex flex-col h-full bg-surface dark:bg-surface overflow-hidden relative">
-          <!-- Header -->
+           <!-- Header -->
           <div class="p-7 pb-5 pt-12 md:pt-7">
-            <div class="flex items-center gap-3 mb-3.5">
-              <span class="px-3 py-1 rounded-full bg-orange-soft text-orange-deep dark:text-orange-light text-[11px] font-semibold capitalize">
-                {{ post.category }}
-              </span>
-              <div class="flex items-center gap-1 text-text-muted font-semibold text-xs">
-                <BaseIcons name="star" solid size="xs" class="text-orange" />
-                <span class="tabular-nums">{{ post.averageRating?.toFixed(1) || "0.0" }}</span>
-                <span class="text-text-dim font-normal">({{ post.ratingCount }})</span>
+            <div class="flex items-start gap-4">
+              <!-- Avatar -->
+              <div class="relative shrink-0">
+                <UserAvatar :user="post.user" size="lg" class="border-2 border-orange" />
               </div>
-            </div>
 
-            <h2
-              class="font-montserrat font-extrabold text-2xl sm:text-3xl tracking-tight leading-tight mb-5 text-text dark:text-text"
-            >
-              {{ post.title }}
-            </h2>
-
-            <div
-              class="flex items-center gap-3 py-3.5 border-y border-border"
-            >
-              <UserAvatar :user="post.user" size="md" />
+              <!-- Details in one container -->
               <div class="flex-1 min-w-0">
-                <p class="font-semibold text-sm text-text dark:text-text truncate">{{ post.user.displayName }}</p>
-                <p class="text-xs text-text-dim truncate">@{{ post.user.username }}</p>
-              </div>
-              <div v-if="!isOwner">
-                <FollowButton :user-id="post.user.id" :is-following="post.user.isFollowing" />
+                <!-- Recipe Title -->
+                <h2 class="font-montserrat font-extrabold text-xl sm:text-2xl tracking-tight leading-tight text-text dark:text-text mb-1.5">
+                  {{ post.title }}
+                </h2>
+
+                <!-- Category tag & Stars -->
+                <div class="flex items-center gap-2 mb-2.5 flex-wrap">
+                  <span class="px-2.5 py-0.5 rounded-full bg-orange-soft text-orange-deep dark:text-orange-light text-[10px] font-bold capitalize">
+                    {{ post.category }}
+                  </span>
+                  <div class="flex items-center gap-1 text-text-muted font-bold text-xs">
+                    <BaseIcons name="star" solid size="xs" class="text-orange" />
+                    <span class="tabular-nums text-[11px]">{{ post.averageRating?.toFixed(1) || "0.0" }}</span>
+                    <span class="text-text-dim text-[10px] font-normal">({{ post.ratingCount }})</span>
+                  </div>
+                </div>
+
+                <!-- Display Name & Handle (broken into separate lines) & Follow button beside them justified between -->
+                <div class="flex items-center justify-between gap-4 mt-2">
+                  <div class="text-xs min-w-0">
+                    <p class="font-bold text-text dark:text-text mb-0.5 truncate">{{ post.user.displayName }}</p>
+                    <p class="text-text-dim dark:text-text-dim/60 truncate">@{{ post.user.username }}</p>
+                  </div>
+                  <div v-if="!isOwner" class="shrink-0">
+                    <FollowButton :user-id="post.user.id" :is-following="post.user.isFollowing" icon-only />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Body -->
-          <div class="flex-1 overflow-y-auto px-7 pb-7">
+          <div class="flex-1 overflow-y-auto lg:px-7 lg:pb-7 pb-3 px-3">
             <!-- Nutrition stats -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-7">
               <div
@@ -356,29 +364,31 @@ const recipeImage = computed(() =>
           </div>
 
           <!-- Footer -->
-          <div class="p-5 px-7 border-t border-border bg-surface dark:bg-surface flex flex-col sm:flex-row gap-2.5">
+          <div class="p-5 px-7 border-t border-border bg-surface dark:bg-surface flex items-center gap-2.5">
             <button
               @click="showCollectionModal = true"
-              class="flex-1 btn-secondary py-3 !text-sm flex items-center justify-center gap-2"
+              class="h-12 w-12 sm:w-auto sm:px-5 sm:flex-1 btn-secondary rounded-full flex items-center justify-center gap-2 shrink-0 p-0"
+              aria-label="Save"
             >
               <BaseIcons name="folder-plus" size="sm" />
-              Save
+              <span class="hidden sm:inline">Save</span>
             </button>
             <button
               @click="forkRecipe"
               :disabled="isForkDisabled"
               :title="forkDisabledReason"
-              class="flex-1 py-3 rounded-btn border border-border font-semibold text-sm text-text-muted hover:border-orange hover:text-orange flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              class="h-12 w-12 sm:w-auto sm:px-5 sm:flex-1 rounded-full border border-border font-semibold text-text-muted hover:border-orange hover:text-orange flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0 p-0"
+              aria-label="Fork"
             >
               <BaseIcons name="arrow-path-rounded-square" size="sm" :class="{ 'animate-spin': isForking }" />
-              {{ isForking ? 'Forking…' : 'Fork' }}
+              <span class="hidden sm:inline">{{ isForking ? 'Forking…' : 'Fork' }}</span>
             </button>
             <button
               @click="showExperiment = true"
-              class="flex-1 btn-primary py-3 !text-sm flex items-center justify-center gap-2"
+              class="flex-1 h-12 btn-primary rounded-full flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest whitespace-nowrap"
             >
               <BaseIcons name="sparkles" size="sm" />
-              Experiment
+              <span>Experiment</span>
             </button>
           </div>
         </div>

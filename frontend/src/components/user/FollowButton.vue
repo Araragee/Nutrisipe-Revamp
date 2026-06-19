@@ -3,13 +3,18 @@ import { ref, watch } from 'vue'
 import { useUsersStore } from '@/stores/users'
 import { useUiStore } from '@/stores/ui'
 import BaseButton from '@/components/base/BaseButton.vue'
+import BaseIcons from '@/components/base/BaseIcons.vue'
 
 interface Props {
   userId: string
   isFollowing?: boolean
+  iconOnly?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  isFollowing: false,
+  iconOnly: false
+})
 
 const usersStore = useUsersStore()
 const uiStore = useUiStore()
@@ -64,9 +69,27 @@ async function toggleFollow() {
 </script>
 
 <template>
+  <button
+    v-if="iconOnly"
+    type="button"
+    :disabled="isLoading"
+    @click="toggleFollow"
+    :class="[
+      'w-9 h-9 rounded-full flex items-center justify-center transition-all border shrink-0',
+      localIsFollowing
+        ? 'bg-orange-soft dark:bg-orange/10 border-orange/30 text-orange'
+        : 'bg-orange border-orange text-white hover:bg-orange/90'
+    ]"
+    :aria-label="localIsFollowing ? 'Unfollow' : 'Follow'"
+  >
+    <div v-if="isLoading" class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+    <BaseIcons v-else :name="localIsFollowing ? 'user-minus' : 'user-plus'" size="sm" />
+  </button>
   <BaseButton
-    :variant="localIsFollowing ? 'primaryOutlined' : 'primary'"
-    size="sm"
+    v-else
+    :button-type="localIsFollowing ? 'primaryOutlined' : 'primary'"
+    size="xs"
+    width-class="w-auto"
     :loading="isLoading"
     @click="toggleFollow"
   >

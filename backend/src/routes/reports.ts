@@ -1,48 +1,38 @@
 import { logger } from '../utils/logger'
 import { Router } from 'express'
+import { z } from 'zod'
 import { auth, AuthRequest } from '../middleware/auth'
 import { prisma } from '../lib/prisma'
 import { parsePagination } from '../utils/pagination'
 
 const router = Router()
 
+const createReportSchema = z
+  .object({
+    type: z.enum(['POST', 'COMMENT', 'USER']),
+    reason: z.enum(['SPAM', 'HARASSMENT', 'INAPPROPRIATE_CONTENT', 'MISINFORMATION', 'COPYRIGHT', 'OTHER']),
+    description: z.string().max(2000).optional(),
+    postId: z.string().uuid().optional(),
+    commentId: z.string().uuid().optional(),
+    reportedUserId: z.string().uuid().optional(),
+  })
+  .refine(
+    (d) =>
+      (d.type === 'POST' && !!d.postId) ||
+      (d.type === 'COMMENT' && !!d.commentId) ||
+      (d.type === 'USER' && !!d.reportedUserId),
+    { message: 'A matching target ID is required for the report type' }
+  )
+
 // Create a report
 router.post('/', auth, async (req: AuthRequest, res) => {
   try {
-    const { type, reason, description, postId, commentId, reportedUserId } = req.body
-
-    // Validate required fields
-    if (!type || !reason) {
-      res.status(400).json({ error: 'Type and reason are required' })
+    const parsed = createReportSchema.safeParse(req.body)
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.errors[0].message })
       return
     }
-
-    // Validate type
-    if (!['POST', 'COMMENT', 'USER'].includes(type)) {
-      res.status(400).json({ error: 'Invalid report type' })
-      return
-    }
-
-    // Validate reason
-    const validReasons = ['SPAM', 'HARASSMENT', 'INAPPROPRIATE_CONTENT', 'MISINFORMATION', 'COPYRIGHT', 'OTHER']
-    if (!validReasons.includes(reason)) {
-      res.status(400).json({ error: 'Invalid report reason' })
-      return
-    }
-
-    // Validate that the correct ID is provided for the type
-    if (type === 'POST' && !postId) {
-      res.status(400).json({ error: 'Post ID is required for post reports' })
-      return
-    }
-    if (type === 'COMMENT' && !commentId) {
-      res.status(400).json({ error: 'Comment ID is required for comment reports' })
-      return
-    }
-    if (type === 'USER' && !reportedUserId) {
-      res.status(400).json({ error: 'User ID is required for user reports' })
-      return
-    }
+    const { type, reason, description, postId, commentId, reportedUserId } = parsed.data
 
     // Check if user has already reported this item
     const existingReport = await prisma.report.findFirst({

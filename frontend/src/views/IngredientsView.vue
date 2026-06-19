@@ -26,6 +26,8 @@ const loading = ref(true)
 const search = ref('')
 const cat = ref<'All' | string>('All')
 const selectedId = ref<string | null>(null)
+// Mobile shows list OR editor (master-detail collapses to a tab switch); desktop shows both.
+const mobileTab = ref<'browse' | 'details'>('browse')
 const draft = ref<Ingredient | null>(null)
 const dirty = ref(false)
 const isCreating = ref(false)
@@ -399,7 +401,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="h-screen bg-background py-8 px-6 md:px-8 flex flex-col">
+  <div class="h-screen bg-background pt-20 pb-24 px-5 md:py-8 md:px-8 flex flex-col">
     <div class="max-w-[1480px] mx-auto flex-1 flex flex-col min-h-0 w-full">
       <!-- Header -->
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6 flex-wrap">
@@ -409,7 +411,7 @@ onMounted(load)
             Nutritionist console
           </div>
           <h1 class="font-montserrat font-black text-[32px] tracking-tight leading-tight text-text mb-1.5">Nutrition Database</h1>
-          <p class="text-sm text-text-muted max-w-xl leading-relaxed">
+          <p class="hidden md:block text-sm text-text-muted max-w-xl leading-relaxed">
             Curate and verify per-100g macro &amp; micronutrient values used across every recipe in Nutrisipe. Per FNRI &amp; USDA standards.
           </p>
         </div>
@@ -419,7 +421,7 @@ onMounted(load)
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             Import CSV
           </button>
-          <button @click="newItem" class="px-4 py-2.5 rounded-xl bg-orange hover:bg-orange-deep text-white font-montserrat font-bold text-[13px] inline-flex items-center gap-2 hover:opacity-95 hover:-translate-y-0.5 transition-all">
+          <button @click="newItem(); mobileTab = 'details'" class="px-4 py-2.5 rounded-xl bg-orange hover:bg-orange-deep text-white font-montserrat font-bold text-[13px] inline-flex items-center gap-2 hover:opacity-95 hover:-translate-y-0.5 transition-all">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             New Ingredient
           </button>
@@ -427,7 +429,7 @@ onMounted(load)
       </div>
 
       <!-- Stats -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+      <div class="hidden md:grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <div v-for="s in statCards" :key="s.lbl" @click="activeModal = s.id" class="p-4 rounded-2xl bg-surface dark:bg-zinc-800/40 border border-border relative overflow-hidden cursor-pointer hover:border-orange transition-all">
           <div class="flex items-center gap-2 mb-2 text-[11px] font-bold uppercase tracking-wider text-text-dim font-montserrat">
             <span class="w-[22px] h-[22px] rounded-lg inline-flex items-center justify-center" :style="{ background: s.color + '22', color: s.color }">
@@ -445,9 +447,22 @@ onMounted(load)
       </div>
 
       <!-- Master-detail -->
-      <div v-else class="grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-3.5 flex-1 min-h-0">
+      <template v-else>
+        <!-- Mobile: tab switch between the list and the editor -->
+        <div class="xl:hidden flex gap-2 mb-3 shrink-0">
+          <button
+            @click="mobileTab = 'browse'"
+            :class="['flex-1 h-10 rounded-xl font-montserrat font-bold text-[13px] border-1.5 transition-all', mobileTab === 'browse' ? 'bg-orange border-orange text-white' : 'bg-surface dark:bg-zinc-800/40 border-border text-text-muted']"
+          >Browse</button>
+          <button
+            @click="mobileTab = 'details'"
+            :class="['flex-1 h-10 rounded-xl font-montserrat font-bold text-[13px] border-1.5 transition-all truncate px-3', mobileTab === 'details' ? 'bg-orange border-orange text-white' : 'bg-surface dark:bg-zinc-800/40 border-border text-text-muted']"
+          >{{ draft?.food_item || 'Editor' }}</button>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-3.5 flex-1 min-h-0">
         <!-- LEFT: list card -->
-        <aside class="bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] overflow-hidden flex flex-col min-h-0">
+        <aside :class="['bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] overflow-hidden flex-col min-h-0', mobileTab === 'browse' ? 'flex' : 'hidden xl:flex']">
           <div class="p-3.5 border-b border-border">
             <div class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-background-secondary border-1.5 border-transparent focus-within:border-orange focus-within:bg-background transition-colors">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="text-text-dim shrink-0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -472,7 +487,7 @@ onMounted(load)
           <div class="flex-1 overflow-y-auto p-1.5">
             <button
               v-for="it in filtered" :key="it.id"
-              @click="selectedId = String(it.id)"
+              @click="selectedId = String(it.id); mobileTab = 'details'"
               :class="[
                 'w-full grid grid-cols-[36px_1fr_auto] gap-2.5 items-center p-2.5 rounded-xl text-left transition-all border-1.5',
                 selectedId === String(it.id)
@@ -498,7 +513,7 @@ onMounted(load)
         </aside>
 
         <!-- RIGHT: editor card -->
-        <section v-if="draft" class="bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] overflow-hidden flex flex-col relative min-h-0">
+        <section v-if="draft" :class="['bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] overflow-hidden flex-col relative min-h-0', mobileTab === 'details' ? 'flex' : 'hidden xl:flex']">
           <!-- Editor head -->
           <div class="flex items-center gap-4 p-5 border-b border-border">
             <div class="w-16 h-16 rounded-2xl bg-background-secondary border border-border flex items-center justify-center text-3xl shrink-0">
@@ -770,11 +785,12 @@ onMounted(load)
           </transition>
         </section>
 
-        <section v-else class="bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] p-12 text-center text-text-dim flex items-center justify-center min-h-0">
+        <section v-else :class="['bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] p-12 text-center text-text-dim items-center justify-center min-h-0', mobileTab === 'details' ? 'flex' : 'hidden xl:flex']">
           Pick an ingredient to begin editing.
         </section>
-      </div>
-      
+        </div>
+      </template>
+
       <StatCardModal
         :title="modalTitle"
         :items="modalItems"

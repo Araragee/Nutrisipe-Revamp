@@ -146,7 +146,7 @@ watch(isNearBottom, (near) => {
 <template>
   <div class="home-view min-h-screen">
 
-    <div class="px-5 sm:px-8 pt-20 md:pt-6 pb-28 md:pb-8 max-w-[1400px] mx-auto">
+    <div class="px-5 sm:px-8 md:pt-6 md:pb-8 max-w-[1400px] mx-auto">
 
       <!-- ── Dashboard header ── -->
       <header v-if="!isTagMode" class="mb-6">
@@ -162,19 +162,21 @@ watch(isNearBottom, (near) => {
         </div>
 
         <!-- Scope tabs -->
-        <div class="flex items-center gap-1.5 p-1 rounded-2xl bg-background-secondary/70 w-fit max-w-full overflow-x-auto scrollbar-hide">
+        <div class="flex items-center gap-1 p-1 rounded-2xl bg-background-secondary/70 w-fit max-w-full overflow-x-auto scrollbar-hide">
           <button
             v-for="tab in SCOPE_TABS"
             :key="tab.id"
             @click="selectScope(tab.id)"
             :class="[
-              'flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all whitespace-nowrap',
+              'flex items-center px-3.5 py-2 rounded-xl text-sm font-semibold transition-all whitespace-nowrap',
               activeScopeId === tab.id
                 ? 'bg-surface text-orange shadow-card'
                 : 'text-text-muted hover:text-text',
             ]"
           >
-            <BaseIcons :name="tab.icon" size="sm" />
+            <span :class="['flex items-center overflow-hidden transition-all duration-300 ease-out', activeScopeId === tab.id ? 'max-w-[22px] opacity-100 mr-1.5' : 'max-w-0 opacity-0 mr-0']">
+              <BaseIcons :name="tab.icon" size="sm" />
+            </span>
             {{ tab.label }}
           </button>
         </div>

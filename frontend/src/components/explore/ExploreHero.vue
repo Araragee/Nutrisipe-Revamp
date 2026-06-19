@@ -41,7 +41,7 @@ function onInput(event: Event) {
     <RecipeMosaicBackground :posts="posts" :count="12" :intensity="0.45" fallback-variant="sunset" />
 
     <div class="relative z-10 w-full max-w-2xl animate-revamp">
-      <h1 class="font-montserrat font-extrabold text-5xl tracking-tight mb-4 drop-shadow-sm">
+      <h1 class="font-montserrat font-extrabold text-3xl sm:text-4xl md:text-5xl tracking-tight mb-4 drop-shadow-sm">
         Explore Nutrisipe
       </h1>
       <p class="text-text-muted text-base md:text-lg mb-8 max-w-lg mx-auto leading-relaxed">

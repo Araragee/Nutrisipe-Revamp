@@ -210,7 +210,7 @@ const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverag
 </script>
 
 <template>
-  <div class="recipe-edit-view min-h-screen bg-background py-16 px-6">
+  <div class="recipe-edit-view min-h-screen bg-background md:py-16 px-6 pt-4">
     <div class="max-w-3xl mx-auto">
       <button @click="goBack()" class="mb-8 flex items-center gap-2 text-text-dim font-bold hover:text-orange transition-colors">
         <span>←</span> BACK TO RECIPE

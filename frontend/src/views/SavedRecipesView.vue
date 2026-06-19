@@ -133,8 +133,8 @@ watch(isNearBottom, (near) => {
 </script>
 
 <template>
-  <div class="saved-recipes-view min-h-screen pt-8">
-    <div class="px-8 py-6 max-w-7xl mx-auto">
+  <div class="saved-recipes-view min-h-screen md:pt-8">
+    <div class="px-5 sm:px-8 md:py-6 max-w-7xl mx-auto">
       <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 class="font-montserrat font-extrabold text-3xl tracking-tight mb-1">Saved</h2>

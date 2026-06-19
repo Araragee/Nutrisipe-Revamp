@@ -52,9 +52,11 @@ const httpServer = createServer(app)
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }))
 
+const allowedOrigins = env.CORS_ORIGINS
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || env.CORS_ORIGIN === '*' || origin === env.CORS_ORIGIN || origin.endsWith('.onrender.com')) {
+    // No origin = same-origin / curl / server-to-server. Allow.
+    if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -86,7 +88,11 @@ const authLimiter = rateLimit({
 // Apply the rate limiting middleware to all requests
 app.use(limiter)
 
-app.use(express.json())
+// Admin bulk ingredient import sends a large JSON array; allow more on that path only.
+// It runs before the global parser, which then skips the already-parsed body.
+app.use('/api/ingredients/bulk', express.json({ limit: '10mb' }))
+app.use(express.json({ limit: '1mb' }))
+app.use(express.urlencoded({ extended: true, limit: '1mb' }))
 app.use('/uploads', express.static('uploads'))
 
 app.get('/', (_req, res) => {

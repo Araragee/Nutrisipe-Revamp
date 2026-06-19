@@ -4,7 +4,6 @@ import { logger } from '@/utils/logger'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { postsApi } from '@/http/endpoints/posts'
-import { socialApi } from '@/http/endpoints/social'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import UserAvatar from '@/components/user/UserAvatar.vue'
@@ -19,8 +18,9 @@ import CookMode from '@/components/recipe/CookMode.vue'
 import CollectionModal from '@/components/profile/CollectionModal.vue'
 import { variationsApi } from '@/http/endpoints/variations'
 import { ratingsApi } from '@/http/endpoints/ratings'
-import { resolveSrcset, ogShareUrl } from '@/utils/imageUrl'
+import { resolveSrcset } from '@/utils/imageUrl'
 import { scaleQuantity } from '@/utils/scaleQuantity'
+import { usePostActions } from '@/composables/usePostActions'
 import type { Post } from '@/typescript/interface/Post'
 
 const route = useRoute()
@@ -29,6 +29,7 @@ const authStore = useAuthStore()
 const uiStore = useUiStore()
 
 const post = ref<Post | null>(null)
+const { toggleLike, toggleSave, sharePost: shareRecipe } = usePostActions(post)
 const relatedPosts = ref<Post[]>([])
 const isLoading = ref(true)
 const isDeleting = ref(false)
@@ -159,64 +160,6 @@ async function handleDelete() {
   }
 }
 
-async function toggleLike() {
-  if (!post.value || !authStore.isAuthenticated) {
-    uiStore.showToast('Please sign in to like', 'info')
-    return
-  }
-  const wasLiked = post.value.isLiked
-  post.value.isLiked = !wasLiked
-  post.value.likeCount += wasLiked ? -1 : 1
-  try {
-    if (wasLiked) await socialApi.unlikePost(post.value.id)
-    else await socialApi.likePost(post.value.id)
-  } catch {
-    post.value.isLiked = wasLiked
-    post.value.likeCount += wasLiked ? 1 : -1
-  }
-}
-
-async function toggleSave() {
-  if (!post.value || !authStore.isAuthenticated) {
-    uiStore.showToast('Please sign in to save', 'info')
-    return
-  }
-  const wasSaved = post.value.isSaved
-  post.value.isSaved = !wasSaved
-  post.value.saveCount += wasSaved ? -1 : 1
-  try {
-    if (wasSaved) await socialApi.unsavePost(post.value.id)
-    else await socialApi.savePost(post.value.id)
-  } catch {
-    post.value.isSaved = wasSaved
-    post.value.saveCount += wasSaved ? 1 : -1
-  }
-}
-
-async function shareRecipe() {
-  if (!post.value) return
-  const url = ogShareUrl(post.value.id)
-  const shareData = {
-    title: post.value.title,
-    text: post.value.description || post.value.title,
-    url,
-  }
-  if (navigator.share) {
-    try {
-      await navigator.share(shareData)
-      return
-    } catch (err: any) {
-      if (err?.name === 'AbortError') return
-    }
-  }
-  try {
-    await navigator.clipboard.writeText(url)
-    uiStore.showToast('Link copied to clipboard', 'success')
-  } catch {
-    uiStore.showToast('Failed to share', 'error')
-  }
-}
-
 onMounted(loadPost)
 watch(postId, loadPost)
 
@@ -231,8 +174,8 @@ const recipeImage = computed(() =>
        <div class="w-12 h-12 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
     </div>
 
-    <div v-else-if="post" class="max-w-7xl mx-auto px-6 py-10 md:py-16">
-       <div class="flex flex-col lg:flex-row gap-12">
+    <div v-else-if="post" class="max-w-7xl mx-auto px-5 sm:px-6 md:py-16 pt-4">
+       <div class="flex flex-col lg:flex-row gap-8 lg:gap-12">
           <!-- Left: Hero Image -->
           <div class="w-full lg:w-1/2 shrink-0">
              <div class="relative rounded-[40px] overflow-hidden shadow-2xl group border-1.5 border-border">
@@ -269,7 +212,7 @@ const recipeImage = computed(() =>
                 <div class="flex items-center gap-1.5 text-orange font-bold text-sm">★ {{ post.averageRating?.toFixed(1) || '0.0' }} ({{ post.ratingCount }})</div>
              </div>
 
-             <h1 class="font-montserrat font-extrabold text-4xl md:text-5xl tracking-tight leading-[1.1] mb-8">{{ post.title }}</h1>
+             <h1 class="font-montserrat font-extrabold text-3xl sm:text-4xl md:text-5xl tracking-tight leading-[1.1] mb-8">{{ post.title }}</h1>
 
              <div class="flex items-center gap-4 p-5 bg-background-secondary rounded-3xl border border-border mb-10">
                 <UserAvatar :user="post.user" size="md" class="border-2 border-orange" />
@@ -293,7 +236,7 @@ const recipeImage = computed(() =>
              </div>
 
              <!-- Tabs -->
-             <div class="flex gap-10 border-b border-border mb-8">
+             <div class="flex gap-6 sm:gap-10 border-b border-border mb-8 overflow-x-auto scrollbar-hide">
                 <button
                   v-for="t in ['ingredients', 'instructions', 'reviews']"
                   :key="t"
@@ -352,22 +295,31 @@ const recipeImage = computed(() =>
              </div>
 
              <!-- Actions -->
-             <div class="flex flex-wrap gap-4 mb-10">
-                <button v-if="hasInstructions" @click="showCookMode = true" class="flex-1 min-w-[200px] btn-primary flex items-center justify-center gap-2 h-14">
+             <div class="flex flex-col gap-3 mb-10 w-full">
+                <!-- Cook Mode (Primary) -->
+                <button v-if="hasInstructions" @click="showCookMode = true" class="w-full btn-primary flex items-center justify-center gap-2 h-12 text-xs font-bold uppercase tracking-widest">
                   <BaseIcons name="play" size="sm" /> Cook Mode
                 </button>
-                <button @click="showCollectionModal = true" class="flex-1 min-w-[160px] btn-secondary flex items-center justify-center gap-2 h-14">
-                  <BaseIcons name="folder-plus" size="sm" /> Save to Collection
-                </button>
-                <button @click="forkRecipe" :disabled="isForkDisabled" :title="forkDisabledReason" class="flex-1 min-w-[160px] btn-secondary flex items-center justify-center gap-2 h-14 disabled:opacity-50 disabled:cursor-not-allowed">
-                  <BaseIcons name="arrow-path-rounded-square" size="sm" :class="{ 'animate-spin': isForking }" /> Fork
-                </button>
-                <button @click="shareRecipe" class="flex-1 min-w-[140px] btn-secondary flex items-center justify-center gap-2 h-14">
-                  <BaseIcons name="share" size="sm" /> Share
-                </button>
-                <button v-if="isOwner" @click="handleDelete" :disabled="isDeleting" class="flex-1 min-w-[140px] btn-secondary flex items-center justify-center gap-2 h-14 !text-red-500 !border-red-500/30 hover:!bg-red-500/10">
-                  <BaseIcons name="trash" size="sm" /> Delete
-                </button>
+                
+                <!-- Secondary Utilities -->
+                <div class="flex flex-wrap sm:flex-nowrap gap-2 w-full">
+                  <button @click="showCollectionModal = true" class="flex-1 sm:flex-none h-12 px-3 sm:px-5 rounded-full border border-border bg-surface dark:bg-zinc-800/40 hover:bg-background-secondary flex items-center justify-center gap-2 text-text-muted hover:text-text transition-colors text-xs font-bold uppercase tracking-widest whitespace-nowrap">
+                    <BaseIcons name="folder-plus" size="sm" />
+                    <span class="hidden sm:inline">Save</span>
+                  </button>
+                  <button @click="forkRecipe" :disabled="isForkDisabled" :title="forkDisabledReason" class="flex-1 sm:flex-none h-12 px-3 sm:px-5 rounded-full border border-border bg-surface dark:bg-zinc-800/40 hover:bg-background-secondary flex items-center justify-center gap-2 text-text-muted hover:text-text disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-bold uppercase tracking-widest whitespace-nowrap">
+                    <BaseIcons name="arrow-path-rounded-square" size="sm" :class="{ 'animate-spin': isForking }" />
+                    <span class="hidden sm:inline">Fork</span>
+                  </button>
+                  <button @click="shareRecipe" class="flex-1 sm:flex-none h-12 px-3 sm:px-5 rounded-full border border-border bg-surface dark:bg-zinc-800/40 hover:bg-background-secondary flex items-center justify-center gap-2 text-text-muted hover:text-text transition-colors text-xs font-bold uppercase tracking-widest whitespace-nowrap">
+                    <BaseIcons name="share" size="sm" />
+                    <span class="hidden sm:inline">Share</span>
+                  </button>
+                  <button v-if="isOwner" @click="handleDelete" :disabled="isDeleting" class="flex-1 sm:flex-none h-12 px-3 sm:px-5 rounded-full border border-red-500/20 bg-surface dark:bg-zinc-800/40 hover:bg-red-500/10 flex items-center justify-center gap-2 text-red-500 transition-colors text-xs font-bold uppercase tracking-widest whitespace-nowrap">
+                    <BaseIcons name="trash" size="sm" />
+                    <span class="hidden sm:inline">Delete</span>
+                  </button>
+                </div>
              </div>
 
              <!-- Variations -->
@@ -378,7 +330,7 @@ const recipeImage = computed(() =>
        </div>
 
        <!-- Related Posts -->
-       <div class="mt-24">
+       <div class="mt-16 md:mt-24">
           <h2 class="font-montserrat font-extrabold text-3xl tracking-tight mb-10">You might also like</h2>
           <PinGrid :posts="relatedPosts" @post-click="(id) => router.push(`/recipes/${id}`)" />
        </div>

@@ -1,8 +1,15 @@
 import { Response, NextFunction } from 'express'
+import { z } from 'zod'
 import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
 import * as ratingService from '../services/ratingService'
 import { parsePagination } from '../utils/pagination'
+
+const ratingSchema = z.object({
+  postId: z.string().uuid(),
+  rating: z.number().int().min(1).max(5),
+  review: z.string().max(2000).optional(),
+})
 
 export async function createOrUpdateRatingHandler(
   req: AuthRequest,
@@ -14,15 +21,7 @@ export async function createOrUpdateRatingHandler(
       throw new AppError(401, 'Unauthorized')
     }
 
-    const { postId, rating, review } = req.body
-
-    if (!postId) {
-      throw new AppError(400, 'Post ID is required')
-    }
-
-    if (!rating || rating < 1 || rating > 5) {
-      throw new AppError(400, 'Rating must be between 1 and 5')
-    }
+    const { postId, rating, review } = ratingSchema.parse(req.body)
 
     const result = await ratingService.createOrUpdateRating(req.userId, {
       postId,
@@ -36,7 +35,11 @@ export async function createOrUpdateRatingHandler(
       data: result.rating
     })
   } catch (error) {
-    next(error)
+    if (error instanceof z.ZodError) {
+      next(new AppError(400, error.errors[0].message))
+    } else {
+      next(error)
+    }
   }
 }
 

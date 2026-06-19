@@ -73,7 +73,7 @@ watch(() => route.params.id, load)
 </script>
 
 <template>
-  <div class="collection-detail min-h-screen py-10 px-6 md:px-12">
+  <div class="collection-detail min-h-screen md:py-10 px-6 md:px-12">
     <div v-if="isLoading" class="flex justify-center py-20">
       <div class="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
     </div>

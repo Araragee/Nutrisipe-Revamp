@@ -9,6 +9,12 @@ export const env = {
   JWT_SECRET: process.env.JWT_SECRET!,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  // Exact-match allowlist (comma-separated). Set to your deployed frontend origin(s),
+  // e.g. CORS_ORIGIN="https://nutrisipe.onrender.com". Use "*" only to allow all.
+  CORS_ORIGINS: (process.env.CORS_ORIGIN || 'http://localhost:5173')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
   UPLOAD_DIR: process.env.UPLOAD_DIR || 'uploads',
   PUBLIC_URL: process.env.PUBLIC_URL || '',
 }

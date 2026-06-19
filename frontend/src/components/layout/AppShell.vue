@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { logger } from '@/utils/logger'
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -10,6 +10,7 @@ import { usersApi } from '@/http/endpoints/users'
 import { socialApi } from '@/http/endpoints/social'
 import { searchApi } from '@/http/endpoints/search'
 import { resolveImage } from '@/utils/imageUrl'
+import { formatTimeAgo } from '@/utils/format'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import BaseIcons from '@/components/base/BaseIcons.vue'
 import NotificationDropdown from '@/components/notifications/NotificationDropdown.vue'
@@ -46,12 +47,64 @@ const route = useRoute()
 const uiStore = useUiStore()
 
 const showMoreDrawer = ref(false)
+const showNotificationsDrawer = ref(false)
+const activeNotificationsTab = ref<'all' | 'unread'>('all')
+
+const filteredNotifications = computed(() => {
+  if (activeNotificationsTab.value === 'unread') {
+    return notificationsStore.notifications.filter(n => !n.isRead)
+  }
+  return notificationsStore.notifications
+})
+
+async function handleMobileNotificationClick(notification: any) {
+  if (!notification.isRead) {
+    await notificationsStore.markAsRead(notification.id)
+  }
+
+  if (notification.type === 'follow') {
+    router.push(`/profile/${notification.actorId}`)
+  } else if (notification.postId) {
+    router.push(`/recipes/${notification.postId}`)
+  }
+
+  showNotificationsDrawer.value = false
+}
+
+const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case 'like': return 'heart'
+    case 'comment': return 'chat-bubble-left'
+    case 'follow': return 'user-plus'
+    case 'save': return 'bookmark'
+    default: return 'bell'
+  }
+}
+
+const getNotificationIconBg = (type: string) => {
+  switch (type) {
+    case 'like': return 'bg-red-500'
+    case 'comment': return 'bg-blue-500'
+    case 'follow': return 'bg-green-500'
+    case 'save': return 'bg-orange'
+    default: return 'bg-gray-500'
+  }
+}
 const searchQuery = ref('')
 const suggestedCreators = ref<SuggestedCreator[]>([])
 const trendingTags = ref<TrendingTag[]>([])
 const followedSet = ref<Set<string>>(new Set())
 
-const MOBILE_PRIMARY_IDS = ['home', 'saved', 'plan', 'profile'] as const
+// Mobile search state
+const showMobileSearch = ref(false)
+const mobileSearchInput = ref<HTMLInputElement | null>(null)
+
+watch(showMobileSearch, async (val) => {
+  if (val) {
+    await nextTick()
+    mobileSearchInput.value?.focus()
+  }
+})
 
 const mainNav = computed<NavItem[]>(() => [
   { id: 'home', icon: 'home', label: 'Discover', path: '/' },
@@ -72,18 +125,27 @@ const secondaryNav = computed<NavItem[]>(() => {
 
 const allNav = computed(() => [...mainNav.value, ...secondaryNav.value])
 
+// Mobile primary items for bottom nav (Discover, Explore, Saved)
 const mobilePrimary = computed(() =>
-  MOBILE_PRIMARY_IDS.map((id) => allNav.value.find((n) => n.id === id)).filter(
+  ['home', 'explore', 'saved'].map((id) => allNav.value.find((n) => n.id === id)).filter(
     (x): x is NavItem => !!x,
   ),
 )
 
+// Mobile secondary items for 'More' drawer
 const mobileSecondary = computed(() =>
-  allNav.value.filter((n) => !MOBILE_PRIMARY_IDS.includes(n.id as any)),
+  allNav.value.filter((n) => !['home', 'explore', 'saved'].includes(n.id)),
 )
 
 const showRightRail = computed(() => route.path === '/')
 const isExploreRoute = computed(() => route.path === '/explore')
+
+// Mobile: fixed top bar (h-16) + floating bottom nav overlay content.
+// Reserve space here so every scrolling view clears them. Full-height views
+// (messages/admin/ingredients) manage their own scroll, so opt out.
+const isImmersiveRoute = computed(() =>
+  ['/messages', '/admin', '/ingredients'].some((p) => route.path.startsWith(p)),
+)
 const navState = ref<'default' | 'detached' | 'shrunk'>('default')
 
 watch(isExploreRoute, (val, oldVal) => {
@@ -334,7 +396,7 @@ onUnmounted(() => {
 
       <!-- Content row -->
       <div class="flex flex-1 overflow-hidden">
-        <main class="flex-1 overflow-y-auto scrollbar-hide">
+        <main :class="['flex-1 overflow-y-auto scrollbar-hide', isImmersiveRoute ? '' : 'pt-20 pb-32 md:pt-0 md:pb-0']">
           <slot />
         </main>
 
@@ -390,100 +452,248 @@ onUnmounted(() => {
     </div>
 
     <!-- ── Mobile top app bar ── -->
-    <div class="md:hidden fixed top-0 left-0 right-0 h-16 bg-surface dark:bg-surface border-b border-border flex items-center justify-between px-5 z-40">
-      <RouterLink to="/" class="flex items-center gap-2">
-        <span class="logo-mark w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0">
-          <svg viewBox="0 0 22 28" fill="none" class="w-[20px] h-[24px]">
-            <path class="n-path" d="M 4,25 C 4,18 4,9 5,4 C 9,10 13,19 17,25 C 17,17 17,9 18,4"
-              stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </span>
-        <span class="font-montserrat font-extrabold text-lg text-text dark:text-text">Nutri<span class="text-orange">sipe</span></span>
-      </RouterLink>
-      <Popover v-slot="{ close }">
-        <PopoverButton
-          class="w-9 h-9 rounded-full bg-orange-soft text-orange flex items-center justify-center relative focus:outline-none focus-visible:ring-2 focus-visible:ring-orange"
-          aria-label="Notifications"
+    <div class="md:hidden fixed top-0 left-0 right-0 h-16 bg-surface dark:bg-surface border-b border-border flex items-center px-5 z-40">
+      <!-- Search Mode -->
+      <div v-if="showMobileSearch" class="flex-1 flex items-center gap-3">
+        <button
+          @click="showMobileSearch = false"
+          class="p-1 rounded-full text-text-muted hover:bg-background-secondary transition-colors"
+          aria-label="Back"
         >
-          <BaseIcons name="bell" size="sm" />
-          <span
-            v-if="notificationsStore.unreadCount > 0"
-            class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-orange text-white text-[9px] font-bold flex items-center justify-center border-2 border-surface"
-          >{{ notificationsStore.unreadCount }}</span>
-        </PopoverButton>
-        <PopoverPanel class="fixed top-16 right-4 z-50 w-[calc(100vw-32px)] max-w-sm md:hidden">
-          <NotificationDropdown @close="close" />
-        </PopoverPanel>
-      </Popover>
+          <BaseIcons name="arrow-left" size="md" />
+        </button>
+        <form @submit.prevent="submitSearch" class="flex-1">
+          <div class="relative w-full">
+            <BaseIcons name="magnifying-glass" size="sm" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-dim pointer-events-none" />
+            <input
+              v-model="searchQuery"
+              type="search"
+              ref="mobileSearchInput"
+              placeholder="Search recipes, chefs, tags…"
+              class="w-full bg-background dark:bg-background-secondary border border-transparent rounded-full pl-10 pr-4 py-2 text-sm text-text dark:text-text outline-none focus:border-orange focus:bg-surface dark:focus:bg-surface transition-colors placeholder:text-text-dim"
+            />
+          </div>
+        </form>
+      </div>
+
+      <!-- Normal Mode -->
+      <div v-else class="flex-1 flex items-center justify-between">
+        <RouterLink to="/" class="flex items-center gap-2">
+          <span class="logo-mark w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0">
+            <svg viewBox="0 0 22 28" fill="none" class="w-[20px] h-[24px]">
+              <path class="n-path" d="M 4,25 C 4,18 4,9 5,4 C 9,10 13,19 17,25 C 17,17 17,9 18,4"
+                stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <span class="font-montserrat font-extrabold text-lg text-text dark:text-text">Nutri<span class="text-orange">sipe</span></span>
+        </RouterLink>
+
+        <div class="flex items-center gap-2">
+          <button
+            @click="showMobileSearch = true"
+            class="w-9 h-9 rounded-full text-text-muted hover:bg-background-secondary hover:text-text flex items-center justify-center transition-colors focus:outline-none"
+            aria-label="Search"
+          >
+            <BaseIcons name="magnifying-glass" size="sm" />
+          </button>
+
+          <!-- More Trigger -->
+          <button
+            @click="showMoreDrawer = true"
+            class="w-9 h-9 rounded-full text-text-muted hover:bg-background-secondary hover:text-text flex items-center justify-center transition-colors focus:outline-none"
+            aria-label="More"
+          >
+            <BaseIcons name="ellipsis-horizontal" size="sm" />
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ── Mobile bottom nav ── -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 p-4 pb-8 z-40 pointer-events-none">
-      <div class="bg-surface dark:bg-surface border border-border rounded-card flex items-center justify-around p-2 shadow-modal pointer-events-auto">
-        <RouterLink
-          v-for="item in mobilePrimary.slice(0, 2)" :key="item.id"
-          :to="item.path"
-          :class="['flex flex-col items-center gap-1 p-2 transition-colors', isActive(item) ? 'text-orange' : 'text-text-dim']"
-        >
-          <BaseIcons :name="item.icon" size="md" />
-          <span class="text-[10px] font-semibold">{{ item.label }}</span>
-        </RouterLink>
+    <!-- Active tab morphs into a labelled pill within the left group; create stays anchored right so the pill never shifts it. -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 p-4 pb-6 z-40 pointer-events-none">
+      <div class="bg-surface dark:bg-surface border border-border rounded-card flex items-center gap-1.5 px-2 py-2 shadow-modal pointer-events-auto">
+        <!-- Nav group (reflows internally as the pill expands) -->
+        <div class="flex-1 flex items-center justify-between gap-1 min-w-0">
+          <!-- Discover, Explore, Saved -->
+          <RouterLink
+            v-for="item in mobilePrimary" :key="item.id"
+            :to="item.path"
+            :class="[
+              'flex items-center justify-center h-11 rounded-full transition-all duration-300 ease-out overflow-hidden',
+              isActive(item) ? 'bg-orange-soft text-orange px-3.5' : 'text-text-dim px-2.5',
+            ]"
+          >
+            <BaseIcons :name="item.id === 'explore' ? 'magnifying-glass' : item.icon" size="md" :solid="isActive(item)" class="shrink-0" />
+            <span :class="['text-[11px] font-bold whitespace-nowrap transition-all duration-300 ease-out', isActive(item) ? 'max-w-[80px] opacity-100 ml-2' : 'max-w-0 opacity-0 ml-0']">{{ item.label }}</span>
+          </RouterLink>
 
+          <!-- Notifications -->
+          <button
+            @click="showNotificationsDrawer = true"
+            :class="[
+              'relative flex items-center justify-center h-11 rounded-full transition-all duration-300 ease-out overflow-hidden',
+              showNotificationsDrawer ? 'bg-orange-soft text-orange px-3.5' : 'text-text-dim px-2.5',
+            ]"
+            aria-label="Notifications"
+          >
+            <BaseIcons name="bell" size="md" :solid="showNotificationsDrawer" class="shrink-0" />
+            <span
+              v-if="notificationsStore.unreadCount > 0"
+              class="absolute top-0.5 right-1 min-w-[14px] h-3.5 px-0.5 rounded-full bg-orange text-white text-[8px] font-bold flex items-center justify-center border border-surface dark:border-surface"
+            >{{ notificationsStore.unreadCount }}</span>
+            <span :class="['text-[11px] font-bold whitespace-nowrap transition-all duration-300 ease-out', showNotificationsDrawer ? 'max-w-[90px] opacity-100 ml-2' : 'max-w-0 opacity-0 ml-0']">Alerts</span>
+          </button>
+        </div>
+
+        <!-- Divider + create, anchored right -->
+        <div class="w-px h-7 bg-border shrink-0"></div>
         <button
           @click="uiStore.openCreateModal()"
-          class="w-14 h-14 rounded-full bg-orange text-white flex items-center justify-center shadow-card-hover -translate-y-4 border-4 border-background transition-transform active:scale-95 shrink-0"
+          class="w-11 h-11 rounded-2xl bg-orange text-white flex items-center justify-center transition-transform active:scale-90 shrink-0"
           aria-label="Share recipe"
         >
-          <BaseIcons name="plus" size="lg" />
-        </button>
-
-        <RouterLink
-          v-for="item in mobilePrimary.slice(2, 4)" :key="item.id"
-          :to="item.path"
-          :class="['flex flex-col items-center gap-1 p-2 transition-colors', isActive(item) ? 'text-orange' : 'text-text-dim']"
-        >
-          <BaseIcons :name="item.icon" size="md" />
-          <span class="text-[10px] font-semibold">{{ item.label }}</span>
-        </RouterLink>
-
-        <button
-          @click="showMoreDrawer = true"
-          class="flex flex-col items-center gap-1 p-2 text-text-dim hover:text-orange transition-colors"
-          aria-label="More"
-        >
-          <BaseIcons name="ellipsis-horizontal" size="md" />
-          <span class="text-[10px] font-semibold">More</span>
+          <BaseIcons name="plus" size="md" />
         </button>
       </div>
     </div>
 
-    <!-- Mobile More drawer -->
-    <Transition name="more-drawer">
+    <!-- Mobile More Sidebar drawer -->
+    <Transition name="sidebar-drawer">
       <div
         v-if="showMoreDrawer"
-        class="md:hidden fixed inset-0 z-50 flex items-end"
-        @click.self="showMoreDrawer = false"
+        class="md:hidden fixed inset-0 z-50 flex justify-end"
       >
-        <div class="absolute inset-0 bg-black/55"></div>
-        <div class="relative w-full bg-surface dark:bg-surface border-t border-border rounded-t-3xl p-6 pb-10 shadow-modal">
-          <div class="w-10 h-1 rounded-full bg-border mx-auto mb-6"></div>
-          <h3 class="font-montserrat font-bold text-lg mb-4 text-text dark:text-text">More</h3>
-          <div class="grid grid-cols-3 gap-3">
+        <div class="absolute inset-0 bg-black/55" @click="showMoreDrawer = false"></div>
+        <div class="relative w-[280px] max-w-[80vw] h-full bg-surface dark:bg-surface border-l border-border p-6 shadow-modal flex flex-col animate-slide-in">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-6 shrink-0">
+            <h3 class="font-montserrat font-bold text-lg text-text dark:text-text">More</h3>
+            <button
+              @click="showMoreDrawer = false"
+              class="p-1 rounded-full text-text-muted hover:bg-background-secondary transition-colors"
+              aria-label="Close"
+            >
+              <BaseIcons name="x-mark" size="sm" />
+            </button>
+          </div>
+
+          <!-- List -->
+          <div class="flex flex-col gap-1.5 flex-1 overflow-y-auto">
             <RouterLink
               v-for="item in mobileSecondary"
               :key="item.id"
               :to="item.path"
               @click="showMoreDrawer = false"
               :class="[
-                'flex flex-col items-center gap-2 p-4 rounded-2xl border transition-colors',
+                'flex items-center gap-3.5 px-4 py-3 rounded-xl transition-colors text-sm',
                 isActive(item)
-                  ? 'border-orange text-orange bg-orange-soft'
-                  : 'border-border bg-background-secondary/60 text-text-muted hover:border-orange hover:text-orange'
+                  ? 'text-orange bg-orange-soft dark:bg-orange/10 font-bold'
+                  : 'text-text-muted hover:text-orange hover:bg-background-secondary dark:text-text-muted dark:hover:text-text'
               ]"
             >
-              <BaseIcons :name="item.icon" size="md" />
-              <span class="text-[11px] font-semibold">{{ item.label }}</span>
+              <BaseIcons :name="item.icon" size="md" :solid="isActive(item)" />
+              <span>{{ item.label }}</span>
             </RouterLink>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Mobile Notifications drawer -->
+    <Transition name="more-drawer">
+      <div
+        v-if="showNotificationsDrawer"
+        class="md:hidden fixed inset-0 z-50 flex items-end"
+        @click.self="showNotificationsDrawer = false"
+      >
+        <div class="absolute inset-0 bg-black/55" @click="showNotificationsDrawer = false"></div>
+        <div class="relative w-full max-h-[85vh] bg-surface dark:bg-surface border-t border-border rounded-t-3xl p-6 pb-10 shadow-modal flex flex-col">
+          <!-- Drag bar -->
+          <div class="w-10 h-1 rounded-full bg-border mx-auto mb-6 shrink-0"></div>
+
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-4 shrink-0">
+            <h3 class="font-montserrat font-bold text-lg text-text dark:text-text">Notifications</h3>
+            <button
+              v-if="notificationsStore.unreadCount > 0"
+              @click="notificationsStore.markAllAsRead()"
+              class="text-xs font-bold text-orange hover:text-orange-deep transition-colors"
+            >
+              Mark all as read
+            </button>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex gap-6 border-b border-border mb-4 shrink-0">
+            <button 
+              @click="activeNotificationsTab = 'all'"
+              :class="['pb-3 text-sm font-bold transition-all relative', activeNotificationsTab === 'all' ? 'text-text dark:text-text' : 'text-text-dim dark:text-text-dim hover:text-text']"
+            >
+              All
+              <div v-if="activeNotificationsTab === 'all'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-orange rounded-full"></div>
+            </button>
+            <button 
+              @click="activeNotificationsTab = 'unread'"
+              :class="['pb-3 text-sm font-bold transition-all relative flex items-center gap-2', activeNotificationsTab === 'unread' ? 'text-text dark:text-text' : 'text-text-dim dark:text-text-dim hover:text-text']"
+            >
+              Unread
+              <span v-if="notificationsStore.unreadCount > 0" class="px-2 py-0.5 rounded-full bg-orange text-white text-[10px] font-black">
+                {{ notificationsStore.unreadCount }}
+              </span>
+              <div v-if="activeNotificationsTab === 'unread'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-orange rounded-full"></div>
+            </button>
+          </div>
+
+          <!-- List -->
+          <div class="overflow-y-auto flex-1 scrollbar-hide min-h-0">
+            <div v-if="notificationsStore.isLoading && notificationsStore.notifications.length === 0" class="p-10 text-center">
+              <div class="w-8 h-8 border-4 border-orange border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p class="text-text-dim text-sm font-medium">Fetching updates...</p>
+            </div>
+
+            <div v-else-if="filteredNotifications.length === 0" class="p-16 text-center">
+              <BaseIcons name="bell" size="xl" class="mx-auto mb-4 opacity-30 text-text-dim" />
+              <p class="text-text-dim font-bold">All caught up!</p>
+              <p class="text-text-dim/60 text-xs mt-1">No new notifications for you right now.</p>
+            </div>
+
+            <div v-else class="flex flex-col">
+              <div 
+                v-for="n in filteredNotifications" 
+                :key="n.id"
+                @click="handleMobileNotificationClick(n)"
+                class="group flex items-start gap-4 py-4 hover:bg-orange/5 cursor-pointer transition-all border-b border-border/50 last:border-0 relative"
+              >
+                <!-- Unread Dot -->
+                <div v-if="!n.isRead" class="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-orange rounded-full"></div>
+
+                <!-- Avatar + Icon -->
+                <div class="relative shrink-0 ml-3">
+                  <UserAvatar :user="n.actor" size="md" class="border-2 border-border shadow-sm" />
+                  <div :class="['absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] shadow-md border-2 border-white dark:border-background-secondary', getNotificationIconBg(n.type)]">
+                    <BaseIcons :name="getNotificationIcon(n.type)" size="xs" class="text-white" />
+                  </div>
+                </div>
+
+                <!-- Text -->
+                <div class="flex-1 min-w-0">
+                  <p class="text-[13px] leading-snug text-text dark:text-text">
+                    <span class="font-extrabold">{{ n.actor.displayName }}</span>
+                    <span class="text-text-muted dark:text-text-dim mx-1">
+                      {{ n.type === 'like' ? 'liked your recipe' : n.type === 'comment' ? 'commented on' : n.type === 'follow' ? 'started following you' : n.type === 'mention' ? 'mentioned you in' : n.type === 'rating' ? 'rated your recipe' : n.type === 'variation' ? 'forked your recipe' : 'interacted with' }}
+                    </span>
+                    <span v-if="n.post" class="font-extrabold">{{ n.post.title }}</span>
+                  </p>
+                  <p class="text-[11px] text-text-dim dark:text-text-dim/60 mt-1 font-medium">{{ formatTimeAgo(n.createdAt) }}</p>
+                </div>
+
+                <!-- Post Thumbnail -->
+                <div v-if="n.post" class="shrink-0 w-12 h-12 rounded-xl overflow-hidden border border-border">
+                  <img :src="resolveImage(n.post.imageUrl, n.post.id)" class="w-full h-full object-cover" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -536,5 +746,22 @@ onUnmounted(() => {
 .more-drawer-enter-from > div:last-child,
 .more-drawer-leave-to > div:last-child {
   transform: translateY(100%);
+}
+
+.sidebar-drawer-enter-active,
+.sidebar-drawer-leave-active {
+  transition: opacity 0.25s ease;
+}
+.sidebar-drawer-enter-from,
+.sidebar-drawer-leave-to {
+  opacity: 0;
+}
+.sidebar-drawer-enter-active > div:last-child,
+.sidebar-drawer-leave-active > div:last-child {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sidebar-drawer-enter-from > div:last-child,
+.sidebar-drawer-leave-to > div:last-child {
+  transform: translateX(100%);
 }
 </style>

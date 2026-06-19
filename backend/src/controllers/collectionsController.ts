@@ -1,15 +1,27 @@
 import { Response, NextFunction } from 'express'
+import { z } from 'zod'
 import * as collectionService from '../services/collectionService'
 import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
 
+const createCollectionSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+  isPublic: z.boolean().optional(),
+})
+
 export async function createCollectionHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     if (!req.userId) throw new AppError(401, 'Unauthorized')
-    const collection = await collectionService.createCollection(req.userId, req.body)
+    const validated = createCollectionSchema.parse(req.body)
+    const collection = await collectionService.createCollection(req.userId, validated)
     res.status(201).json({ success: true, data: collection })
   } catch (error) {
-    next(error)
+    if (error instanceof z.ZodError) {
+      next(new AppError(400, error.errors[0].message))
+    } else {
+      next(error)
+    }
   }
 }
 

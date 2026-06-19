@@ -32,6 +32,8 @@ function startOfWeek(d: Date): Date {
 }
 
 const weekStart = ref(startOfWeek(new Date()))
+// Mobile shows one day at a time; desktop shows the full week grid.
+const selectedDate = ref(new Date())
 
 const weekEnd = computed(() => {
   const d = new Date(weekStart.value)
@@ -100,12 +102,21 @@ function shiftWeek(delta: number) {
   const next = new Date(weekStart.value)
   next.setDate(next.getDate() + 7 * delta)
   weekStart.value = next
+  selectedDate.value = new Date(next) // keep mobile's selected day inside the visible week
   loadWeek()
 }
 
 function jumpToday() {
   weekStart.value = startOfWeek(new Date())
+  selectedDate.value = new Date()
   loadWeek()
+}
+
+function selectDay(d: Date) {
+  selectedDate.value = new Date(d)
+}
+function isSelected(d: Date): boolean {
+  return fmtIso(d) === fmtIso(selectedDate.value)
 }
 
 // Picker modal
@@ -354,26 +365,108 @@ const weekNutrition = computed(() => {
     maxDayCal,
   }
 })
+
+const selectedDateLabel = computed(() =>
+  selectedDate.value.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }),
+)
+const selectedDayPlansBySlot = computed(() => {
+  const res = {} as Record<MealSlot, MealPlan[]>
+  for (const slot of SLOTS) {
+    res[slot] = plansByCell.value[`${fmtIso(selectedDate.value)}|${slot}`] ?? []
+  }
+  return res
+})
+const selectedDayCalories = computed(() => {
+  const day = weekNutrition.value?.byDay[fmtIso(selectedDate.value)]
+  return day ? Math.round(day.calories) : null
+})
 </script>
 
 <template>
-  <div class="meal-plan-view min-h-screen px-6 md:px-10 py-10">
+  <div class="meal-plan-view min-h-screen px-6 md:px-10 md:py-10">
     <div class="max-w-7xl mx-auto">
-      <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+      <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 md:mb-8">
         <div>
           <p class="text-orange text-[11px] font-bold uppercase tracking-[0.3em] mb-2">Plan</p>
-          <h1 class="font-montserrat font-extrabold text-4xl md:text-5xl tracking-tight">This week's meals</h1>
-          <p class="text-text-muted mt-2">Drop saved recipes into the grid. Grocery list updates automatically.</p>
+          <h1 class="font-montserrat font-extrabold text-3xl sm:text-4xl md:text-5xl tracking-tight">This week's meals</h1>
+          <p class="hidden md:block text-text-muted mt-2">Drop saved recipes into the grid. Grocery list updates automatically.</p>
         </div>
-        <div class="flex items-center gap-2">
-          <button @click="shiftWeek(-1)" class="w-10 h-10 rounded-full border-1.5 border-border bg-surface/70 hover:border-orange hover:text-orange transition-all">‹</button>
-          <button @click="jumpToday" class="px-4 h-10 rounded-full border-1.5 border-border bg-surface/70 text-xs font-bold hover:border-orange hover:text-orange transition-all">Today</button>
-          <span class="px-3 text-sm font-bold tabular-nums">{{ weekLabel }}</span>
-          <button @click="shiftWeek(1)" class="w-10 h-10 rounded-full border-1.5 border-border bg-surface/70 hover:border-orange hover:text-orange transition-all">›</button>
-          <RouterLink to="/groceries" class="ml-4 btn-primary px-5 py-2.5 text-xs inline-flex items-center gap-1.5"><BaseIcons name="shopping-cart" size="sm" />Grocery List</RouterLink>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
+          <div class="flex items-center gap-2">
+            <button @click="shiftWeek(-1)" aria-label="Previous week" class="w-10 h-10 shrink-0 rounded-full border-1.5 border-border bg-surface/70 hover:border-orange hover:text-orange transition-all">‹</button>
+            <button @click="jumpToday" class="px-4 h-10 shrink-0 rounded-full border-1.5 border-border bg-surface/70 text-xs font-bold hover:border-orange hover:text-orange transition-all">Today</button>
+            <span class="flex-1 text-center sm:flex-none px-1 sm:px-2 text-sm font-bold tabular-nums whitespace-nowrap">{{ weekLabel }}</span>
+            <button @click="shiftWeek(1)" aria-label="Next week" class="w-10 h-10 shrink-0 rounded-full border-1.5 border-border bg-surface/70 hover:border-orange hover:text-orange transition-all">›</button>
+          </div>
+          <RouterLink to="/groceries" class="btn-primary px-5 py-2.5 text-xs inline-flex items-center justify-center gap-1.5 sm:ml-2"><BaseIcons name="shopping-cart" size="sm" />Grocery List</RouterLink>
         </div>
       </header>
 
+      <!-- ── Mobile: day picker + single-day stacked meals ── -->
+      <div class="md:hidden">
+        <div class="flex gap-2 overflow-x-auto scrollbar-hide -mx-6 px-6 pb-1 mb-6">
+          <button
+            v-for="d in days"
+            :key="`m-${d.toISOString()}`"
+            @click="selectDay(d)"
+            :class="[
+              'shrink-0 w-[3.25rem] rounded-2xl py-2.5 flex flex-col items-center border-1.5 transition-all active:scale-95',
+              isSelected(d)
+                ? 'border-orange bg-orange text-white shadow-card'
+                : isToday(d)
+                  ? 'border-orange/40 bg-orange/5'
+                  : 'border-border bg-background-secondary/40',
+            ]"
+          >
+            <span :class="['text-[10px] font-bold uppercase tracking-wide', isSelected(d) ? 'text-white/80' : 'text-text-dim']">{{ fmtDay(d) }}</span>
+            <span class="font-montserrat font-extrabold text-lg leading-none mt-1">{{ fmtNum(d) }}</span>
+          </button>
+        </div>
+
+        <div class="flex items-baseline justify-between mb-4">
+          <h2 class="font-montserrat font-extrabold text-xl tracking-tight">{{ selectedDateLabel }}</h2>
+          <span v-if="selectedDayCalories" class="text-xs text-text-dim shrink-0 ml-3"><span class="font-bold text-text tabular-nums">{{ selectedDayCalories }}</span> kcal</span>
+        </div>
+
+        <div class="space-y-5">
+          <section v-for="slot in SLOTS" :key="`m-${slot}`">
+            <div class="flex items-center gap-2 mb-2.5 text-xs font-bold uppercase tracking-widest text-text-muted">
+              <span class="text-sm">{{ SLOT_ICONS[slot] }}</span>
+              <span>{{ slot }}</span>
+            </div>
+            <div class="space-y-2">
+              <div
+                v-for="plan in selectedDayPlansBySlot[slot]"
+                :key="plan.id"
+                @click="router.push(`/recipes/${plan.postId}`)"
+                class="relative flex items-center gap-3 p-2 rounded-2xl bg-surface border-1.5 border-border active:scale-[0.99] transition-transform"
+              >
+                <img :src="resolveImage(plan.post?.imageUrl, plan.postId)" :alt="plan.post?.title" class="w-16 h-16 rounded-xl object-cover shrink-0" />
+                <div class="min-w-0 flex-1">
+                  <p class="font-bold text-sm leading-tight line-clamp-2">{{ plan.post?.title }}</p>
+                  <p class="text-xs text-text-dim mt-0.5">{{ plan.servings }} servings</p>
+                </div>
+                <button
+                  @click.stop="removePlan(plan.id)"
+                  class="w-9 h-9 shrink-0 rounded-full bg-background-secondary text-text-dim hover:text-red-500 flex items-center justify-center transition-colors"
+                  aria-label="Remove from plan"
+                >
+                  <BaseIcons name="x-mark" size="sm" />
+                </button>
+              </div>
+              <button
+                @click="openPicker(selectedDate, slot)"
+                class="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-1.5 border-dashed border-border text-text-dim text-sm font-bold hover:border-orange hover:text-orange active:scale-[0.99] transition-all"
+              >
+                <BaseIcons name="plus" size="sm" /> Add {{ slot }}
+              </button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- ── Desktop: full week grid ── -->
+      <div class="hidden md:block">
       <div class="grid grid-cols-[110px_repeat(7,minmax(0,1fr))] gap-2 mb-2">
         <div></div>
         <div
@@ -438,6 +531,7 @@ const weekNutrition = computed(() => {
           >+</button>
         </div>
       </div>
+      </div><!-- /desktop week grid -->
 
       <!-- Weekly nutrition summary -->
       <div v-if="weekNutrition" class="mt-8 p-6 rounded-3xl bg-background-secondary/40 border-1.5 border-border">

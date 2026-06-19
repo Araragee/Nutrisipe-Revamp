@@ -209,7 +209,7 @@ const themeOptions = [
 </script>
 
 <template>
-  <div class="settings-view min-h-screen bg-background py-10 px-6 md:px-12">
+  <div class="settings-view min-h-screen bg-background md:py-10 px-6 md:px-12">
     <div class="max-w-6xl mx-auto">
       <header class="mb-10">
         <p class="text-orange text-[11px] font-bold uppercase tracking-[0.3em] mb-2">Account</p>
