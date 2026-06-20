@@ -38,22 +38,33 @@ const tiles = computed(() => {
 const showFallback = computed(() => failed.value || tiles.value.length === 0)
 
 // Food stays vivid; the wash comes only from the scrim below — never from
-// dimming the imagery toward a flat white/black base.
+// dimming the imagery toward a flat white/black base. In dark mode we keep the
+// photography close to full strength so the hero reads as a lit kitchen, not a
+// blacked-out panel.
 const gridStyle = computed(() => ({
   gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
   gap: '0px',
   filter: `blur(${props.blur}px) saturate(1.25)`,
-  opacity: isDark.value ? 0.5 : 1,
+  opacity: isDark.value ? 0.78 : 1,
 }))
 
-// Dark: moody top-down veil. Light: radial spotlight that keeps the centered
-// hero text legible while letting the food show at the edges, then fades into
-// the page background at the bottom.
+// The veil exists for one reason: keep centered hero text legible over busy
+// food photography. When we fall back to the brand mesh (no photos), there is
+// nothing to obscure, so the heavy scrim only darkens the page — drop it to a
+// whisper-thin base fade instead.
 const veilStyle = computed(() => {
+  if (showFallback.value) {
+    // Just fade the very bottom into the page background; no central dimming.
+    return {
+      background: 'linear-gradient(to bottom, transparent 72%, var(--bg) 100%)',
+    }
+  }
   if (isDark.value) {
+    // Gentle top-down warmth-preserving scrim — enough for AA text contrast,
+    // light enough that the food still glows behind the hero.
     return {
       background:
-        'linear-gradient(to bottom, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.62) 60%, var(--bg) 100%)',
+        'linear-gradient(to bottom, rgba(8,6,4,0.30) 0%, rgba(8,6,4,0.48) 64%, var(--bg) 100%)',
     }
   }
   const core = Math.min(props.intensity + 0.18, 0.82)
@@ -114,7 +125,7 @@ watch(() => props.posts, load)
   background: var(--bg, #fafafa);
 }
 
-:global(.dark) .recipe-mosaic-bg {
+:global(.dark .recipe-mosaic-bg) {
   background: var(--bg, #09090b);
 }
 </style>

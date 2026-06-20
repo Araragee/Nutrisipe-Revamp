@@ -1,57 +1,95 @@
 <script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useToast } from '@/composables/useToast'
+import Toast from '@/components/ui/Toast.vue'
 
 const { toasts, removeToast } = useToast()
 
-const typeClasses = {
-  success: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200',
-  error: 'bg-red-500/15 border-red-500/30 text-red-200',
-  warning: 'bg-orange-500/15 border-orange-500/30 text-orange-200',
-  info: 'bg-blue-500/10 border-blue-500/30 text-blue-200',
+// Respect prefers-reduced-motion: disables the auto-dismiss progress timer
+// inside each Toast and swaps TransitionGroup for instant fades.
+const reducedMotion = ref(false)
+let mql: MediaQueryList | null = null
+
+function syncMotion(e: MediaQueryList | MediaQueryListEvent) {
+  reducedMotion.value = e.matches
 }
 
-const typeIcons = {
-  success: '✓',
-  error: '✕',
-  warning: '⚠',
-  info: 'ℹ',
-}
+onMounted(() => {
+  if (typeof window === 'undefined' || !window.matchMedia) return
+  mql = window.matchMedia('(prefers-reduced-motion: reduce)')
+  syncMotion(mql)
+  mql.addEventListener('change', syncMotion)
+})
+
+onBeforeUnmount(() => {
+  mql?.removeEventListener('change', syncMotion)
+})
 </script>
 
 <template>
-  <div class="fixed top-6 right-6 z-[9999] space-y-3 max-w-[360px] w-full pointer-events-none">
-    <transition-group name="toast">
-      <div
+  <div
+    class="pointer-events-none fixed inset-x-4 top-4 z-[9999] flex flex-col items-center gap-2.5 sm:inset-x-auto sm:right-6 sm:top-6 sm:max-w-[380px] sm:items-stretch"
+    role="region"
+    aria-label="Notifications"
+  >
+    <TransitionGroup :name="reducedMotion ? 'toast-fade' : 'toast'" tag="div" class="flex w-full flex-col gap-2.5">
+      <Toast
         v-for="toast in toasts"
         :key="toast.id"
-        :class="[typeClasses[toast.type], 'pointer-events-auto flex items-start gap-3 p-4 rounded-2xl border shadow-2xl backdrop-blur-xl bg-[rgba(28,22,17,0.85)]']"
-      >
-        <span class="text-lg font-bold shrink-0 mt-0.5" :class="typeClasses[toast.type].split(' ')[2]">{{ typeIcons[toast.type] }}</span>
-        <p class="flex-1 text-[13px] font-semibold text-white/90 leading-snug pt-0.5">{{ toast.message }}</p>
-        <button
-          @click="removeToast(toast.id)"
-          class="text-white/40 hover:text-white transition-colors shrink-0 p-1"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-        </button>
-      </div>
-    </transition-group>
+        :toast="toast"
+        :reduced-motion="reducedMotion"
+        @dismiss="removeToast"
+      />
+    </TransitionGroup>
   </div>
 </template>
 
 <style scoped>
-.toast-enter-active,
+/* Enter: slide in from the right with a subtle spring + scale.
+   Leave: softer, smaller drift so exits feel quieter than enters.
+   Move: smoothly reflow remaining toasts when one is removed (stacking). */
+.toast-enter-active {
+  transition:
+    transform 0.42s cubic-bezier(0.34, 1.2, 0.64, 1),
+    opacity 0.42s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
 .toast-leave-active {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.2, 0.64, 1),
+    opacity 0.3s ease-out;
+  /* take out of flow so siblings glide up via .toast-move */
+  position: absolute;
+  width: 100%;
+}
+
+.toast-move {
+  transition: transform 0.42s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
 .toast-enter-from {
   opacity: 0;
-  transform: translateX(100%) scale(0.95);
+  transform: translate3d(40px, 0, 0) scale(0.96);
 }
 
 .toast-leave-to {
   opacity: 0;
-  transform: translateY(-10px) scale(0.95);
+  transform: translate3d(0, -10px, 0) scale(0.97);
+}
+
+/* Reduced-motion variant: instant, opacity-only. */
+.toast-fade-enter-active,
+.toast-fade-leave-active {
+  transition: opacity 0.12s linear;
+}
+
+.toast-fade-leave-active {
+  position: absolute;
+  width: 100%;
+}
+
+.toast-fade-enter-from,
+.toast-fade-leave-to {
+  opacity: 0;
 }
 </style>

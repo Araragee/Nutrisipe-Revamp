@@ -1,30 +1,58 @@
 import { ref } from 'vue'
 
+export type ToastType = 'success' | 'error' | 'warning' | 'info'
+
+export interface ToastAction {
+  label: string
+  onClick: () => void
+}
+
+export interface ToastOptions {
+  /** Auto-dismiss duration in ms. `0` (or less) keeps the toast until dismissed. */
+  duration?: number
+  /** Optional action button, e.g. an "Undo" affordance. */
+  action?: ToastAction
+}
+
 export interface Toast {
   id: number
   message: string
-  type: 'success' | 'error' | 'warning' | 'info'
-  duration?: number
+  type: ToastType
+  duration: number
+  action?: ToastAction
 }
+
+const DEFAULT_DURATION = 4000
 
 const toasts = ref<Toast[]>([])
 let toastId = 0
 
+/**
+ * Normalize the legacy `(message, type, duration)` call shape and the new
+ * `(message, type, options)` shape into a single options object. Keeps every
+ * existing `addToast`/`showToast` caller working unchanged.
+ */
+function normalizeOptions(options?: number | ToastOptions): ToastOptions {
+  if (typeof options === 'number') return { duration: options }
+  return options ?? {}
+}
+
 export function useToast() {
-  const addToast = (message: string, type: Toast['type'] = 'info', duration = 3000) => {
-    const isDuplicate = toasts.value.some(t => t.message === message && t.type === type)
-    if (isDuplicate) return -1
+  const addToast = (
+    message: string,
+    type: ToastType = 'info',
+    options?: number | ToastOptions,
+  ) => {
+    const { duration = DEFAULT_DURATION, action } = normalizeOptions(options)
+
+    // De-dupe identical, action-less toasts so rapid repeats don't stack.
+    if (!action) {
+      const isDuplicate = toasts.value.some(t => t.message === message && t.type === type && !t.action)
+      if (isDuplicate) return -1
+    }
 
     const id = toastId++
-    const toast: Toast = { id, message, type, duration }
-
-    toasts.value.push(toast)
-
-    if (duration > 0) {
-      setTimeout(() => {
-        removeToast(id)
-      }, duration)
-    }
+    toasts.value.push({ id, message, type, duration, action })
 
     return id
   }
@@ -36,21 +64,17 @@ export function useToast() {
     }
   }
 
-  const success = (message: string, duration?: number) => {
-    return addToast(message, 'success', duration)
-  }
+  const success = (message: string, options?: number | ToastOptions) =>
+    addToast(message, 'success', options)
 
-  const error = (message: string, duration?: number) => {
-    return addToast(message, 'error', duration)
-  }
+  const error = (message: string, options?: number | ToastOptions) =>
+    addToast(message, 'error', options)
 
-  const warning = (message: string, duration?: number) => {
-    return addToast(message, 'warning', duration)
-  }
+  const warning = (message: string, options?: number | ToastOptions) =>
+    addToast(message, 'warning', options)
 
-  const info = (message: string, duration?: number) => {
-    return addToast(message, 'info', duration)
-  }
+  const info = (message: string, options?: number | ToastOptions) =>
+    addToast(message, 'info', options)
 
   return {
     toasts,

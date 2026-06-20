@@ -83,7 +83,7 @@ async function handleRegister() {
 
         <!-- Headline + perks -->
         <div class="mt-auto mb-auto pt-12">
-          <h1 class="font-montserrat font-black text-4xl xl:text-5xl tracking-tight leading-[1.05] text-text dark:text-text mb-3">
+          <h1 class="font-montserrat font-black text-4xl xl:text-5xl tracking-tight leading-[1.05] text-text dark:text-text mb-3 text-balance">
             Everything you need to<br /><span class="text-orange">eat better.</span>
           </h1>
           <p class="text-text-muted dark:text-text-muted text-base max-w-md leading-relaxed mb-10">
@@ -213,7 +213,7 @@ async function handleRegister() {
             </Transition>
           </div>
 
-          <button type="submit" class="btn-primary w-full py-3.5 mt-2 rounded-btn" :disabled="isLoading">
+          <button type="submit" class="btn-primary w-full py-3.5 mt-2 rounded-btn shadow-[0_6px_24px_var(--orange-glow)] hover:shadow-[0_12px_32px_var(--orange-glow)] hover:-translate-y-0.5 transition-[transform,box-shadow,background-color] duration-200 active:scale-[0.96]" :disabled="isLoading">
             <span v-if="isLoading" class="flex items-center justify-center gap-2">
               <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M21 12a9 9 0 11-6.219-8.56"/>

@@ -24,20 +24,20 @@ const palette = computed(() => {
   switch (props.variant) {
     case 'cool':
       return dark
-        ? ['oklch(24% 0.12 220)', 'oklch(28% 0.09 180)', 'oklch(20% 0.15 280)', 'oklch(30% 0.07 200)']
+        ? ['oklch(40% 0.13 220)', 'oklch(44% 0.10 180)', 'oklch(36% 0.16 280)', 'oklch(46% 0.08 200)']
         : ['oklch(72% 0.14 220)', 'oklch(80% 0.11 180)', 'oklch(68% 0.18 280)', 'oklch(85% 0.08 200)']
     case 'sunset':
       return dark
-        ? ['oklch(22% 0.16 30)', 'oklch(26% 0.12 60)', 'oklch(18% 0.18 350)', 'oklch(28% 0.09 45)']
+        ? ['oklch(40% 0.17 30)', 'oklch(44% 0.13 60)', 'oklch(35% 0.19 350)', 'oklch(46% 0.10 45)']
         : ['oklch(72% 0.20 30)', 'oklch(78% 0.16 60)', 'oklch(65% 0.22 350)', 'oklch(82% 0.12 45)']
     case 'morning':
       return dark
-        ? ['oklch(30% 0.06 80)', 'oklch(27% 0.09 50)', 'oklch(32% 0.05 100)', 'oklch(25% 0.11 35)']
+        ? ['oklch(46% 0.07 80)', 'oklch(43% 0.10 50)', 'oklch(48% 0.06 100)', 'oklch(41% 0.12 35)']
         : ['oklch(88% 0.08 80)', 'oklch(85% 0.12 50)', 'oklch(92% 0.06 100)', 'oklch(78% 0.14 35)']
     case 'warm':
     default:
       return dark
-        ? ['oklch(25% 0.13 40)', 'oklch(29% 0.10 60)', 'oklch(22% 0.14 25)', 'oklch(31% 0.07 70)']
+        ? ['oklch(42% 0.14 40)', 'oklch(46% 0.11 60)', 'oklch(38% 0.15 25)', 'oklch(48% 0.08 70)']
         : ['oklch(75% 0.17 40)', 'oklch(82% 0.13 60)', 'oklch(70% 0.18 25)', 'oklch(88% 0.09 70)']
   }
 })
@@ -128,19 +128,22 @@ const blobs = computed(() =>
   );
 }
 
-:global(.dark) .brand-mesh-bg {
+:global(.dark .brand-mesh-bg) {
   background: var(--bg, #09090b);
 }
-:global(.dark) .brand-mesh-blob {
-  opacity: 0.55;
+:global(.dark .brand-mesh-blob) {
+  opacity: 0.68;
 }
-:global(.dark) .brand-mesh-veil {
+:global(.dark .brand-mesh-veil) {
   background: radial-gradient(
     ellipse at center,
     transparent 0%,
-    rgba(0, 0, 0, 0.2) 70%,
-    rgba(0, 0, 0, 0.45) 100%
+    rgba(0, 0, 0, 0.08) 72%,
+    rgba(0, 0, 0, 0.22) 100%
   );
+}
+:global(.dark .brand-mesh-grain) {
+  opacity: 0.18;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -41,7 +41,11 @@ function onInput(event: Event) {
     <RecipeMosaicBackground :posts="posts" :count="12" :intensity="0.45" fallback-variant="sunset" />
 
     <div class="relative z-10 w-full max-w-2xl animate-revamp">
-      <h1 class="font-montserrat font-extrabold text-3xl sm:text-4xl md:text-5xl tracking-tight mb-4 drop-shadow-sm">
+      <span class="inline-flex items-center gap-1.5 mb-4 px-3 py-1 rounded-full bg-orange-soft text-orange text-[11px] font-bold uppercase tracking-widest">
+        <span class="w-1.5 h-1.5 rounded-full bg-orange animate-pulse"></span>
+        Discover
+      </span>
+      <h1 class="font-montserrat font-black text-3xl sm:text-4xl md:text-5xl tracking-tight mb-4 drop-shadow-sm">
         Explore Nutrisipe
       </h1>
       <p class="text-text-muted text-base md:text-lg mb-8 max-w-lg mx-auto leading-relaxed">
@@ -51,7 +55,7 @@ function onInput(event: Event) {
       <!-- Search Bar -->
       <div class="relative group">
         <div
-          class="absolute inset-y-0 left-5 flex items-center pointer-events-none text-xl group-focus-within:text-orange transition-colors"
+          class="absolute inset-y-0 left-5 flex items-center pointer-events-none text-xl text-text-dim group-focus-within:text-orange transition-colors"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </div>
@@ -61,11 +65,11 @@ function onInput(event: Event) {
           @keyup.enter="emit('search')"
           type="text"
           placeholder="Try ‘miso soup’, ‘chef’, or a tag…"
-          class="w-full h-16 pl-14 pr-32 bg-surface/80 border-1.5 border-border rounded-2xl text-[15px] font-medium outline-none focus:border-orange focus:ring-4 focus:ring-orange/10 shadow-lg transition-all"
+          class="w-full h-16 pl-14 pr-32 bg-surface/90 backdrop-blur-md border-1.5 border-border rounded-2xl text-[15px] font-medium outline-none focus:border-orange focus:ring-4 focus:ring-orange/10 shadow-card-hover transition-all"
         />
         <button
           @click="emit('search')"
-          class="absolute right-2.5 top-2.5 bottom-2.5 px-6 bg-orange text-white rounded-xl font-bold text-sm shadow-md hover:opacity-90 active:scale-95 transition-all"
+          class="absolute right-2.5 top-2.5 bottom-2.5 px-6 bg-orange text-white rounded-xl font-bold text-sm shadow-md hover:bg-orange-deep active:scale-95 transition-all"
         >Search</button>
       </div>
 

@@ -35,14 +35,21 @@ const newDescription = ref('')
 const newPublic = ref(false)
 const isCreating = ref(false)
 
+// Fallback tints only show when a collection has no thumbnail — never as the
+// dominant treatment over real food photography.
 const collectionGradients = [
-  'from-orange-400 to-red-500',
-  'from-green-400 to-emerald-500',
-  'from-blue-400 to-indigo-500',
-  'from-pink-400 to-rose-500',
-  'from-yellow-400 to-amber-500',
-  'from-purple-400 to-violet-500',
+  'from-orange/70 to-red-500/70',
+  'from-green/70 to-emerald-500/70',
+  'from-blue-400/70 to-indigo-500/70',
+  'from-pink-400/70 to-rose-500/70',
+  'from-amber-400/70 to-orange/70',
+  'from-purple-400/70 to-violet-500/70',
 ]
+
+const tabs = [
+  { key: 'collections', label: 'Collections' },
+  { key: 'all', label: 'All Saved' },
+] as const
 
 function handlePostClick(postId: string) {
   selectedPostId.value = postId
@@ -92,6 +99,16 @@ async function fetchSavedPosts(reset = false) {
 
 const canCreate = computed(() => newName.value.trim().length > 0 && !isCreating.value)
 
+function openNewModal() {
+  showNewModal.value = true
+}
+
+function resetNewForm() {
+  newName.value = ''
+  newDescription.value = ''
+  newPublic.value = false
+}
+
 async function createCollection() {
   if (!canCreate.value) return
   isCreating.value = true
@@ -103,9 +120,7 @@ async function createCollection() {
     })
     collections.value.unshift(response.data.data)
     showNewModal.value = false
-    newName.value = ''
-    newDescription.value = ''
-    newPublic.value = false
+    resetNewForm()
     uiStore.showToast('Collection created', 'success')
   } catch (error) {
     logger.error('Failed to create collection:', error)
@@ -134,123 +149,272 @@ watch(isNearBottom, (near) => {
 
 <template>
   <div class="saved-recipes-view min-h-screen md:pt-8">
-    <div class="px-5 sm:px-8 md:py-6 max-w-7xl mx-auto">
-      <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div class="mx-auto max-w-6xl px-5 sm:px-8 md:py-6">
+      <!-- Header -->
+      <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h2 class="font-montserrat font-extrabold text-3xl tracking-tight mb-1">Saved</h2>
-          <p class="text-text-dim text-sm">Organize loves into boards. Or browse them all.</p>
+          <h1 class="text-balance font-montserrat text-3xl font-extrabold tracking-tight text-text">
+            Saved
+          </h1>
+          <p class="mt-1 text-sm text-text-dim">Organize what you love into boards — or browse it all.</p>
         </div>
         <button
           v-if="activeTab === 'collections'"
-          @click="showNewModal = true"
-          class="btn-primary px-6 py-3 text-xs whitespace-nowrap"
-        >+ New Collection</button>
+          @click="openNewModal"
+          class="inline-flex items-center gap-2 self-start rounded-full bg-orange px-5 py-3 font-montserrat text-xs font-bold uppercase tracking-widest text-white shadow-[0_6px_24px_rgba(255,107,53,0.35)] transition-[transform,background-color,box-shadow] duration-200 ease-revamp hover:bg-orange-light hover:shadow-[0_12px_32px_rgba(255,107,53,0.35)] active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background md:self-auto"
+        >
+          <BaseIcons name="plus" size="sm" />
+          New Collection
+        </button>
       </div>
 
-      <div class="flex gap-8 border-b border-border mb-8">
+      <!-- Tabs -->
+      <div class="mb-8 flex gap-1 border-b border-border">
         <button
-          v-for="t in (['collections', 'all'] as const)"
-          :key="t"
-          @click="activeTab = t"
+          v-for="t in tabs"
+          :key="t.key"
+          @click="activeTab = t.key"
           :class="[
-            'pb-4 text-sm font-bold uppercase tracking-widest transition-all border-b-2',
-            activeTab === t ? 'text-orange border-orange' : 'text-text-muted border-transparent hover:text-text'
+            'relative px-4 py-3 font-montserrat text-xs font-bold uppercase tracking-widest transition-colors duration-200 ease-revamp',
+            activeTab === t.key ? 'text-orange' : 'text-text-dim hover:text-text',
           ]"
-        >{{ t === 'collections' ? 'Collections' : 'All Saved' }}</button>
+        >
+          {{ t.label }}
+          <span
+            v-if="activeTab === t.key"
+            class="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-orange"
+          ></span>
+        </button>
       </div>
 
       <!-- Collections tab -->
       <div v-if="activeTab === 'collections'">
-        <div v-if="isLoadingCollections" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="i in 3" :key="i" class="h-56 bg-background-secondary rounded-3xl animate-pulse"></div>
-        </div>
-        <div v-else-if="collections.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          v-if="isLoadingCollections"
+          class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+        >
           <div
+            v-for="i in 3"
+            :key="i"
+            class="h-52 animate-pulse rounded-card bg-background-secondary"
+          ></div>
+        </div>
+
+        <div v-else class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Create card always first -->
+          <button
+            @click="openNewModal"
+            class="group flex h-52 flex-col items-center justify-center gap-3 rounded-card border-2 border-dashed border-border bg-background-secondary/50 text-text-dim transition-[transform,border-color,color] duration-200 ease-revamp hover:-translate-y-1 hover:border-orange/50 hover:text-orange active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            <span
+              class="grid h-12 w-12 place-items-center rounded-full bg-surface shadow-card transition-transform duration-200 ease-revamp group-hover:scale-110"
+            >
+              <BaseIcons name="plus" size="lg" />
+            </span>
+            <span class="font-montserrat text-xs font-bold uppercase tracking-widest">New Collection</span>
+          </button>
+
+          <article
             v-for="(col, idx) in collections"
             :key="col.id"
             @click="router.push(`/collections/${col.id}`)"
-            class="group relative h-56 rounded-3xl overflow-hidden cursor-pointer shadow-card transition-all hover:-translate-y-1 border-1.5 border-border"
+            class="group relative h-52 cursor-pointer overflow-hidden rounded-card shadow-card outline outline-1 -outline-offset-1 outline-black/10 transition-[transform,box-shadow] duration-300 ease-revamp hover:-translate-y-1 hover:shadow-card-hover dark:outline-white/10"
           >
-            <img :src="resolveImage(col.thumbnailUrl, col.id)" :alt="col.name" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-            <div :class="['absolute inset-0 bg-gradient-to-t opacity-60', collectionGradients[idx % collectionGradients.length]]"></div>
-            <div class="absolute inset-0 p-6 flex flex-col justify-end">
-              <h3 class="font-montserrat font-extrabold text-2xl text-white drop-shadow-md">{{ col.name }}</h3>
-              <p class="text-white/85 text-sm font-medium">{{ col.postCount ?? 0 }} recipes · {{ col.isPublic ? 'Public' : 'Private' }}</p>
+            <img
+              :src="resolveImage(col.thumbnailUrl, col.id)"
+              :alt="col.name"
+              loading="lazy"
+              class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+            />
+            <!-- Tint fallback for thumbnail-less boards + readability scrim -->
+            <div
+              v-if="!col.thumbnailUrl"
+              :class="['absolute inset-0 bg-gradient-to-br opacity-90', collectionGradients[idx % collectionGradients.length]]"
+            ></div>
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent"
+            ></div>
+
+            <div class="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5">
+              <div class="min-w-0">
+                <h3 class="truncate font-montserrat text-xl font-extrabold text-white drop-shadow">
+                  {{ col.name }}
+                </h3>
+                <p class="mt-0.5 text-xs font-semibold text-white/85">
+                  <span class="tabular-nums">{{ col.postCount ?? 0 }}</span>
+                  {{ (col.postCount ?? 0) === 1 ? 'recipe' : 'recipes' }}
+                </p>
+              </div>
+              <span
+                class="flex shrink-0 items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur"
+              >
+                <BaseIcons :name="col.isPublic ? 'globe-alt' : 'lock-closed'" size="xs" />
+                {{ col.isPublic ? 'Public' : 'Private' }}
+              </span>
             </div>
-          </div>
+          </article>
         </div>
-        <div v-else class="flex flex-col items-center justify-center py-24 text-center">
-          <BaseIcons name="folder" size="xl" class="mx-auto mb-6 text-text-dim" />
-          <h3 class="text-xl font-bold mb-2">No collections yet</h3>
-          <p class="text-text-dim max-w-xs mx-auto mb-6">Group saved recipes into boards — meal plans, holidays, anything.</p>
-          <button @click="showNewModal = true" class="btn-primary px-8">+ Create Collection</button>
+
+        <!-- Truly empty (no collections at all) -->
+        <div
+          v-if="!isLoadingCollections && collections.length === 0"
+          class="mt-5 flex flex-col items-center justify-center rounded-card border-2 border-dashed border-border bg-background-secondary/50 px-6 py-16 text-center"
+        >
+          <div class="mb-5 grid h-16 w-16 place-items-center rounded-full bg-orange-soft text-orange">
+            <BaseIcons name="folder" size="xl" />
+          </div>
+          <h3 class="mb-2 font-montserrat text-xl font-bold text-text">No collections yet</h3>
+          <p class="mx-auto max-w-xs text-pretty text-text-dim">
+            Group saved recipes into boards — meal plans, holidays, anything.
+          </p>
         </div>
       </div>
 
       <!-- All saved tab -->
       <div v-else-if="activeTab === 'all'">
-        <PinGrid
-          v-if="posts.length > 0"
-          :posts="posts"
-          @post-click="handlePostClick"
-        />
+        <PinGrid v-if="posts.length > 0" :posts="posts" @post-click="handlePostClick" />
         <div
           v-if="isLoadingPosts"
-          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-4"
+          class="mt-4 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
         >
           <PinSkeleton v-for="i in 5" :key="i" />
         </div>
         <div
           v-if="!isLoadingPosts && posts.length === 0"
-          class="flex flex-col items-center justify-center py-24 text-center"
+          class="flex flex-col items-center justify-center rounded-card border-2 border-dashed border-border bg-background-secondary/50 px-6 py-20 text-center"
         >
-          <BaseIcons name="bookmark" size="xl" class="mx-auto mb-6 text-text-dim" />
-          <h3 class="text-xl font-bold mb-2">No saved recipes yet</h3>
-          <p class="text-text-dim max-w-xs mx-auto">Tap the heart on any recipe you love to save it.</p>
-          <RouterLink to="/" class="mt-6 btn-primary px-8">Discover Recipes</RouterLink>
+          <div class="mb-5 grid h-16 w-16 place-items-center rounded-full bg-orange-soft text-orange">
+            <BaseIcons name="bookmark" size="xl" />
+          </div>
+          <h3 class="mb-2 font-montserrat text-xl font-bold text-text">No saved recipes yet</h3>
+          <p class="mx-auto max-w-xs text-pretty text-text-dim">
+            Tap the bookmark on any recipe you love to save it.
+          </p>
+          <RouterLink to="/" class="btn-primary mt-6 !text-xs">Discover Recipes</RouterLink>
         </div>
       </div>
     </div>
 
     <!-- New collection modal -->
-    <div
-      v-if="showNewModal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60"
-      @click.self="showNewModal = false"
-    >
-      <div class="bg-surface border-1.5 border-border rounded-3xl p-8 max-w-md w-full shadow-modal">
-        <h3 class="font-montserrat font-extrabold text-2xl mb-6">New Collection</h3>
-        <label class="block text-xs font-bold uppercase tracking-widest text-text-dim mb-2">Name</label>
-        <input
-          v-model="newName"
-          type="text"
-          placeholder="Sunday Brunch"
-          class="w-full px-4 py-3 bg-background-secondary border-1.5 border-border rounded-xl text-sm outline-none focus:border-orange transition-all mb-4"
-        />
-        <label class="block text-xs font-bold uppercase tracking-widest text-text-dim mb-2">Description (optional)</label>
-        <textarea
-          v-model="newDescription"
-          rows="3"
-          placeholder="Easy weekend recipes for slow mornings"
-          class="w-full px-4 py-3 bg-background-secondary border-1.5 border-border rounded-xl text-sm outline-none focus:border-orange transition-all resize-none mb-4"
-        ></textarea>
-        <label class="flex items-center gap-3 cursor-pointer mb-6">
-          <input v-model="newPublic" type="checkbox" class="w-4 h-4 accent-orange" />
-          <span class="text-sm">Make public — others can browse</span>
-        </label>
-        <div class="flex gap-3 justify-end">
-          <button @click="showNewModal = false" class="btn-secondary px-6 py-2.5 text-xs">Cancel</button>
-          <button @click="createCollection" :disabled="!canCreate" class="btn-primary px-6 py-2.5 text-xs disabled:opacity-50">
-            {{ isCreating ? 'Creating…' : 'Create' }}
-          </button>
+    <Transition name="modal">
+      <div
+        v-if="showNewModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-5 backdrop-blur-sm"
+        @click.self="showNewModal = false"
+      >
+        <div
+          class="w-full max-w-md overflow-hidden rounded-[28px] border border-border bg-surface shadow-modal"
+        >
+          <div class="p-7">
+            <div class="mb-6 flex items-start justify-between">
+              <div>
+                <h3 class="font-montserrat text-2xl font-extrabold tracking-tight text-text">
+                  New Collection
+                </h3>
+                <p class="mt-1 text-sm text-text-dim">Give your board a name and you’re set.</p>
+              </div>
+              <button
+                @click="showNewModal = false"
+                aria-label="Close"
+                class="grid h-9 w-9 place-items-center rounded-full bg-background-secondary text-text-dim transition-[transform,color] duration-200 ease-revamp hover:text-text active:scale-90"
+              >
+                <BaseIcons name="x-mark" size="sm" />
+              </button>
+            </div>
+
+            <label class="mb-2 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-text-dim"
+              >Name</label
+            >
+            <input
+              v-model="newName"
+              type="text"
+              placeholder="Sunday Brunch"
+              class="mb-4 w-full rounded-xl border-1.5 border-border bg-background-secondary px-4 py-3 text-sm text-text outline-none transition-colors duration-200 focus:border-orange"
+              @keyup.enter="createCollection"
+            />
+
+            <label class="mb-2 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-text-dim"
+              >Description <span class="text-text-dim/60">(optional)</span></label
+            >
+            <textarea
+              v-model="newDescription"
+              rows="3"
+              placeholder="Easy weekend recipes for slow mornings"
+              class="mb-4 w-full resize-none rounded-xl border-1.5 border-border bg-background-secondary px-4 py-3 text-sm text-text outline-none transition-colors duration-200 focus:border-orange"
+            ></textarea>
+
+            <label
+              class="mb-6 flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-background-secondary/60 p-3"
+            >
+              <input v-model="newPublic" type="checkbox" class="h-4 w-4 accent-orange" />
+              <span class="text-sm text-text">
+                <span class="font-semibold">Make public</span>
+                <span class="text-text-dim"> — others can browse this board</span>
+              </span>
+            </label>
+
+            <div class="flex justify-end gap-3">
+              <button
+                @click="showNewModal = false"
+                class="rounded-full border border-border bg-surface px-5 py-2.5 font-montserrat text-xs font-bold uppercase tracking-widest text-text transition-[transform,color,border-color] duration-200 ease-revamp hover:border-orange/40 hover:text-orange active:scale-[0.96]"
+              >
+                Cancel
+              </button>
+              <button
+                @click="createCollection"
+                :disabled="!canCreate"
+                class="inline-flex items-center gap-2 rounded-full bg-orange px-6 py-2.5 font-montserrat text-xs font-bold uppercase tracking-widest text-white shadow-[0_6px_24px_rgba(255,107,53,0.35)] transition-[transform,background-color,opacity] duration-200 ease-revamp hover:bg-orange-light active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+              >
+                <span
+                  v-if="isCreating"
+                  class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
+                ></span>
+                {{ isCreating ? 'Creating' : 'Create' }}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </Transition>
 
-    <RecipeModal
-      :post-id="selectedPostId"
-      :show="showPostModal"
-      @close="showPostModal = false"
-    />
+    <RecipeModal :post-id="selectedPostId" :show="showPostModal" @close="showPostModal = false" />
   </div>
 </template>
+
+<style scoped>
+.saved-recipes-view {
+  -webkit-font-smoothing: antialiased;
+}
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+.modal-enter-active > div,
+.modal-leave-active > div {
+  transition:
+    opacity 0.25s cubic-bezier(0.34, 1.2, 0.64, 1),
+    transform 0.25s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+.modal-enter-from > div {
+  opacity: 0;
+  transform: translateY(12px) scale(0.97);
+}
+.modal-leave-to > div {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-enter-active,
+  .modal-leave-active,
+  .modal-enter-active > div,
+  .modal-leave-active > div {
+    transition: none;
+  }
+}
+</style>

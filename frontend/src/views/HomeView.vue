@@ -189,9 +189,9 @@ watch(isNearBottom, (near) => {
           :key="cat.name"
           @click="selectCategory(cat.name)"
           :class="[
-            'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors shrink-0',
+            'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all shrink-0 active:scale-95',
             selectedCategory === cat.name
-              ? 'bg-orange text-white'
+              ? 'bg-orange text-white shadow-card-hover'
               : 'bg-surface dark:bg-surface border border-border text-text-muted dark:text-text-muted hover:border-orange hover:text-orange',
           ]"
         >
@@ -210,7 +210,10 @@ watch(isNearBottom, (near) => {
           Back to feed
         </button>
         <div class="flex items-center gap-3">
-          <h2 class="font-montserrat font-extrabold text-2xl tracking-tight">{{ activeTag }}</h2>
+          <h2 class="font-montserrat font-extrabold text-2xl tracking-tight flex items-center gap-2.5">
+            <span class="w-1 h-6 rounded-full bg-orange"></span>
+            {{ activeTag }}
+          </h2>
           <span class="px-2.5 py-0.5 rounded-full bg-orange-soft text-orange text-sm font-bold">{{ displayPosts.length }} recipes</span>
         </div>
       </div>

@@ -21,7 +21,7 @@ interface FctEntry {
   vit_c: number
 }
 
-const FCT: FctEntry[] = [
+export const FCT: FctEntry[] = [
   // ── Grains & Tubers ────────────────────────────────────────
   { food_item: 'Rice, white, cooked', alt_name: 'Kanin', category: 'Grain', edible_portion: 100, energy: 130, protein: 2.7, fat: 0.3, carb: 28.2, calcium: 10, phos: 43, iron: 0.2, vit_a: 0, thia: 0.02, ribo: 0.01, nia: 0.4, vit_c: 0 },
   { food_item: 'Rice, white, raw', alt_name: 'Bigas', category: 'Grain', edible_portion: 100, energy: 365, protein: 7.1, fat: 0.6, carb: 80.4, calcium: 28, phos: 115, iron: 0.8, vit_a: 0, thia: 0.07, ribo: 0.05, nia: 1.6, vit_c: 0 },
@@ -234,6 +234,126 @@ const FCT: FctEntry[] = [
   { food_item: 'Vanilla extract', category: 'Spice', edible_portion: 100, energy: 288, protein: 0.1, fat: 0.1, carb: 12.6, calcium: 11, phos: 6, iron: 0.1, vit_a: 0, thia: 0.01, ribo: 0.09, nia: 0.4, vit_c: 0 },
   { food_item: 'Honey', category: 'Spice', edible_portion: 100, energy: 304, protein: 0.3, fat: 0.0, carb: 82.4, calcium: 6, phos: 4, iron: 0.4, vit_a: 0, thia: 0.0, ribo: 0.04, nia: 0.1, vit_c: 0.5 },
   { food_item: 'Sesame seeds', category: 'Spice', edible_portion: 100, energy: 573, protein: 17.7, fat: 49.7, carb: 23.4, calcium: 975, phos: 629, iron: 14.5, vit_a: 9, thia: 0.79, ribo: 0.25, nia: 4.5, vit_c: 0 },
+
+  // ════════════════════════════════════════════════════════════════
+  //  EXPANSION BATCH — 100 additional real Philippine foods (FNRI/USDA)
+  // ════════════════════════════════════════════════════════════════
+
+  // ── Native & Tropical Fruits ─────────────────────────────────
+  { food_item: 'Chico, raw', alt_name: 'Sapote', category: 'Fruit', edible_portion: 80, energy: 83, protein: 0.4, fat: 1.1, carb: 19.9, calcium: 21, phos: 12, iron: 0.8, vit_a: 60, thia: 0.02, ribo: 0.02, nia: 0.2, vit_c: 14 },
+  { food_item: 'Marang, raw', alt_name: 'Madang', category: 'Fruit', edible_portion: 30, energy: 92, protein: 1.5, fat: 0.4, carb: 22.4, calcium: 17, phos: 30, iron: 0.6, vit_a: 0, thia: 0.13, ribo: 0.05, nia: 0.6, vit_c: 3 },
+  { food_item: 'Durian, raw', alt_name: 'Durian', category: 'Fruit', edible_portion: 32, energy: 147, protein: 1.5, fat: 5.3, carb: 27.1, calcium: 6, phos: 39, iron: 0.4, vit_a: 44, thia: 0.37, ribo: 0.20, nia: 1.1, vit_c: 20 },
+  { food_item: 'Mangosteen, raw', alt_name: 'Mangostan', category: 'Fruit', edible_portion: 31, energy: 73, protein: 0.4, fat: 0.6, carb: 17.9, calcium: 12, phos: 8, iron: 0.3, vit_a: 2, thia: 0.05, ribo: 0.05, nia: 0.3, vit_c: 3 },
+  { food_item: 'Macopa, raw', alt_name: 'Wax apple', category: 'Fruit', edible_portion: 90, energy: 25, protein: 0.6, fat: 0.2, carb: 5.7, calcium: 29, phos: 8, iron: 0.1, vit_a: 17, thia: 0.02, ribo: 0.03, nia: 0.8, vit_c: 22 },
+  { food_item: 'Aratiles, raw', alt_name: 'Mansanitas', category: 'Fruit', edible_portion: 90, energy: 81, protein: 1.0, fat: 1.6, carb: 17.9, calcium: 124, phos: 84, iron: 1.2, vit_a: 0, thia: 0.06, ribo: 0.04, nia: 0.5, vit_c: 80 },
+  { food_item: 'Bignay, raw', alt_name: 'Bignai', category: 'Fruit', edible_portion: 80, energy: 56, protein: 0.7, fat: 0.4, carb: 13.7, calcium: 24, phos: 18, iron: 0.7, vit_a: 30, thia: 0.03, ribo: 0.05, nia: 0.4, vit_c: 19 },
+  { food_item: 'Tiesa, raw', alt_name: 'Canistel', category: 'Fruit', edible_portion: 65, energy: 138, protein: 1.7, fat: 0.6, carb: 36.7, calcium: 27, phos: 38, iron: 0.9, vit_a: 100, thia: 0.17, ribo: 0.01, nia: 3.7, vit_c: 58 },
+  { food_item: 'Caimito, purple, raw', alt_name: 'Star apple, purple', category: 'Fruit', edible_portion: 70, energy: 67, protein: 1.5, fat: 0.6, carb: 14.7, calcium: 17, phos: 25, iron: 0.7, vit_a: 0, thia: 0.05, ribo: 0.04, nia: 0.5, vit_c: 9 },
+  { food_item: 'Balimbing, raw', alt_name: 'Starfruit', category: 'Fruit', edible_portion: 91, energy: 31, protein: 1.0, fat: 0.3, carb: 6.7, calcium: 3, phos: 12, iron: 0.1, vit_a: 61, thia: 0.01, ribo: 0.02, nia: 0.4, vit_c: 34 },
+  { food_item: 'Sineguelas, raw', alt_name: 'Spanish plum', category: 'Fruit', edible_portion: 80, energy: 73, protein: 0.8, fat: 0.2, carb: 17.0, calcium: 26, phos: 32, iron: 0.5, vit_a: 80, thia: 0.05, ribo: 0.05, nia: 0.5, vit_c: 5 },
+  { food_item: 'Tambis, raw', alt_name: 'Water apple', category: 'Fruit', edible_portion: 90, energy: 32, protein: 0.5, fat: 0.3, carb: 7.2, calcium: 7, phos: 9, iron: 0.4, vit_a: 17, thia: 0.02, ribo: 0.03, nia: 0.6, vit_c: 22 },
+  { food_item: 'Langka seeds, boiled', alt_name: 'Buto ng langka', category: 'Fruit', edible_portion: 75, energy: 184, protein: 5.3, fat: 1.1, carb: 38.4, calcium: 50, phos: 38, iron: 1.5, vit_a: 17, thia: 0.25, ribo: 0.11, nia: 0.9, vit_c: 11 },
+  { food_item: 'Mabolo, raw', alt_name: 'Velvet apple', category: 'Fruit', edible_portion: 85, energy: 79, protein: 2.8, fat: 0.2, carb: 17.4, calcium: 46, phos: 18, iron: 0.6, vit_a: 35, thia: 0.02, ribo: 0.03, nia: 0.5, vit_c: 18 },
+  { food_item: 'Guapple, raw', alt_name: 'Apple guava', category: 'Fruit', edible_portion: 90, energy: 51, protein: 0.8, fat: 0.6, carb: 11.9, calcium: 13, phos: 28, iron: 0.3, vit_a: 250, thia: 0.05, ribo: 0.04, nia: 1.0, vit_c: 160 },
+
+  // ── Vegetables & Greens ──────────────────────────────────────
+  { food_item: 'Ampalaya tops, raw', alt_name: 'Talbos ng ampalaya', category: 'Vegetable', edible_portion: 80, energy: 35, protein: 4.5, fat: 0.4, carb: 5.6, calcium: 92, phos: 65, iron: 3.0, vit_a: 4500, thia: 0.10, ribo: 0.25, nia: 1.0, vit_c: 88 },
+  { food_item: 'Squash flower, raw', alt_name: 'Bulaklak ng kalabasa', category: 'Vegetable', edible_portion: 85, energy: 15, protein: 1.0, fat: 0.1, carb: 3.3, calcium: 39, phos: 49, iron: 0.7, vit_a: 1947, thia: 0.04, ribo: 0.08, nia: 0.7, vit_c: 28 },
+  { food_item: 'Squash tops, raw', alt_name: 'Talbos ng kalabasa', category: 'Vegetable', edible_portion: 70, energy: 19, protein: 3.1, fat: 0.4, carb: 2.6, calcium: 39, phos: 70, iron: 2.1, vit_a: 1500, thia: 0.09, ribo: 0.15, nia: 0.5, vit_c: 11 },
+  { food_item: 'Ubod, raw', alt_name: 'Heart of palm', category: 'Vegetable', edible_portion: 100, energy: 36, protein: 2.7, fat: 0.2, carb: 6.5, calcium: 18, phos: 53, iron: 1.0, vit_a: 0, thia: 0.04, ribo: 0.06, nia: 0.5, vit_c: 8 },
+  { food_item: 'Katuray flowers, raw', alt_name: 'Katuray', category: 'Vegetable', edible_portion: 90, energy: 27, protein: 1.4, fat: 0.1, carb: 6.7, calcium: 19, phos: 30, iron: 0.8, vit_a: 0, thia: 0.08, ribo: 0.08, nia: 0.5, vit_c: 73 },
+  { food_item: 'Himbabao, raw', alt_name: 'Alukon', category: 'Vegetable', edible_portion: 80, energy: 40, protein: 3.5, fat: 0.5, carb: 6.5, calcium: 100, phos: 60, iron: 2.0, vit_a: 500, thia: 0.08, ribo: 0.12, nia: 0.8, vit_c: 30 },
+  { food_item: 'Malungay pods, raw', alt_name: 'Bunga ng malunggay', category: 'Vegetable', edible_portion: 50, energy: 37, protein: 2.1, fat: 0.2, carb: 8.5, calcium: 30, phos: 110, iron: 0.4, vit_a: 74, thia: 0.05, ribo: 0.07, nia: 0.6, vit_c: 120 },
+  { food_item: 'Lima beans, fresh', alt_name: 'Patani', category: 'Vegetable', edible_portion: 100, energy: 113, protein: 6.8, fat: 0.7, carb: 20.0, calcium: 34, phos: 136, iron: 3.1, vit_a: 303, thia: 0.22, ribo: 0.10, nia: 1.5, vit_c: 23 },
+  { food_item: 'Sayote tops, raw', alt_name: 'Talbos ng sayote', category: 'Vegetable', edible_portion: 75, energy: 30, protein: 4.0, fat: 0.4, carb: 4.7, calcium: 58, phos: 80, iron: 2.5, vit_a: 1500, thia: 0.08, ribo: 0.18, nia: 0.9, vit_c: 16 },
+  { food_item: 'Cassava leaves, raw', alt_name: 'Dahon ng kamoteng kahoy', category: 'Vegetable', edible_portion: 70, energy: 91, protein: 7.0, fat: 1.0, carb: 13.0, calcium: 165, phos: 99, iron: 2.0, vit_a: 8000, thia: 0.16, ribo: 0.32, nia: 1.8, vit_c: 295 },
+  { food_item: 'Banana blossom, cooked', alt_name: 'Pusong saba, luto', category: 'Vegetable', edible_portion: 100, energy: 47, protein: 1.5, fat: 0.5, carb: 9.5, calcium: 52, phos: 70, iron: 1.6, vit_a: 45, thia: 0.04, ribo: 0.05, nia: 0.6, vit_c: 8 },
+  { food_item: 'Wood ear mushroom, dried', alt_name: 'Tenga ng daga', category: 'Vegetable', edible_portion: 100, energy: 284, protein: 9.3, fat: 0.7, carb: 73.0, calcium: 159, phos: 184, iron: 56.1, vit_a: 0, thia: 0.02, ribo: 0.84, nia: 6.3, vit_c: 0 },
+  { food_item: 'Shiitake mushroom, dried', alt_name: 'Shiitake', category: 'Vegetable', edible_portion: 100, energy: 296, protein: 9.6, fat: 1.0, carb: 75.4, calcium: 11, phos: 294, iron: 1.7, vit_a: 0, thia: 0.30, ribo: 1.27, nia: 14.1, vit_c: 4 },
+  { food_item: 'Oyster mushroom, raw', alt_name: 'Kabuteng tainga', category: 'Vegetable', edible_portion: 100, energy: 33, protein: 3.3, fat: 0.4, carb: 6.1, calcium: 3, phos: 120, iron: 1.3, vit_a: 2, thia: 0.13, ribo: 0.35, nia: 5.0, vit_c: 0 },
+  { food_item: 'Onion leeks, raw', alt_name: 'Kutsay', category: 'Vegetable', edible_portion: 80, energy: 30, protein: 2.7, fat: 0.4, carb: 4.4, calcium: 105, phos: 50, iron: 1.6, vit_a: 4353, thia: 0.08, ribo: 0.12, nia: 0.6, vit_c: 30 },
+  { food_item: 'Kulasiman, raw', alt_name: 'Common purslane', category: 'Vegetable', edible_portion: 100, energy: 20, protein: 2.0, fat: 0.4, carb: 3.4, calcium: 65, phos: 44, iron: 1.9, vit_a: 1320, thia: 0.05, ribo: 0.11, nia: 0.5, vit_c: 21 },
+
+  // ── Fish & Seafood ───────────────────────────────────────────
+  { food_item: 'Sardine, fresh', alt_name: 'Tamban', category: 'Protein', edible_portion: 100, energy: 159, protein: 19.0, fat: 9.0, carb: 0, calcium: 79, phos: 252, iron: 1.4, vit_a: 30, thia: 0.05, ribo: 0.18, nia: 6.5, vit_c: 0 },
+  { food_item: 'Anchovy, fresh', alt_name: 'Dilis', category: 'Protein', edible_portion: 100, energy: 131, protein: 20.4, fat: 4.8, carb: 0, calcium: 147, phos: 174, iron: 3.3, vit_a: 50, thia: 0.06, ribo: 0.26, nia: 14.0, vit_c: 0 },
+  { food_item: 'Skipjack tuna, fresh', alt_name: 'Tulingan', category: 'Protein', edible_portion: 100, energy: 103, protein: 22.0, fat: 1.0, carb: 0, calcium: 29, phos: 220, iron: 1.3, vit_a: 16, thia: 0.03, ribo: 0.30, nia: 18.0, vit_c: 0 },
+  { food_item: 'Yellowfin tuna, fresh', alt_name: 'Tambakol', category: 'Protein', edible_portion: 100, energy: 109, protein: 24.4, fat: 0.5, carb: 0, calcium: 4, phos: 278, iron: 0.8, vit_a: 18, thia: 0.12, ribo: 0.05, nia: 18.5, vit_c: 0 },
+  { food_item: 'Indian mackerel, fresh', alt_name: 'Alumahan', category: 'Protein', edible_portion: 100, energy: 124, protein: 21.9, fat: 3.6, carb: 0, calcium: 47, phos: 218, iron: 1.4, vit_a: 53, thia: 0.10, ribo: 0.36, nia: 8.0, vit_c: 0 },
+  { food_item: 'Slipmouth fish, fresh', alt_name: 'Sapsap', category: 'Protein', edible_portion: 65, energy: 88, protein: 17.6, fat: 1.6, carb: 0, calcium: 58, phos: 180, iron: 1.2, vit_a: 30, thia: 0.04, ribo: 0.08, nia: 2.5, vit_c: 0 },
+  { food_item: 'Goatfish, fresh', alt_name: 'Saramulyete', category: 'Protein', edible_portion: 65, energy: 96, protein: 19.0, fat: 2.0, carb: 0, calcium: 40, phos: 200, iron: 1.0, vit_a: 25, thia: 0.04, ribo: 0.07, nia: 3.0, vit_c: 0 },
+  { food_item: 'Rabbitfish, fresh', alt_name: 'Danggit', category: 'Protein', edible_portion: 60, energy: 99, protein: 18.5, fat: 2.6, carb: 0, calcium: 45, phos: 190, iron: 1.1, vit_a: 28, thia: 0.04, ribo: 0.08, nia: 3.2, vit_c: 0 },
+  { food_item: 'Dried danggit', alt_name: 'Danggit tuyo', category: 'Protein', edible_portion: 100, energy: 295, protein: 56.0, fat: 7.5, carb: 0, calcium: 1100, phos: 980, iron: 6.0, vit_a: 40, thia: 0.05, ribo: 0.20, nia: 7.0, vit_c: 0 },
+  { food_item: 'Pompano, fresh', alt_name: 'Pampano', category: 'Protein', edible_portion: 70, energy: 164, protein: 18.5, fat: 9.5, carb: 0, calcium: 22, phos: 230, iron: 0.6, vit_a: 30, thia: 0.06, ribo: 0.13, nia: 3.2, vit_c: 0 },
+  { food_item: 'Crab fat', alt_name: 'Aligue', category: 'Protein', edible_portion: 100, energy: 250, protein: 12.0, fat: 22.0, carb: 0.5, calcium: 60, phos: 230, iron: 2.0, vit_a: 200, thia: 0.05, ribo: 0.18, nia: 2.0, vit_c: 0 },
+  { food_item: 'Sea cucumber, fresh', alt_name: 'Balatan', category: 'Protein', edible_portion: 100, energy: 56, protein: 13.0, fat: 0.4, carb: 0, calcium: 285, phos: 30, iron: 2.0, vit_a: 0, thia: 0.01, ribo: 0.05, nia: 0.3, vit_c: 0 },
+  { food_item: 'Abalone, fresh', alt_name: 'Kapinan', category: 'Protein', edible_portion: 100, energy: 105, protein: 17.1, fat: 0.8, carb: 6.0, calcium: 31, phos: 184, iron: 3.2, vit_a: 2, thia: 0.19, ribo: 0.10, nia: 1.5, vit_c: 2 },
+  { food_item: 'Sea urchin roe, fresh', alt_name: 'Tayom', category: 'Protein', edible_portion: 100, energy: 125, protein: 16.0, fat: 4.8, carb: 3.0, calcium: 30, phos: 170, iron: 2.5, vit_a: 600, thia: 0.10, ribo: 0.45, nia: 1.5, vit_c: 0 },
+  { food_item: 'Scallop, fresh', alt_name: 'Tipay', category: 'Protein', edible_portion: 100, energy: 88, protein: 16.8, fat: 0.8, carb: 2.4, calcium: 24, phos: 218, iron: 0.6, vit_a: 0, thia: 0.01, ribo: 0.07, nia: 1.1, vit_c: 0 },
+  { food_item: 'Octopus, fresh', alt_name: 'Pugita', category: 'Protein', edible_portion: 100, energy: 82, protein: 14.9, fat: 1.0, carb: 2.2, calcium: 53, phos: 186, iron: 5.3, vit_a: 45, thia: 0.03, ribo: 0.04, nia: 2.1, vit_c: 5 },
+  { food_item: 'Freshwater eel, raw', alt_name: 'Igat', category: 'Protein', edible_portion: 84, energy: 184, protein: 18.4, fat: 11.7, carb: 0, calcium: 20, phos: 216, iron: 0.5, vit_a: 1043, thia: 0.15, ribo: 0.04, nia: 3.5, vit_c: 2 },
+  { food_item: 'Snail, freshwater, raw', alt_name: 'Kuhol', category: 'Protein', edible_portion: 30, energy: 76, protein: 12.2, fat: 0.7, carb: 5.0, calcium: 217, phos: 78, iron: 3.5, vit_a: 30, thia: 0.02, ribo: 0.12, nia: 1.4, vit_c: 0 },
+
+  // ── Meat & Poultry ───────────────────────────────────────────
+  { food_item: 'Pork, kasim, raw', alt_name: 'Pigue ng baboy', category: 'Protein', edible_portion: 100, energy: 178, protein: 19.5, fat: 11.0, carb: 0, calcium: 9, phos: 195, iron: 1.0, vit_a: 5, thia: 0.70, ribo: 0.22, nia: 4.5, vit_c: 0 },
+  { food_item: 'Pork intestine, raw', alt_name: 'Bituka ng baboy', category: 'Protein', edible_portion: 100, energy: 121, protein: 14.0, fat: 7.0, carb: 0, calcium: 12, phos: 100, iron: 1.1, vit_a: 0, thia: 0.04, ribo: 0.10, nia: 1.0, vit_c: 0 },
+  { food_item: 'Pork kidney, raw', alt_name: 'Bato ng baboy', category: 'Protein', edible_portion: 100, energy: 100, protein: 16.5, fat: 3.2, carb: 0, calcium: 11, phos: 218, iron: 5.0, vit_a: 130, thia: 0.34, ribo: 1.14, nia: 5.2, vit_c: 13 },
+  { food_item: 'Pork ears, raw', alt_name: 'Tenga ng baboy', category: 'Protein', edible_portion: 100, energy: 234, protein: 18.4, fat: 17.1, carb: 0, calcium: 20, phos: 30, iron: 0.4, vit_a: 0, thia: 0.05, ribo: 0.12, nia: 0.5, vit_c: 0 },
+  { food_item: 'Pork hock, raw', alt_name: 'Pata ng baboy', category: 'Protein', edible_portion: 70, energy: 234, protein: 16.5, fat: 18.7, carb: 0, calcium: 18, phos: 120, iron: 0.8, vit_a: 0, thia: 0.30, ribo: 0.15, nia: 2.5, vit_c: 0 },
+  { food_item: 'Beef tripe, raw', alt_name: 'Tuwalya ng baka', category: 'Protein', edible_portion: 100, energy: 85, protein: 12.1, fat: 4.0, carb: 0, calcium: 69, phos: 64, iron: 0.6, vit_a: 0, thia: 0.02, ribo: 0.07, nia: 0.9, vit_c: 0 },
+  { food_item: 'Beef oxtail, raw', alt_name: 'Buntot ng baka', category: 'Protein', edible_portion: 56, energy: 262, protein: 18.4, fat: 20.5, carb: 0, calcium: 12, phos: 145, iron: 2.8, vit_a: 0, thia: 0.04, ribo: 0.16, nia: 3.3, vit_c: 0 },
+  { food_item: 'Beef brisket, raw', alt_name: 'Punta y pecho', category: 'Protein', edible_portion: 100, energy: 202, protein: 18.4, fat: 13.8, carb: 0, calcium: 7, phos: 165, iron: 2.0, vit_a: 0, thia: 0.05, ribo: 0.15, nia: 4.0, vit_c: 0 },
+  { food_item: 'Carabeef, lean, raw', alt_name: 'Karne ng kalabaw', category: 'Protein', edible_portion: 100, energy: 99, protein: 20.4, fat: 1.6, carb: 0, calcium: 14, phos: 196, iron: 2.5, vit_a: 0, thia: 0.06, ribo: 0.17, nia: 4.5, vit_c: 0 },
+  { food_item: 'Goat meat, lean, raw', alt_name: 'Kambing', category: 'Protein', edible_portion: 100, energy: 109, protein: 20.6, fat: 2.3, carb: 0, calcium: 13, phos: 180, iron: 3.7, vit_a: 0, thia: 0.08, ribo: 0.49, nia: 3.8, vit_c: 0 },
+  { food_item: 'Duck meat, raw', alt_name: 'Karne ng pato', category: 'Protein', edible_portion: 71, energy: 211, protein: 18.3, fat: 15.2, carb: 0, calcium: 11, phos: 203, iron: 2.4, vit_a: 76, thia: 0.36, ribo: 0.40, nia: 5.3, vit_c: 0 },
+  { food_item: 'Quail meat, raw', alt_name: 'Pugo', category: 'Protein', edible_portion: 80, energy: 134, protein: 21.8, fat: 4.5, carb: 0, calcium: 13, phos: 275, iron: 4.5, vit_a: 78, thia: 0.28, ribo: 0.26, nia: 8.2, vit_c: 7 },
+  { food_item: 'Quail egg, raw', alt_name: 'Itlog ng pugo', category: 'Protein', edible_portion: 92, energy: 158, protein: 13.1, fat: 11.1, carb: 0.4, calcium: 64, phos: 226, iron: 3.7, vit_a: 543, thia: 0.13, ribo: 0.79, nia: 0.2, vit_c: 0 },
+  { food_item: 'Chicken feet, raw', alt_name: 'Adidas', category: 'Protein', edible_portion: 60, energy: 215, protein: 19.4, fat: 14.6, carb: 0.2, calcium: 88, phos: 83, iron: 0.9, vit_a: 100, thia: 0.06, ribo: 0.20, nia: 0.4, vit_c: 0 },
+  { food_item: 'Chicken gizzard, raw', alt_name: 'Balunbalunan', category: 'Protein', edible_portion: 100, energy: 94, protein: 17.7, fat: 2.1, carb: 0, calcium: 11, phos: 148, iron: 2.5, vit_a: 0, thia: 0.03, ribo: 0.23, nia: 3.7, vit_c: 4 },
+  { food_item: 'Chicken skin, raw', alt_name: 'Balat ng manok', category: 'Protein', edible_portion: 100, energy: 349, protein: 13.3, fat: 32.4, carb: 0, calcium: 11, phos: 113, iron: 1.0, vit_a: 110, thia: 0.04, ribo: 0.11, nia: 4.0, vit_c: 0 },
+  { food_item: 'Embutido', alt_name: 'Embutido', category: 'Protein', edible_portion: 100, energy: 245, protein: 13.0, fat: 17.0, carb: 9.0, calcium: 25, phos: 130, iron: 1.3, vit_a: 50, thia: 0.20, ribo: 0.18, nia: 2.5, vit_c: 2 },
+
+  // ── Grains, Tubers & Kakanin Bases ───────────────────────────
+  { food_item: 'Pinipig', alt_name: 'Pounded young rice', category: 'Grain', edible_portion: 100, energy: 358, protein: 7.0, fat: 1.0, carb: 79.0, calcium: 10, phos: 110, iron: 1.5, vit_a: 0, thia: 0.20, ribo: 0.05, nia: 2.5, vit_c: 0 },
+  { food_item: 'Rice, red, raw', alt_name: 'Pulang bigas', category: 'Grain', edible_portion: 100, energy: 356, protein: 7.5, fat: 2.6, carb: 76.0, calcium: 10, phos: 250, iron: 2.2, vit_a: 0, thia: 0.34, ribo: 0.05, nia: 4.5, vit_c: 0 },
+  { food_item: 'Millet, raw', alt_name: 'Dawa', category: 'Grain', edible_portion: 100, energy: 378, protein: 11.0, fat: 4.2, carb: 72.8, calcium: 8, phos: 285, iron: 3.0, vit_a: 0, thia: 0.42, ribo: 0.29, nia: 4.7, vit_c: 0 },
+  { food_item: 'Adlai, raw', alt_name: "Job's tears", category: 'Grain', edible_portion: 100, energy: 356, protein: 12.8, fat: 5.7, carb: 65.3, calcium: 25, phos: 280, iron: 4.5, vit_a: 0, thia: 0.30, ribo: 0.10, nia: 2.5, vit_c: 0 },
+  { food_item: 'Bibingka galapong, raw', alt_name: 'Galapong batter', category: 'Grain', edible_portion: 100, energy: 340, protein: 5.5, fat: 0.7, carb: 78.0, calcium: 8, phos: 95, iron: 0.5, vit_a: 0, thia: 0.05, ribo: 0.02, nia: 0.5, vit_c: 0 },
+  { food_item: 'Pandesal', alt_name: 'Pan de sal', category: 'Grain', edible_portion: 100, energy: 287, protein: 8.5, fat: 4.0, carb: 53.0, calcium: 30, phos: 90, iron: 1.8, vit_a: 0, thia: 0.20, ribo: 0.12, nia: 2.0, vit_c: 0 },
+  { food_item: 'Gabi, cooked', alt_name: 'Taro, boiled', category: 'Grain', edible_portion: 100, energy: 142, protein: 0.5, fat: 0.1, carb: 34.6, calcium: 18, phos: 76, iron: 0.7, vit_a: 4, thia: 0.11, ribo: 0.03, nia: 0.5, vit_c: 5 },
+  { food_item: 'Tugui, raw', alt_name: 'Lesser yam', category: 'Grain', edible_portion: 100, energy: 116, protein: 2.0, fat: 0.2, carb: 27.0, calcium: 20, phos: 50, iron: 0.8, vit_a: 0, thia: 0.10, ribo: 0.03, nia: 0.5, vit_c: 9 },
+  { food_item: 'Arrowroot, raw', alt_name: 'Uraro', category: 'Grain', edible_portion: 100, energy: 65, protein: 4.2, fat: 0.2, carb: 13.4, calcium: 6, phos: 98, iron: 2.2, vit_a: 1, thia: 0.14, ribo: 0.06, nia: 1.7, vit_c: 2 },
+
+  // ── Legumes, Nuts & Seeds ────────────────────────────────────
+  { food_item: 'Pigeon pea, dry', alt_name: 'Kadyos', category: 'Legume', edible_portion: 100, energy: 343, protein: 21.7, fat: 1.5, carb: 62.8, calcium: 130, phos: 367, iron: 5.2, vit_a: 28, thia: 0.64, ribo: 0.19, nia: 2.9, vit_c: 0 },
+  { food_item: 'Cowpea, dry', alt_name: 'Bataw', category: 'Legume', edible_portion: 100, energy: 336, protein: 23.5, fat: 1.3, carb: 60.0, calcium: 110, phos: 424, iron: 8.3, vit_a: 3, thia: 0.85, ribo: 0.23, nia: 2.1, vit_c: 2 },
+  { food_item: 'Hyacinth bean, dry', alt_name: 'Batao', category: 'Legume', edible_portion: 100, energy: 344, protein: 23.9, fat: 1.7, carb: 60.7, calcium: 130, phos: 380, iron: 5.1, vit_a: 5, thia: 0.50, ribo: 0.16, nia: 2.0, vit_c: 0 },
+  { food_item: 'Mung bean, cooked', alt_name: 'Munggo, luto', category: 'Legume', edible_portion: 100, energy: 105, protein: 7.0, fat: 0.4, carb: 19.2, calcium: 27, phos: 99, iron: 1.4, vit_a: 24, thia: 0.16, ribo: 0.06, nia: 0.6, vit_c: 1 },
+  { food_item: 'Cashew nut, raw', alt_name: 'Kasoy', category: 'Legume', edible_portion: 100, energy: 553, protein: 18.2, fat: 43.8, carb: 30.2, calcium: 37, phos: 593, iron: 6.7, vit_a: 0, thia: 0.42, ribo: 0.06, nia: 1.1, vit_c: 0 },
+  { food_item: 'Pili nut, raw', alt_name: 'Pili', category: 'Legume', edible_portion: 100, energy: 719, protein: 10.8, fat: 79.6, carb: 4.0, calcium: 145, phos: 575, iron: 3.5, vit_a: 41, thia: 0.91, ribo: 0.09, nia: 0.5, vit_c: 0 },
+  { food_item: 'Sunflower seed, raw', alt_name: 'Buto ng mirasol', category: 'Legume', edible_portion: 100, energy: 584, protein: 20.8, fat: 51.5, carb: 20.0, calcium: 78, phos: 660, iron: 5.2, vit_a: 50, thia: 1.48, ribo: 0.36, nia: 8.3, vit_c: 1 },
+  { food_item: 'Squash seed, dried', alt_name: 'Buto ng kalabasa', category: 'Legume', edible_portion: 100, energy: 559, protein: 30.2, fat: 49.0, carb: 10.7, calcium: 46, phos: 1233, iron: 8.8, vit_a: 16, thia: 0.27, ribo: 0.15, nia: 4.9, vit_c: 2 },
+
+  // ── Dairy & Beverages ────────────────────────────────────────
+  { food_item: 'Yogurt, plain', alt_name: 'Yogurt', category: 'Dairy', edible_portion: 100, energy: 61, protein: 3.5, fat: 3.3, carb: 4.7, calcium: 121, phos: 95, iron: 0.1, vit_a: 99, thia: 0.03, ribo: 0.14, nia: 0.1, vit_c: 1 },
+  { food_item: 'Powdered milk, whole', alt_name: 'Gatas na pulbos', category: 'Dairy', edible_portion: 100, energy: 496, protein: 26.3, fat: 26.7, carb: 38.4, calcium: 912, phos: 776, iron: 0.5, vit_a: 934, thia: 0.28, ribo: 1.21, nia: 0.6, vit_c: 8 },
+  { food_item: 'Carabao milk, fresh', alt_name: 'Gatas ng kalabaw', category: 'Dairy', edible_portion: 100, energy: 97, protein: 3.8, fat: 6.9, carb: 5.2, calcium: 178, phos: 120, iron: 0.1, vit_a: 178, thia: 0.05, ribo: 0.10, nia: 0.1, vit_c: 2 },
+  { food_item: 'Soy milk', alt_name: 'Gatas ng toyo', category: 'Beverage', edible_portion: 100, energy: 54, protein: 3.3, fat: 1.8, carb: 6.3, calcium: 25, phos: 52, iron: 0.6, vit_a: 3, thia: 0.06, ribo: 0.07, nia: 0.5, vit_c: 0 },
+  { food_item: 'Salabat, ginger tea', alt_name: 'Salabat', category: 'Beverage', edible_portion: 100, energy: 33, protein: 0.1, fat: 0.0, carb: 8.5, calcium: 5, phos: 3, iron: 0.2, vit_a: 0, thia: 0.0, ribo: 0.01, nia: 0.1, vit_c: 1 },
+  { food_item: 'Tsokolate, native', alt_name: 'Tablea drink', category: 'Beverage', edible_portion: 100, energy: 120, protein: 3.0, fat: 5.5, carb: 15.0, calcium: 60, phos: 90, iron: 1.5, vit_a: 30, thia: 0.03, ribo: 0.10, nia: 0.5, vit_c: 0 },
+  { food_item: 'Taho, plain', alt_name: 'Taho', category: 'Protein', edible_portion: 100, energy: 96, protein: 6.5, fat: 2.5, carb: 12.0, calcium: 90, phos: 100, iron: 1.2, vit_a: 0, thia: 0.06, ribo: 0.04, nia: 0.3, vit_c: 0 },
+
+  // ── Condiments, Sweeteners & Misc ────────────────────────────
+  { food_item: 'Coconut sugar', alt_name: 'Asukal ng niyog', category: 'Spice', edible_portion: 100, energy: 375, protein: 1.1, fat: 0.4, carb: 92.0, calcium: 8, phos: 79, iron: 2.0, vit_a: 0, thia: 0.04, ribo: 0.05, nia: 0.5, vit_c: 0 },
+  { food_item: 'Muscovado sugar', alt_name: 'Asukal na muscovado', category: 'Spice', edible_portion: 100, energy: 383, protein: 0.1, fat: 0.0, carb: 98.0, calcium: 90, phos: 25, iron: 2.5, vit_a: 0, thia: 0.01, ribo: 0.01, nia: 0.1, vit_c: 0 },
+  { food_item: 'Coconut jam', alt_name: 'Matamis sa bao', category: 'Spice', edible_portion: 100, energy: 320, protein: 1.5, fat: 9.0, carb: 58.0, calcium: 18, phos: 60, iron: 1.0, vit_a: 0, thia: 0.02, ribo: 0.02, nia: 0.4, vit_c: 1 },
+  { food_item: 'Latik', alt_name: 'Coconut curd', category: 'Fat', edible_portion: 100, energy: 480, protein: 4.0, fat: 48.0, carb: 10.0, calcium: 20, phos: 110, iron: 2.0, vit_a: 0, thia: 0.04, ribo: 0.02, nia: 0.6, vit_c: 1 },
+  { food_item: 'Bagoong, Ilocos', alt_name: 'Bagoong monamon', category: 'Spice', edible_portion: 100, energy: 92, protein: 13.0, fat: 1.6, carb: 5.0, calcium: 1050, phos: 700, iron: 5.8, vit_a: 25, thia: 0.02, ribo: 0.11, nia: 1.6, vit_c: 0 },
+  { food_item: 'Sukang Iloko', alt_name: 'Sugarcane vinegar', category: 'Spice', edible_portion: 100, energy: 16, protein: 0.1, fat: 0.0, carb: 0.7, calcium: 7, phos: 5, iron: 0.1, vit_a: 0, thia: 0.0, ribo: 0.0, nia: 0.0, vit_c: 0 },
+  { food_item: 'Calamansi juice, fresh', alt_name: 'Katas ng kalamansi', category: 'Beverage', edible_portion: 100, energy: 25, protein: 0.4, fat: 0.1, carb: 7.0, calcium: 12, phos: 9, iron: 0.2, vit_a: 5, thia: 0.02, ribo: 0.01, nia: 0.1, vit_c: 30 },
+  { food_item: 'Chili garlic sauce', alt_name: 'Sarsang bawang at sili', category: 'Spice', edible_portion: 100, energy: 88, protein: 1.8, fat: 1.0, carb: 18.0, calcium: 25, phos: 35, iron: 1.5, vit_a: 800, thia: 0.05, ribo: 0.06, nia: 0.8, vit_c: 12 },
+  { food_item: 'Liver spread, canned', alt_name: 'Liver spread', category: 'Protein', edible_portion: 100, energy: 230, protein: 11.0, fat: 18.0, carb: 6.0, calcium: 20, phos: 180, iron: 6.0, vit_a: 5000, thia: 0.15, ribo: 1.20, nia: 8.0, vit_c: 5 },
+  { food_item: 'Chicharon, pork', alt_name: 'Chicharon', category: 'Protein', edible_portion: 100, energy: 544, protein: 61.3, fat: 31.3, carb: 0, calcium: 30, phos: 50, iron: 0.8, vit_a: 0, thia: 0.04, ribo: 0.10, nia: 0.5, vit_c: 0 },
 ]
 
 async function main() {
@@ -264,11 +384,15 @@ async function main() {
   console.log(`✅ Done. Created: ${created}, Updated: ${updated}. Total in DB: ${total}`)
 }
 
-main()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+// Only run the seeder when this file is executed directly (e.g. via tsx),
+// not when FCT is imported by another module (e.g. gen-prod-sql.ts).
+if (process.argv[1] && /seed-ingredients\.ts$/.test(process.argv[1])) {
+  main()
+    .catch((e) => {
+      console.error(e)
+      process.exit(1)
+    })
+    .finally(async () => {
+      await prisma.$disconnect()
+    })
+}

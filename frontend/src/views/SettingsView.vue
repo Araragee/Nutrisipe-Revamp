@@ -226,9 +226,9 @@ const themeOptions = [
               :key="s.id"
               @click="activeSection = s.id"
               :class="[
-                'flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all whitespace-nowrap shrink-0 lg:w-full',
+                'flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-[background-color,color] duration-200 whitespace-nowrap shrink-0 lg:w-full active:scale-[0.97]',
                 activeSection === s.id
-                  ? 'bg-orange/10 text-orange'
+                  ? 'bg-orange-soft text-orange'
                   : 'text-text-muted hover:bg-background-secondary hover:text-text',
               ]"
             >
@@ -275,7 +275,7 @@ const themeOptions = [
             </div>
 
             <div class="flex gap-3 mt-8">
-              <button @click="saveProfile" :disabled="isSavingProfile" class="btn-primary px-7 py-3 text-xs disabled:opacity-50">
+              <button @click="saveProfile" :disabled="isSavingProfile" class="btn-save">
                 {{ isSavingProfile ? 'Saving…' : 'Save Profile' }}
               </button>
             </div>
@@ -294,10 +294,10 @@ const themeOptions = [
                   :key="d"
                   @click="toggleArr(prefs.dietary, d)"
                   :class="[
-                    'px-4 py-2 rounded-full border-1.5 text-xs font-bold transition-all',
+                    'px-4 py-2 rounded-full border-1.5 text-xs font-bold transition-[background-color,border-color,color,transform] duration-200 active:scale-[0.96]',
                     prefs.dietary.includes(d)
-                      ? 'bg-orange border-orange text-white'
-                      : 'bg-transparent border-border text-text hover:border-orange',
+                      ? 'bg-orange border-orange text-white shadow-[0_4px_16px_var(--orange-glow)]'
+                      : 'bg-transparent border-border text-text hover:border-orange hover:text-orange',
                   ]"
                 >{{ d }}</button>
               </div>
@@ -311,13 +311,13 @@ const themeOptions = [
                   :key="g"
                   @click="toggleArr(prefs.cuisines, g)"
                   :class="[
-                    'p-4 rounded-2xl border-1.5 text-left transition-all',
+                    'p-4 rounded-2xl border-1.5 text-left transition-[background-color,border-color,transform] duration-200 active:scale-[0.97]',
                     prefs.cuisines.includes(g)
-                      ? 'border-orange bg-orange/10'
+                      ? 'border-orange bg-orange-soft'
                       : 'border-border hover:border-orange',
                   ]"
                 >
-                  <BaseIcons :name="GOAL_LABELS[g].icon" size="lg" class="mx-auto mb-1" />
+                  <BaseIcons :name="GOAL_LABELS[g].icon" size="lg" class="mx-auto mb-1" :class="prefs.cuisines.includes(g) ? 'text-orange' : 'text-text-muted'" />
                   <span class="font-bold text-sm" :class="prefs.cuisines.includes(g) ? 'text-orange' : 'text-text'">{{ GOAL_LABELS[g].label }}</span>
                 </button>
               </div>
@@ -331,17 +331,17 @@ const themeOptions = [
                   :key="a"
                   @click="toggleArr(prefs.allergies, a)"
                   :class="[
-                    'px-4 py-2 rounded-full border-1.5 text-xs font-bold transition-all',
+                    'px-4 py-2 rounded-full border-1.5 text-xs font-bold transition-[background-color,border-color,color,transform] duration-200 active:scale-[0.96]',
                     prefs.allergies.includes(a)
                       ? 'bg-red-500/15 border-red-500 text-red-500'
-                      : 'bg-transparent border-border text-text hover:border-red-500',
+                      : 'bg-transparent border-border text-text hover:border-red-500 hover:text-red-500',
                   ]"
                 ><BaseIcons name="no-symbol" size="xs" class="inline-block mr-1 -mt-0.5" />{{ a }}</button>
               </div>
             </div>
 
             <div class="flex gap-3 mt-8">
-              <button @click="savePreferences" :disabled="isSavingPrefs" class="btn-primary px-7 py-3 text-xs disabled:opacity-50">
+              <button @click="savePreferences" :disabled="isSavingPrefs" class="btn-save">
                 {{ isSavingPrefs ? 'Saving…' : 'Save Preferences' }}
               </button>
             </div>
@@ -358,13 +358,13 @@ const themeOptions = [
                 :key="t.value"
                 @click="setMode(t.value)"
                 :class="[
-                  'p-5 rounded-2xl border-1.5 text-left transition-all',
+                  'p-5 rounded-2xl border-1.5 text-left transition-[background-color,border-color,transform] duration-200 active:scale-[0.97]',
                   mode === t.value
-                    ? 'border-orange bg-orange/10'
+                    ? 'border-orange bg-orange-soft'
                     : 'border-border hover:border-orange',
                 ]"
               >
-                <BaseIcons :name="t.icon" size="lg" class="mb-2" />
+                <BaseIcons :name="t.icon" size="lg" class="mb-2" :class="mode === t.value ? 'text-orange' : 'text-text-muted'" />
                 <span class="font-bold text-sm" :class="mode === t.value ? 'text-orange' : 'text-text'">{{ t.label }}</span>
               </button>
             </div>
@@ -393,7 +393,7 @@ const themeOptions = [
               </label>
             </div>
 
-            <button @click="saveNotifPrefs" :disabled="isPersistingPrefs" class="btn-primary px-7 py-3 text-xs mt-8 disabled:opacity-50">Save</button>
+            <button @click="saveNotifPrefs" :disabled="isPersistingPrefs" class="btn-save mt-8">Save</button>
           </div>
 
           <!-- PRIVACY -->
@@ -425,7 +425,7 @@ const themeOptions = [
               </label>
             </div>
 
-            <button @click="savePrivacyPrefs" :disabled="isPersistingPrefs" class="btn-primary px-7 py-3 text-xs mt-8 disabled:opacity-50">Save</button>
+            <button @click="savePrivacyPrefs" :disabled="isPersistingPrefs" class="btn-save mt-8">Save</button>
           </div>
 
           <!-- ACCOUNT -->
@@ -456,15 +456,15 @@ const themeOptions = [
             </div>
 
             <div class="mt-8 pt-6 border-t border-border space-y-3">
-              <button @click="logoutHere" class="w-full px-6 py-3 rounded-2xl border-1.5 border-border bg-background-secondary text-text font-bold text-sm hover:border-orange transition-all text-left flex items-center justify-between">
+              <button @click="logoutHere" class="w-full px-6 py-3.5 rounded-2xl border-1.5 border-border bg-background-secondary text-text font-bold text-sm hover:border-orange hover:text-orange transition-[color,border-color,transform] duration-200 active:scale-[0.98] text-left flex items-center justify-between group">
                 <span>Sign out of this device</span>
-                <span>→</span>
+                <span class="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
               </button>
-              <button @click="logoutEverywhere" class="w-full px-6 py-3 rounded-2xl border-1.5 border-border bg-background-secondary text-text font-bold text-sm hover:border-orange transition-all text-left flex items-center justify-between">
+              <button @click="logoutEverywhere" class="w-full px-6 py-3.5 rounded-2xl border-1.5 border-border bg-background-secondary text-text font-bold text-sm hover:border-orange hover:text-orange transition-[color,border-color,transform] duration-200 active:scale-[0.98] text-left flex items-center justify-between group">
                 <span>Sign out everywhere</span>
-                <span>→</span>
+                <span class="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
               </button>
-              <button @click="requestDeleteAccount" class="w-full px-6 py-3 rounded-2xl border-1.5 border-red-500/40 bg-red-500/5 text-red-500 font-bold text-sm hover:bg-red-500/10 transition-all text-left flex items-center justify-between">
+              <button @click="requestDeleteAccount" class="w-full px-6 py-3.5 rounded-2xl border-1.5 border-red-500/40 bg-red-500/5 text-red-500 font-bold text-sm hover:bg-red-500/10 transition-[background-color,transform] duration-200 active:scale-[0.98] text-left flex items-center justify-between">
                 <span>Delete my account</span>
                 <BaseIcons name="exclamation-triangle" size="sm" />
               </button>
@@ -484,15 +484,21 @@ const themeOptions = [
   border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
-:global(.dark) .ls-card {
+:global(.dark .ls-card) {
   background: rgba(15, 13, 21, 0.86);
 }
 
 .settings-card {
-  background: var(--bg2);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 32px;
-  padding: 32px;
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+}
+@media (min-width: 768px) {
+  .settings-card {
+    padding: 32px;
+  }
 }
 
 .settings-h2 {
@@ -501,6 +507,7 @@ const themeOptions = [
   font-size: 1.5rem;
   letter-spacing: -0.01em;
   color: var(--text, #1a0f08);
+  text-wrap: balance;
 }
 
 .settings-h3 {
@@ -531,16 +538,21 @@ const themeOptions = [
 .settings-input {
   width: 100%;
   padding: 0.85rem 1rem;
-  background: var(--surface, rgba(255, 255, 255, 0.7));
+  background: var(--bg2);
   border: 1.5px solid var(--border, rgba(0, 0, 0, 0.08));
   border-radius: 14px;
   font-size: 0.9rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   color: inherit;
+}
+.settings-input::placeholder {
+  color: var(--text3);
 }
 .settings-input:focus {
   border-color: var(--orange, #ff6b35);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px var(--orange-soft);
 }
 
 .settings-hint {
@@ -555,10 +567,11 @@ const themeOptions = [
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  background: var(--surface, rgba(255, 255, 255, 0.6));
+  background: var(--bg2);
   border: 1px solid var(--border, rgba(0, 0, 0, 0.06));
   border-radius: 16px;
   cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
 }
 .settings-row:hover {
   border-color: var(--orange, #ff6b35);
@@ -566,32 +579,67 @@ const themeOptions = [
 
 .settings-switch {
   appearance: none;
-  width: 44px;
-  height: 24px;
-  background: var(--bg2);
+  width: 46px;
+  height: 26px;
+  background: var(--border);
   border-radius: 999px;
   position: relative;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.25s cubic-bezier(0.34, 1.2, 0.64, 1);
   flex-shrink: 0;
 }
 .settings-switch::before {
   content: '';
   position: absolute;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: #fff;
   top: 3px;
   left: 3px;
-  transition: transform 0.2s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 0.25s cubic-bezier(0.34, 1.2, 0.64, 1);
+  box-shadow: 0 1px 3px rgba(30, 20, 10, 0.25);
 }
 .settings-switch:checked {
   background: var(--orange, #ff6b35);
 }
 .settings-switch:checked::before {
   transform: translateX(20px);
+}
+.settings-switch:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+
+.btn-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--orange);
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 14px;
+  box-shadow: 0 6px 24px var(--orange-glow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.btn-save:hover:not(:disabled) {
+  background: var(--orange-light);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px var(--orange-glow);
+}
+.btn-save:active:not(:disabled) {
+  transform: scale(0.96);
+}
+.btn-save:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.btn-save:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 3px;
 }
 
 @keyframes fadeIn {
@@ -605,6 +653,12 @@ const themeOptions = [
   }
 }
 .animate-fadeIn {
-  animation: fadeIn 0.35s ease-out;
+  animation: fadeIn 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeIn {
+    animation: none;
+  }
 }
 </style>

@@ -47,15 +47,22 @@ function handleSubmit() {
 <template>
   <BaseModal :show="isOpen" title="Create Recipe Variation" @close="close">
     <div class="space-y-6">
-      <div class="bg-gray-50 dark:bg-zinc-700 p-3 rounded-lg">
-        <p class="text-xs text-gray-600 dark:text-gray-400 mb-1">Forking recipe:</p>
-        <p class="font-semibold text-gray-900 dark:text-white">{{ originalPost?.title }}</p>
+      <div class="flex items-center gap-3 bg-orange-soft border border-orange/20 p-3.5 rounded-2xl">
+        <span class="shrink-0 w-9 h-9 rounded-full bg-orange/15 text-orange grid place-items-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+        </span>
+        <div class="min-w-0">
+          <p class="text-[10px] font-montserrat font-bold uppercase tracking-widest text-text-dim mb-0.5">Forking recipe</p>
+          <p class="font-montserrat font-bold text-text truncate">{{ originalPost?.title }}</p>
+        </div>
       </div>
 
       <form @submit.prevent="handleSubmit" class="space-y-4">
-        <div>
-          <label for="title" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            Title *
+        <div class="space-y-2">
+          <label for="title" class="block text-[11px] font-montserrat font-bold uppercase tracking-widest text-text-dim">
+            Title <span class="text-orange">*</span>
           </label>
           <input
             id="title"
@@ -63,14 +70,14 @@ function handleSubmit() {
             required
             maxlength="255"
             type="text"
-            placeholder="Give your variation a unique name..."
-            class="w-full px-4 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all dark:bg-zinc-700 dark:text-white"
+            placeholder="Give your variation a unique name…"
+            class="w-full px-4 py-3 bg-background border border-border rounded-2xl text-text outline-none transition-colors duration-200 ease-out focus:border-orange placeholder:text-text-dim"
           />
         </div>
 
-        <div>
-          <label for="description" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            What Did You Change? *
+        <div class="space-y-2">
+          <label for="description" class="block text-[11px] font-montserrat font-bold uppercase tracking-widest text-text-dim">
+            What Did You Change? <span class="text-orange">*</span>
           </label>
           <textarea
             id="description"
@@ -78,8 +85,8 @@ function handleSubmit() {
             required
             maxlength="1000"
             rows="4"
-            placeholder="Explain your modifications..."
-            class="w-full px-4 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all dark:bg-zinc-700 dark:text-white resize-none"
+            placeholder="Explain your modifications…"
+            class="w-full px-4 py-3 bg-background border border-border rounded-2xl text-text leading-relaxed outline-none transition-colors duration-200 ease-out focus:border-orange placeholder:text-text-dim resize-y"
           />
         </div>
       </form>

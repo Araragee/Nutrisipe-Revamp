@@ -179,7 +179,7 @@ watch(
       <div class="p-6 pb-4">
         <h1 class="font-montserrat font-extrabold text-2xl tracking-tight mb-1">Messages</h1>
         <p class="text-text-dim text-xs font-bold uppercase tracking-widest">
-          {{ conversations.length }} active chats
+          <span class="tabular-nums">{{ conversations.length }}</span> active chats
         </p>
       </div>
 
@@ -214,8 +214,8 @@ watch(
             v-for="conversation in filteredConversations"
             :key="conversation.id"
             @click="selectConversation(conversation)"
-            class="p-4 rounded-2xl cursor-pointer transition-all duration-300 flex gap-4 items-center group"
-            :class="selectedConversation?.id === conversation.id ? 'bg-orange-soft border-1.5 border-orange/20' : 'hover:bg-background-secondary'"
+            class="p-4 rounded-2xl cursor-pointer transition-[background-color,border-color] duration-200 flex gap-4 items-center group active:scale-[0.99]"
+            :class="selectedConversation?.id === conversation.id ? 'bg-orange-soft border-1.5 border-orange/20' : 'border-1.5 border-transparent hover:bg-background-secondary'"
           >
             <div class="relative shrink-0">
               <UserAvatar :user="conversation.otherUser" size="md" :class="selectedConversation?.id === conversation.id ? 'ring-2 ring-orange' : ''" />
@@ -259,7 +259,7 @@ watch(
         <!-- Chat Header -->
         <header class="h-16 lg:h-20 border-b border-border bg-surface/80 px-6 flex items-center justify-between sticky top-0 z-10">
           <div class="flex items-center gap-3">
-            <button @click="selectedConversation = null" class="md:hidden w-8 h-8 rounded-full bg-background-secondary flex items-center justify-center text-lg">‹</button>
+            <button @click="selectedConversation = null" aria-label="Back to conversations" class="md:hidden w-10 h-10 rounded-full bg-background-secondary hover:text-orange flex items-center justify-center text-lg transition-[color,transform] duration-200 active:scale-[0.92]">‹</button>
             <div class="relative">
               <UserAvatar :user="selectedConversation.otherUser" size="sm" class="border-2 border-orange" />
               <span
@@ -293,10 +293,10 @@ watch(
               :class="message.senderId === authStore.user?.id ? 'justify-end' : 'justify-start'"
             >
               <div
-                class="max-w-[80%] md:max-w-[70%] px-4 py-3 rounded-2xl text-sm shadow-sm"
+                class="max-w-[80%] md:max-w-[70%] px-4 py-3 rounded-2xl text-sm"
                 :class="message.senderId === authStore.user?.id
-                    ? 'bg-orange text-white rounded-tr-none'
-                    : 'bg-surface-solid border border-border text-text rounded-tl-none'"
+                    ? 'bg-orange text-white rounded-tr-md shadow-[0_4px_16px_var(--orange-glow)]'
+                    : 'bg-surface-solid border border-border text-text rounded-tl-md shadow-card'"
               >
                 <p class="leading-relaxed">{{ message.content }}</p>
                 <p
@@ -331,13 +331,13 @@ watch(
                 @input="handleTyping"
                 type="text"
                 placeholder="Message..."
-                class="w-full px-5 py-3 bg-background-secondary border-1.5 border-border rounded-2xl text-sm outline-none focus:border-orange transition-all"
+                class="w-full px-5 py-3 bg-background-secondary border-1.5 border-border rounded-2xl text-sm outline-none focus:border-orange focus:bg-surface focus:shadow-[0_0_0_3px_var(--orange-soft)] transition-[border-color,background-color,box-shadow] duration-200"
               />
             </div>
             <button
               type="submit"
               :disabled="!messageText.trim()"
-              class="w-10 h-10 shrink-0 rounded-full bg-orange text-white flex items-center justify-center shadow-lg shadow-orange/30 disabled:opacity-50 disabled:scale-95 transition-all active:scale-90"
+              class="w-11 h-11 shrink-0 rounded-full bg-orange text-white flex items-center justify-center shadow-[0_6px_24px_var(--orange-glow)] disabled:opacity-50 disabled:shadow-none transition-[transform,box-shadow,opacity] duration-200 hover:-translate-y-0.5 active:scale-[0.92]"
             >
               <BaseIcons name="paper-airplane" size="sm" />
             </button>

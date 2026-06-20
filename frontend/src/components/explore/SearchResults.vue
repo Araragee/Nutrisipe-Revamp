@@ -37,7 +37,10 @@ const isEmpty = computed(
 <template>
   <div class="mb-12 animate-fadeIn">
     <div class="flex items-baseline justify-between mb-6">
-      <h2 class="font-montserrat font-extrabold text-2xl">Results for "{{ query }}"</h2>
+      <h2 class="font-montserrat font-extrabold text-2xl flex items-center gap-2.5">
+        <span class="w-1 h-6 rounded-full bg-orange"></span>
+        Results for "{{ query }}"
+      </h2>
       <button
         @click="$emit('clear')"
         class="text-orange text-xs font-bold uppercase tracking-widest hover:underline"
@@ -59,7 +62,7 @@ const isEmpty = computed(
           <div
             v-for="user in users"
             :key="user.id"
-            class="flex items-center gap-4 p-4 bg-background-secondary/50 border border-border rounded-2xl hover:border-orange transition-all"
+            class="flex items-center gap-4 p-4 bg-background-secondary/50 border border-border rounded-2xl hover:border-orange hover:shadow-card-hover hover:-translate-y-0.5 transition-all"
           >
             <RouterLink :to="`/profile/${user.id}`" class="flex items-center gap-3 flex-1 min-w-0">
               <UserAvatar :user="user" size="md" class="shrink-0" />

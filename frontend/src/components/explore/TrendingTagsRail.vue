@@ -24,7 +24,7 @@ defineEmits<{
         v-for="tag in tags"
         :key="tag.name"
         @click="$emit('select', tag.name)"
-        class="shrink-0 px-4 py-2 rounded-full border-1.5 border-border bg-surface/60 text-sm font-bold hover:border-orange hover:text-orange transition-all"
+        class="shrink-0 px-4 py-2 rounded-full border-1.5 border-border bg-surface/60 text-sm font-bold hover:border-orange hover:text-orange hover:bg-orange-soft active:scale-95 transition-all"
       >
         #{{ tag.name }}
         <span class="ml-2 text-[10px] text-text-dim tabular-nums">{{ tag.count }}</span>
