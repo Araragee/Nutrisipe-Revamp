@@ -42,29 +42,32 @@ onMounted(loadVariations)
     </div>
 
     <div v-else-if="variations.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-       <div 
-         v-for="v in variations" 
+       <button
+         v-for="v in variations"
          :key="v.id"
-         class="bg-background-secondary border border-border rounded-2xl p-4 flex gap-4 hover:border-orange transition-all cursor-pointer group"
+         type="button"
+         class="bg-background-secondary border border-border rounded-card p-4 flex gap-4 text-left transition-colors duration-200 ease-out hover:border-orange hover:shadow-card-hover active:scale-[0.99] cursor-pointer group"
          @click="compare(v.variationPost.id)"
        >
-          <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-border">
-             <img :src="v.variationPost.imageUrl" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+          <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 outline outline-1 outline-black/10 dark:outline-white/10">
+             <img :src="v.variationPost.imageUrl" :alt="v.variationPost.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" />
           </div>
           <div class="flex-1 min-w-0">
-             <div class="font-bold text-sm truncate mb-1">{{ v.variationPost.title }}</div>
+             <div class="font-montserrat font-bold text-sm truncate mb-1">{{ v.variationPost.title }}</div>
              <div class="text-[10px] text-text-dim flex items-center gap-2">
-                <span>By {{ v.variationPost.user?.displayName || 'Anonymous' }}</span>
-                <span class="w-1 h-1 bg-text-dim/30 rounded-full"></span>
-                <span>View comparison</span>
+                <span class="truncate">By {{ v.variationPost.user?.displayName || 'Anonymous' }}</span>
+                <span class="w-1 h-1 bg-text-dim/40 rounded-full shrink-0"></span>
+                <span class="text-orange font-bold uppercase tracking-wide shrink-0">Compare</span>
              </div>
              <p v-if="v.description" class="text-[11px] text-text-muted mt-2 line-clamp-1 italic">"{{ v.description }}"</p>
           </div>
-       </div>
+       </button>
     </div>
 
-    <div v-else class="text-center py-10 bg-background-tertiary rounded-3xl border border-dashed border-border">
-       <p class="text-xs text-text-dim">No variations yet. Be the first to fork this recipe!</p>
+    <div v-else class="text-center py-12 px-6 bg-background-secondary rounded-card border border-dashed border-border">
+       <div class="text-2xl mb-2 text-orange">⑂</div>
+       <p class="font-montserrat font-bold text-sm">No variations yet</p>
+       <p class="text-xs text-text-dim mt-1">Be the first to fork this recipe and make it your own.</p>
     </div>
   </div>
 </template>

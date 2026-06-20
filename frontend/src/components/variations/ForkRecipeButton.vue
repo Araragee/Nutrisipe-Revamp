@@ -59,7 +59,7 @@ const handleFork = () => {
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: background-color 0.2s ease-out, border-color 0.2s ease-out, color 0.2s ease-out, transform 0.15s ease-out;
   cursor: pointer;
 }
 
@@ -86,35 +86,44 @@ const handleFork = () => {
   to { transform: rotate(360deg); }
 }
 
-.btn-primary {
-  background: var(--color-primary, #10b981);
-  color: white;
-  border: none;
+.fork-button {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  border-radius: var(--radius-btn);
+}
+.fork-button:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
+.btn-primary {
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+}
 .btn-primary:hover:not(:disabled) {
-  background: var(--color-primary-dark, #059669);
+  background: var(--orange-deep);
 }
 
 .btn-secondary {
-  background: var(--color-secondary, #6366f1);
-  color: white;
-  border: none;
+  background: var(--bg2);
+  color: var(--text);
+  border: 1px solid var(--border);
 }
-
 .btn-secondary:hover:not(:disabled) {
-  background: var(--color-secondary-dark, #4f46e5);
+  border-color: var(--orange);
+  color: var(--orange);
 }
 
 .btn-outline {
   background: transparent;
-  color: var(--color-text, #374151);
-  border: 1px solid var(--color-border, #d1d5db);
+  color: var(--text2);
+  border: 1px solid var(--border);
 }
-
 .btn-outline:hover:not(:disabled) {
-  background: var(--color-bg-hover, #f9fafb);
-  border-color: var(--color-primary, #10b981);
-  color: var(--color-primary, #10b981);
+  background: var(--orange-soft);
+  border-color: var(--orange);
+  color: var(--orange);
 }
 </style>

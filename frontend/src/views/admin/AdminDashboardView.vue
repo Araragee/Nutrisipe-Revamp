@@ -57,14 +57,31 @@ const quickActions = [
   { path: '/admin/analytics', icon: 'chart-bar', title: 'View Analytics', desc: 'Detailed platform metrics' },
   { path: '/ingredients', icon: 'circle-stack', title: 'Food Database', desc: 'Manage ingredient nutritional data' },
 ]
+
+const summaryCards = computed(() => {
+  if (!stats.value) return []
+  return [
+    { icon: 'users', val: stats.value.users.total, label: 'Total Citizens', tone: 'orange' },
+    { icon: 'document-text', val: stats.value.content.posts, label: 'Recipes Shared', tone: 'orange' },
+    { icon: 'fire', val: `+${stats.value.users.newToday}`, label: 'New Today', tone: 'green' },
+    { icon: 'exclamation-triangle', val: stats.value.moderation.pendingReports, label: 'Pending Reports', tone: 'amber' },
+  ]
+})
+
+const toneStyle = (tone: string) =>
+  ({
+    orange: 'bg-orange-soft text-orange',
+    green: 'bg-green-500/10 text-green-600 dark:text-green-400',
+    amber: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  }[tone] ?? 'bg-orange-soft text-orange')
 </script>
 
 <template>
   <div class="admin-dashboard-view min-h-screen bg-background py-16 px-6 md:px-12">
     <div class="max-w-7xl mx-auto">
       <header class="mb-12">
-         <h1 class="font-montserrat font-extrabold text-4xl tracking-tight mb-2">Admin Command Center</h1>
-         <p class="text-text-dim font-bold uppercase tracking-widest text-xs">Nutrisipe Platform Management</p>
+         <p class="text-orange text-[11px] font-bold uppercase tracking-[0.3em] mb-2 font-montserrat">Nutrisipe Platform Management</p>
+         <h1 class="font-montserrat font-extrabold text-4xl md:text-5xl tracking-tight text-balance">Admin Command Center</h1>
       </header>
 
       <div v-if="isLoading" class="flex justify-center py-20">
@@ -73,61 +90,54 @@ const quickActions = [
 
       <div v-else-if="stats">
         <!-- Stats Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div class="bg-background-secondary border border-border rounded-3xl p-5">
-             <div class="text-orange mb-4"><BaseIcons name="users" size="lg" /></div>
-             <div class="font-montserrat font-extrabold text-3xl mb-1">{{ stats.users.total }}</div>
-             <div class="text-[10px] font-bold uppercase tracking-widest text-text-dim">Total Citizens</div>
-          </div>
-          <div class="bg-background-secondary border border-border rounded-3xl p-5">
-             <div class="text-orange mb-4"><BaseIcons name="document-text" size="lg" /></div>
-             <div class="font-montserrat font-extrabold text-3xl mb-1">{{ stats.content.posts }}</div>
-             <div class="text-[10px] font-bold uppercase tracking-widest text-text-dim">Recipes Shared</div>
-          </div>
-          <div class="bg-background-secondary border border-border rounded-3xl p-5">
-             <div class="text-orange mb-4"><BaseIcons name="fire" size="lg" /></div>
-             <div class="font-montserrat font-extrabold text-3xl mb-1">+{{ stats.users.newToday }}</div>
-             <div class="text-[10px] font-bold uppercase tracking-widest text-text-dim">New Today</div>
-          </div>
-          <div class="bg-background-secondary border border-border rounded-3xl p-5">
-             <div class="text-orange mb-4"><BaseIcons name="exclamation-triangle" size="lg" /></div>
-             <div class="font-montserrat font-extrabold text-3xl mb-1">{{ stats.moderation.pendingReports }}</div>
-             <div class="text-[10px] font-bold uppercase tracking-widest text-text-dim">Pending Reports</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+          <div
+            v-for="card in summaryCards"
+            :key="card.label"
+            class="bg-surface border border-border rounded-card p-5 shadow-card hover:shadow-card-hover transition-shadow duration-200"
+          >
+             <div :class="['w-11 h-11 rounded-2xl flex items-center justify-center mb-4', toneStyle(card.tone)]">
+               <BaseIcons :name="card.icon" size="md" />
+             </div>
+             <div class="font-montserrat font-extrabold text-3xl mb-1 tabular-nums">{{ card.val }}</div>
+             <div class="text-[10px] font-bold uppercase tracking-widest text-text-dim">{{ card.label }}</div>
           </div>
         </div>
 
-        <h2 class="font-montserrat font-extrabold text-xl mb-8 tracking-tight uppercase">Quick Controls</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <h2 class="font-montserrat font-extrabold text-xl mb-6 tracking-tight">Quick Controls</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
            <RouterLink
              v-for="action in quickActions"
              :key="action.path"
              :to="action.path"
-             class="group bg-background-secondary/50 border border-border rounded-[32px] p-8 hover:bg-orange-soft/30 hover:border-orange transition-all"
+             class="group bg-surface border border-border rounded-card p-7 shadow-card hover:border-orange hover:-translate-y-1 transition-[transform,border-color,box-shadow] duration-200 hover:shadow-card-hover active:scale-[0.98]"
            >
-              <div class="mb-4 text-text-dim group-hover:text-orange transition-colors"><BaseIcons :name="action.icon" size="lg" /></div>
-              <h3 class="font-bold text-lg mb-2">{{ action.title }}</h3>
-              <p class="text-xs text-text-muted leading-relaxed">{{ action.desc }}</p>
+              <div class="mb-4 w-11 h-11 rounded-2xl bg-background-secondary text-text-dim group-hover:bg-orange-soft group-hover:text-orange flex items-center justify-center transition-colors duration-200">
+                <BaseIcons :name="action.icon" size="md" />
+              </div>
+              <h3 class="font-montserrat font-bold text-lg mb-2">{{ action.title }}</h3>
+              <p class="text-xs text-text-muted leading-relaxed text-pretty">{{ action.desc }}</p>
            </RouterLink>
         </div>
 
         <!-- Activity Overview -->
-        <div class="bg-background-secondary border border-border rounded-[40px] p-10 md:p-12">
+        <div class="bg-surface border border-border rounded-card p-8 md:p-12 shadow-card">
            <div class="flex items-center justify-between mb-10">
               <h2 class="font-montserrat font-extrabold text-2xl tracking-tight">Platform Health</h2>
-              <button @click="loadStats" class="text-orange font-bold text-xs uppercase tracking-widest hover:underline">Refresh Data</button>
+              <button @click="loadStats" class="text-orange font-bold text-xs uppercase tracking-widest hover:underline active:scale-[0.96] transition-transform">Refresh Data</button>
            </div>
-           <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+           <div class="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
               <div>
                  <p class="text-text-dim font-bold text-[10px] uppercase tracking-[0.2em] mb-4">Engagement</p>
                  <div class="flex items-end gap-3">
-                    <span class="font-montserrat font-extrabold text-4xl">{{ stats.content.comments }}</span>
+                    <span class="font-montserrat font-extrabold text-4xl tabular-nums">{{ stats.content.comments }}</span>
                     <span class="text-text-muted text-sm font-bold pb-1.5">Comments</span>
                  </div>
               </div>
               <div>
                  <p class="text-text-dim font-bold text-[10px] uppercase tracking-[0.2em] mb-4">Growth Rate</p>
                  <div class="flex items-end gap-3">
-                    <span :class="['font-montserrat font-extrabold text-4xl', growthRate > 0 ? 'text-green-500' : 'text-text-dim']">{{ growthRate > 0 ? `+${growthRate}%` : '—' }}</span>
+                    <span :class="['font-montserrat font-extrabold text-4xl tabular-nums', growthRate > 0 ? 'text-green-600 dark:text-green-400' : 'text-text-dim']">{{ growthRate > 0 ? `+${growthRate}%` : '—' }}</span>
                     <span class="text-text-muted text-sm font-bold pb-1.5">Today</span>
                  </div>
               </div>
@@ -144,7 +154,7 @@ const quickActions = [
         </div>
       </div>
 
-      <div v-if="error" class="bg-red-500/10 border border-red-500/50 rounded-2xl p-6 text-red-500 font-bold">
+      <div v-if="error" class="bg-red-500/10 border border-red-500/50 rounded-card p-6 text-red-500 font-bold">
         {{ error }}
       </div>
     </div>

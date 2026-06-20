@@ -29,7 +29,10 @@ const collectionGradients = [
 <template>
   <div class="mb-12">
     <div class="flex items-center justify-between mb-6">
-      <h2 class="font-montserrat font-extrabold text-2xl">Your Collections</h2>
+      <h2 class="font-montserrat font-extrabold text-2xl flex items-center gap-2.5">
+        <span class="w-1 h-6 rounded-full bg-orange"></span>
+        Your Collections
+      </h2>
       <RouterLink to="/saved" class="text-orange font-bold text-sm hover:underline">View All</RouterLink>
     </div>
     <div v-if="loading" class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -40,13 +43,15 @@ const collectionGradients = [
         v-for="(col, idx) in collections.slice(0, 6)"
         :key="col.id"
         @click="$emit('open', col.id)"
-        class="group relative h-48 rounded-3xl overflow-hidden cursor-pointer shadow-card transition-all hover:-translate-y-1"
+        class="group relative h-48 rounded-3xl overflow-hidden cursor-pointer shadow-card transition-all hover:-translate-y-1 hover:shadow-card-hover"
       >
         <img
           :src="resolveImage(col.thumbnailUrl, col.id)"
           class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div :class="['absolute inset-0 bg-gradient-to-t opacity-60', collectionGradients[idx % collectionGradients.length]]"></div>
+        <!-- color accent (top) + readability scrim (bottom) -->
+        <div :class="['absolute inset-0 bg-gradient-to-br opacity-30 mix-blend-multiply', collectionGradients[idx % collectionGradients.length]]"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
         <div class="absolute inset-0 p-6 flex flex-col justify-end">
           <h3 class="font-montserrat font-extrabold text-xl text-white drop-shadow-md">{{ col.name }}</h3>
           <p class="text-white/80 text-sm font-medium">{{ col.postCount ?? 0 }} recipes</p>

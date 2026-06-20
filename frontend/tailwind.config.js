@@ -93,9 +93,6 @@ module.exports = {
       transitionDuration: {
         'revamp': '300ms',
       },
-      opacity: {
-        '18': '0.18',
-      },
       borderWidth: {
         '1.5': '1.5px',
       }

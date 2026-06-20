@@ -4,6 +4,7 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { commentsApi } from '@/http/endpoints/comments'
 import UserAvatar from '@/components/user/UserAvatar.vue'
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import type { Comment } from '@/typescript/interface/Comment'
 
 const props = defineProps<{
@@ -30,6 +31,8 @@ const isSubmittingReply = ref(false)
 const editingCommentId = ref<string | null>(null)
 const editingCommentText = ref('')
 
+const replyCount = computed(() => props.comment._count?.replies || replies.value.length)
+
 async function toggleReplies() {
   showReplies.value = !showReplies.value
   if (showReplies.value && replies.value.length === 0) {
@@ -49,6 +52,10 @@ async function loadReplies() {
   }
 }
 
+function startReply() {
+  isReplying.value = true
+}
+
 async function handleReply() {
   if (!replyText.value.trim() || isSubmittingReply.value) return
 
@@ -57,7 +64,7 @@ async function handleReply() {
     const response = await commentsApi.create({
       postId: props.postId,
       content: replyText.value.trim(),
-      parentId: props.comment.id
+      parentId: props.comment.id,
     })
     replies.value.unshift(response.data.data)
     replyText.value = ''
@@ -87,11 +94,11 @@ async function handleUpdate() {
 }
 
 function handleDeleteReply(replyId: string) {
-  replies.value = replies.value.filter(r => r.id !== replyId)
+  replies.value = replies.value.filter((r) => r.id !== replyId)
 }
 
 function handleUpdateReply(updatedReply: Comment) {
-  const index = replies.value.findIndex(r => r.id === updatedReply.id)
+  const index = replies.value.findIndex((r) => r.id === updatedReply.id)
   if (index !== -1) {
     replies.value[index] = updatedReply
   }
@@ -103,86 +110,141 @@ function formatDate(dateString: string) {
   const diff = Math.floor((now.getTime() - date.getTime()) / 1000)
 
   if (diff < 60) return 'just now'
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-  return date.toLocaleDateString()
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h`
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d`
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 </script>
 
 <template>
   <div class="comment-item">
-    <div class="flex gap-3 group">
-      <UserAvatar :user="comment.user" size="sm" class="shrink-0" />
-      
-      <div class="flex-1 min-w-0">
-        <div class="bg-background-secondary rounded-2xl p-4 border border-border">
-          <div class="flex items-center justify-between mb-1">
-            <span class="font-bold text-sm">{{ comment.user.displayName }}</span>
-            <span class="text-[10px] text-text-dim">{{ formatDate(comment.createdAt) }}</span>
+    <div class="group/comment flex gap-3">
+      <UserAvatar :user="comment.user" size="sm" class="mt-0.5 shrink-0" />
+
+      <div class="min-w-0 flex-1">
+        <!-- Bubble -->
+        <div class="rounded-2xl rounded-tl-md border border-border bg-background-secondary px-4 py-3">
+          <div class="mb-0.5 flex items-center justify-between gap-2">
+            <span class="truncate font-montserrat text-sm font-bold text-text">{{
+              comment.user.displayName
+            }}</span>
+            <time class="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-text-dim">{{
+              formatDate(comment.createdAt)
+            }}</time>
           </div>
-          
+
+          <!-- Edit mode -->
           <div v-if="editingCommentId === comment.id" class="mt-2">
             <textarea
               v-model="editingCommentText"
-              class="w-full bg-background border border-orange/30 rounded-xl p-3 text-sm focus:border-orange outline-none resize-none"
+              class="w-full resize-none rounded-xl border-1.5 border-orange/40 bg-background p-3 text-sm text-text outline-none transition-colors focus:border-orange"
               rows="2"
+              @keyup.enter.ctrl="handleUpdate"
             ></textarea>
-            <div class="flex justify-end gap-2 mt-2">
-              <button @click="editingCommentId = null" class="text-xs text-text-dim hover:text-text">Cancel</button>
-              <button @click="handleUpdate" class="text-xs text-orange font-bold">Save</button>
-            </div>
-          </div>
-          <p v-else class="text-sm text-text-muted leading-relaxed whitespace-pre-wrap">
-            {{ comment.content }}
-          </p>
-        </div>
-        
-        <div class="flex items-center gap-4 mt-2 px-2">
-          <button @click="isReplying = !isReplying" class="text-xs font-bold text-text-dim hover:text-orange transition-colors">
-            Reply
-          </button>
-          <button
-            v-if="comment._count?.replies || replies.length > 0"
-            @click="toggleReplies"
-            class="text-xs font-bold text-orange hover:underline"
-          >
-            {{ showReplies ? 'Hide' : 'Show' }} {{ comment._count?.replies || replies.length }} replies
-          </button>
-          
-          <div v-if="isOwner" class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex gap-3">
-            <button @click="startEdit" class="text-[10px] uppercase font-bold tracking-wider text-text-dim hover:text-text">Edit</button>
-            <button @click="emit('delete', comment.id)" class="text-[10px] uppercase font-bold tracking-wider text-text-dim hover:text-red-500">Delete</button>
-          </div>
-        </div>
-        
-        <!-- Reply Input -->
-        <div v-if="isReplying" class="mt-4 flex gap-3 animate-revamp">
-          <UserAvatar v-if="authStore.user" :user="authStore.user" size="xs" class="shrink-0 mt-1" />
-          <div class="flex-1">
-            <textarea
-              v-model="replyText"
-              placeholder="Write a reply..."
-              class="w-full bg-background-secondary border border-border rounded-xl p-3 text-sm focus:border-orange outline-none resize-none"
-              rows="2"
-              @keyup.enter.ctrl="handleReply"
-            ></textarea>
-            <div class="flex justify-end gap-3 mt-2">
-              <button @click="isReplying = false" class="text-xs text-text-dim">Cancel</button>
+            <div class="mt-2 flex justify-end gap-3">
               <button
-                @click="handleReply"
-                :disabled="!replyText.trim() || isSubmittingReply"
-                class="px-4 py-1.5 bg-orange text-white text-xs font-bold rounded-lg disabled:opacity-50"
+                @click="editingCommentId = null"
+                class="text-xs font-bold uppercase tracking-wider text-text-dim transition-colors hover:text-text"
               >
-                Reply
+                Cancel
+              </button>
+              <button
+                @click="handleUpdate"
+                class="text-xs font-bold uppercase tracking-wider text-orange transition-colors hover:text-orange-light"
+              >
+                Save
               </button>
             </div>
           </div>
+          <p v-else class="whitespace-pre-wrap text-pretty text-sm leading-relaxed text-text-muted">
+            {{ comment.content }}
+          </p>
         </div>
-        
-        <!-- Replies List -->
-        <div v-if="showReplies" class="mt-4 space-y-4 border-l-2 border-border ml-2 pl-4">
+
+        <!-- Action row -->
+        <div class="mt-1.5 flex items-center gap-1 px-1">
+          <button
+            @click="startReply"
+            class="rounded-full px-2 py-1 text-xs font-bold text-text-dim transition-[color,background-color] duration-200 hover:bg-orange-soft hover:text-orange"
+          >
+            Reply
+          </button>
+          <button
+            v-if="replyCount > 0"
+            @click="toggleReplies"
+            class="flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold text-orange transition-colors hover:bg-orange-soft"
+          >
+            <BaseIcons
+              name="chevron-down"
+              size="xs"
+              class="transition-transform duration-200 ease-revamp"
+              :class="showReplies ? 'rotate-180' : ''"
+            />
+            <span class="tabular-nums">{{ replyCount }}</span>
+            {{ replyCount === 1 ? 'reply' : 'replies' }}
+          </button>
+
+          <div
+            v-if="isOwner"
+            class="ml-auto flex gap-1 opacity-0 transition-opacity duration-200 focus-within:opacity-100 group-hover/comment:opacity-100"
+          >
+            <button
+              @click="startEdit"
+              aria-label="Edit comment"
+              class="grid h-7 w-7 place-items-center rounded-full text-text-dim transition-[color,background-color] duration-200 hover:bg-background-secondary hover:text-text"
+            >
+              <BaseIcons name="pencil" size="xs" />
+            </button>
+            <button
+              @click="emit('delete', comment.id)"
+              aria-label="Delete comment"
+              class="grid h-7 w-7 place-items-center rounded-full text-text-dim transition-[color,background-color] duration-200 hover:bg-red-500/10 hover:text-red-500"
+            >
+              <BaseIcons name="trash" size="xs" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Reply input -->
+        <Transition name="reply">
+          <div v-if="isReplying" class="mt-3 flex gap-2.5">
+            <UserAvatar v-if="authStore.user" :user="authStore.user" size="xs" class="mt-1 shrink-0" />
+            <div class="flex-1">
+              <textarea
+                v-model="replyText"
+                placeholder="Write a reply…"
+                class="w-full resize-none rounded-xl border-1.5 border-border bg-background-secondary p-3 text-sm text-text outline-none transition-colors focus:border-orange"
+                rows="2"
+                @keyup.enter.ctrl="handleReply"
+              ></textarea>
+              <div class="mt-2 flex justify-end gap-2">
+                <button
+                  @click="isReplying = false"
+                  class="rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-text-dim transition-colors hover:text-text"
+                >
+                  Cancel
+                </button>
+                <button
+                  @click="handleReply"
+                  :disabled="!replyText.trim() || isSubmittingReply"
+                  class="inline-flex items-center gap-1.5 rounded-full bg-orange px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white transition-[transform,opacity] duration-200 ease-revamp hover:bg-orange-light active:scale-[0.96] disabled:opacity-50"
+                >
+                  <span
+                    v-if="isSubmittingReply"
+                    class="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"
+                  ></span>
+                  Reply
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+
+        <!-- Replies -->
+        <div v-if="showReplies" class="mt-4 space-y-4 border-l-2 border-border pl-4">
           <div v-if="isLoadingReplies" class="flex justify-center py-2">
-             <div class="w-4 h-4 border-2 border-orange border-t-transparent rounded-full animate-spin"></div>
+            <div class="h-4 w-4 animate-spin rounded-full border-2 border-orange border-t-transparent"></div>
           </div>
           <CommentItem
             v-for="reply in replies"
@@ -197,3 +259,31 @@ function formatDate(dateString: string) {
     </div>
   </div>
 </template>
+
+<style scoped>
+.reply-enter-active {
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+.reply-leave-active {
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+.reply-enter-from {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+.reply-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reply-enter-active,
+  .reply-leave-active {
+    transition: none;
+  }
+}
+</style>

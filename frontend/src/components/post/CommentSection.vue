@@ -65,7 +65,7 @@ async function handleDeleteComment(commentId: string) {
 }
 
 function handleUpdateComment(updatedComment: Comment) {
-  const index = comments.value.findIndex(c => c.id === updatedComment.id)
+  const index = comments.value.findIndex((c) => c.id === updatedComment.id)
   if (index !== -1) {
     comments.value[index] = updatedComment
   }
@@ -78,51 +78,70 @@ onMounted(() => {
 
 <template>
   <div class="comment-section">
-    <div class="section-header flex items-center justify-between mb-8">
-      <h3 class="font-montserrat font-extrabold text-xl tracking-tight">
-        Comments <span class="ml-2 text-orange text-sm">{{ comments.length }}</span>
-      </h3>
+    <div class="mb-6 flex items-center gap-2">
+      <h3 class="font-montserrat text-lg font-extrabold tracking-tight text-text">Comments</h3>
+      <span
+        class="rounded-full bg-orange-soft px-2 py-0.5 text-xs font-bold tabular-nums text-orange"
+        >{{ comments.length }}</span
+      >
     </div>
 
-    <!-- Input Area -->
-    <div v-if="authStore.isAuthenticated" class="mb-10 flex gap-4">
-      <UserAvatar v-if="authStore.user" :user="authStore.user" size="md" class="shrink-0" />
-      <div class="flex-1 relative group">
-        <MentionInput
-          v-model="newCommentText"
-          placeholder="Add a comment… use @ to mention"
-          :rows="4"
-          textareaClass="w-full p-5 bg-background-secondary border-1.5 border-border rounded-2xl text-sm text-text font-inherit resize-y transition-colors focus:outline-none focus:border-orange min-h-[100px]"
-        />
-        <div class="flex items-center justify-between mt-3 px-1">
-          <p class="text-[10px] text-text-dim italic">Type @ to mention</p>
-          <button
-            @click="handleSubmitComment"
-            :disabled="!canComment || isSubmitting"
-            class="px-8 py-2.5 bg-orange hover:bg-orange-light text-white text-xs font-bold rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:grayscale disabled:scale-100"
-          >
-            {{ isSubmitting ? 'Posting...' : 'Post Comment' }}
-          </button>
+    <!-- Composer -->
+    <div v-if="authStore.isAuthenticated" class="mb-8 flex gap-3">
+      <UserAvatar v-if="authStore.user" :user="authStore.user" size="md" class="mt-0.5 shrink-0" />
+      <div class="flex-1">
+        <div
+          class="rounded-2xl border-1.5 border-border bg-background-secondary p-1 transition-colors duration-200 focus-within:border-orange"
+        >
+          <MentionInput
+            v-model="newCommentText"
+            placeholder="Add a comment… use @ to mention"
+            :rows="3"
+            textareaClass="w-full p-3 bg-transparent text-sm text-text font-inherit resize-y border-0 focus:outline-none focus:ring-0 min-h-[72px]"
+          />
+          <div class="flex items-center justify-between gap-3 px-2 pb-1">
+            <p class="text-[10px] italic text-text-dim">Type @ to mention · ⌘↵ to post</p>
+            <button
+              @click="handleSubmitComment"
+              :disabled="!canComment || isSubmitting"
+              class="inline-flex items-center gap-1.5 rounded-full bg-orange px-5 py-2 font-montserrat text-xs font-bold uppercase tracking-widest text-white shadow-[0_4px_16px_rgba(255,107,53,0.3)] transition-[transform,background-color,opacity] duration-200 ease-revamp hover:bg-orange-light active:scale-[0.96] disabled:scale-100 disabled:opacity-50 disabled:shadow-none"
+            >
+              <span
+                v-if="isSubmitting"
+                class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
+              ></span>
+              {{ isSubmitting ? 'Posting' : 'Post' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
-    <div v-else class="mb-10 p-6 bg-orange-soft/30 rounded-2xl border border-orange/10 text-center">
-      <p class="text-sm text-text-dim mb-3">Please sign in to join the conversation.</p>
-      <button @click="$router.push('/login')" class="text-xs font-bold text-orange hover:underline">Sign In</button>
+    <div
+      v-else
+      class="mb-8 flex flex-col items-center gap-2 rounded-2xl border border-orange/15 bg-orange-soft/40 p-6 text-center"
+    >
+      <p class="text-sm text-text-muted">Sign in to join the conversation.</p>
+      <button
+        @click="$router.push('/login')"
+        class="text-xs font-bold uppercase tracking-widest text-orange transition-colors hover:text-orange-light"
+      >
+        Sign In
+      </button>
     </div>
 
-    <!-- Comments List -->
+    <!-- Loading -->
     <div v-if="isLoading" class="space-y-6">
-      <div v-for="i in 3" :key="i" class="flex gap-4 animate-pulse">
-        <div class="w-10 h-10 rounded-full bg-background-secondary"></div>
+      <div v-for="i in 3" :key="i" class="flex animate-pulse gap-3">
+        <div class="h-8 w-8 shrink-0 rounded-full bg-background-secondary"></div>
         <div class="flex-1 space-y-2">
-          <div class="h-4 w-24 bg-background-secondary rounded"></div>
-          <div class="h-12 w-full bg-background-secondary rounded-xl"></div>
+          <div class="h-3 w-24 rounded bg-background-secondary"></div>
+          <div class="h-14 w-full rounded-2xl bg-background-secondary"></div>
         </div>
       </div>
     </div>
-    
-    <div v-else-if="comments.length > 0" class="space-y-8">
+
+    <!-- List -->
+    <div v-else-if="comments.length > 0" class="space-y-6">
       <CommentItem
         v-for="comment in comments"
         :key="comment.id"
@@ -133,20 +152,35 @@ onMounted(() => {
       />
     </div>
 
-    <div v-else class="py-12 text-center">
-      <BaseIcons name="chat-bubble-left-right" size="xl" class="mx-auto mb-4 text-text-dim" />
-      <p class="text-text-dim text-sm italic">No comments yet. Be the first to start the discussion!</p>
+    <!-- Empty -->
+    <div v-else class="flex flex-col items-center justify-center py-12 text-center">
+      <div class="mb-3 grid h-12 w-12 place-items-center rounded-full bg-orange-soft text-orange">
+        <BaseIcons name="chat-bubble-left-right" size="md" />
+      </div>
+      <p class="text-sm text-text-dim">No comments yet. Be the first to start the conversation.</p>
     </div>
   </div>
 </template>
 
 <style scoped>
 .comment-section :deep(.comment-item) {
-  animation: slideDown 0.3s ease-out forwards;
+  animation: slideDown 0.3s cubic-bezier(0.34, 1.2, 0.64, 1) both;
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comment-section :deep(.comment-item) {
+    animation: none;
+  }
 }
 </style>

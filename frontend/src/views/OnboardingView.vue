@@ -313,7 +313,7 @@ onMounted(() => {
               </div>
 
               <p class="mt-6 text-white/40 text-sm">
-                <span class="font-extrabold text-orange-light">{{ selectedCreators.size }}</span> selected — follow as many as you like
+                <span class="font-extrabold text-orange-light tabular-nums">{{ selectedCreators.size }}</span> selected — follow as many as you like
               </p>
             </div>
 
@@ -328,12 +328,12 @@ onMounted(() => {
           <button
             v-if="step > 0"
             @click="step--"
-            class="flex-1 sm:flex-none sm:px-10 py-4 rounded-2xl border border-white/10 bg-white/5 font-montserrat font-bold text-sm text-white/70 hover:bg-white/10 hover:text-white transition-all"
+            class="flex-1 sm:flex-none sm:px-10 py-4 rounded-2xl border border-white/10 bg-white/5 font-montserrat font-bold text-sm text-white/70 hover:bg-white/10 hover:text-white transition-[background-color,color,transform] duration-200 active:scale-[0.97]"
           >← Back</button>
           <button
             @click="next"
             :disabled="isSaving || !canContinue"
-            class="flex-1 px-8 py-4 rounded-2xl bg-gradient-to-b from-orange-light to-orange shadow-lg shadow-orange/20 text-white font-montserrat font-bold text-sm hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:cursor-not-allowed"
+            class="flex-1 px-8 py-4 rounded-2xl bg-gradient-to-b from-orange-light to-orange shadow-[0_12px_30px_-8px_var(--orange-glow)] text-white font-montserrat font-bold text-sm hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-8px_var(--orange-glow)] transition-[transform,box-shadow] duration-200 active:scale-[0.97] disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none disabled:cursor-not-allowed"
           >{{ isSaving ? 'Saving…' : ctaLabel }}</button>
         </div>
       </section>

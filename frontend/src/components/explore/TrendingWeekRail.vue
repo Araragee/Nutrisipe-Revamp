@@ -31,18 +31,25 @@ function scrollBy(direction: -1 | 1) {
 <template>
   <div class="mb-12">
     <div class="flex items-center justify-between mb-6">
-      <h2 class="font-montserrat font-extrabold text-2xl">Trending This Week</h2>
+      <h2 class="font-montserrat font-extrabold text-2xl flex items-center gap-2.5">
+        <span class="w-1 h-6 rounded-full bg-orange"></span>
+        Trending This Week
+      </h2>
       <div class="flex gap-2">
         <button
           @click="scrollBy(-1)"
           aria-label="Scroll left"
-          class="w-10 h-10 rounded-full border border-border bg-surface/70 flex items-center justify-center text-text-dim hover:text-orange hover:border-orange transition-all"
-        >‹</button>
+          class="w-10 h-10 rounded-full border border-border bg-surface/70 flex items-center justify-center text-text-dim hover:text-orange hover:border-orange active:scale-95 transition-all"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
         <button
           @click="scrollBy(1)"
           aria-label="Scroll right"
-          class="w-10 h-10 rounded-full border border-border bg-surface/70 flex items-center justify-center text-text-dim hover:text-orange hover:border-orange transition-all"
-        >›</button>
+          class="w-10 h-10 rounded-full border border-border bg-surface/70 flex items-center justify-center text-text-dim hover:text-orange hover:border-orange active:scale-95 transition-all"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       </div>
     </div>
 

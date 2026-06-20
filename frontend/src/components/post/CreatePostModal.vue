@@ -108,35 +108,44 @@ function handleClose() {
   <BaseModal :show="show" title="Create Post" size="lg" @close="handleClose">
     <form @submit.prevent="handleSubmit" class="space-y-6">
       <!-- Error Message -->
-      <div v-if="error" class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm border border-red-200 dark:border-red-800">
+      <div
+        v-if="error"
+        class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400"
+      >
         {{ error }}
       </div>
 
       <!-- Title -->
       <div>
-        <label for="title" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          Title *
+        <label
+          for="title"
+          class="mb-2 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-text-dim"
+        >
+          Title <span class="text-orange">*</span>
         </label>
         <input
           id="title"
           v-model="title"
           type="text"
           required
-          placeholder="Enter post title"
-          class="w-full px-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all dark:bg-zinc-700 dark:text-white"
+          placeholder="What are you cooking?"
+          class="w-full rounded-xl border-1.5 border-border bg-background-secondary px-4 py-3 text-sm text-text outline-none transition-colors duration-200 focus:border-orange"
         />
       </div>
 
       <!-- Category -->
       <div>
-        <label for="category" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          Category *
+        <label
+          for="category"
+          class="mb-2 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-text-dim"
+        >
+          Category <span class="text-orange">*</span>
         </label>
         <select
           id="category"
           v-model="category"
           required
-          class="w-full px-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all dark:bg-zinc-700 dark:text-white"
+          class="w-full rounded-xl border-1.5 border-border bg-background-secondary px-4 py-3 text-sm text-text outline-none transition-colors duration-200 focus:border-orange"
         >
           <option v-for="cat in categories" :key="cat.value" :value="cat.value">
             {{ cat.label }}
@@ -146,53 +155,48 @@ function handleClose() {
 
       <!-- Image Upload -->
       <div>
-        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-          Post Image *
+        <label
+          class="mb-2 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-text-dim"
+        >
+          Post Image <span class="text-orange">*</span>
         </label>
-        <ImageUpload
-          v-model="imageUrl"
-          :max-size="5"
-          @error="(msg) => error = msg"
-        />
-        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Upload an image for your post (max 5MB)
-        </p>
+        <ImageUpload v-model="imageUrl" :max-size="5" @error="(msg) => (error = msg)" />
+        <p class="mt-2 text-xs text-text-dim">Upload an image for your post (max 5MB).</p>
       </div>
 
       <!-- Description -->
       <div>
-        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        <label
+          class="mb-2 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-text-dim"
+        >
           Description
         </label>
-        <RichTextEditor
-          v-model="description"
-          placeholder="Tell us about your post..."
-          :max-length="2000"
-        />
+        <RichTextEditor v-model="description" placeholder="Tell the story behind it…" :max-length="2000" />
       </div>
 
       <!-- Tags -->
       <div>
-        <label for="tags" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        <label
+          for="tags"
+          class="mb-2 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-text-dim"
+        >
           Tags
         </label>
         <input
           id="tags"
           v-model="tags"
           type="text"
-          placeholder="healthy, quick, easy (comma separated)"
-          class="w-full px-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all dark:bg-zinc-700 dark:text-white"
+          placeholder="healthy, quick, easy"
+          class="w-full rounded-xl border-1.5 border-border bg-background-secondary px-4 py-3 text-sm text-text outline-none transition-colors duration-200 focus:border-orange"
         />
-        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Separate tags with commas
-        </p>
+        <p class="mt-2 text-xs text-text-dim">Separate tags with commas.</p>
         <div v-if="tagsArray.length > 0" class="mt-3 flex flex-wrap gap-2">
           <span
             v-for="tag in tagsArray"
             :key="tag"
-            class="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-sm font-medium"
+            class="rounded-full bg-orange-soft px-3 py-1 text-xs font-semibold text-orange"
           >
-            {{ tag }}
+            #{{ tag }}
           </span>
         </div>
       </div>
@@ -201,8 +205,8 @@ function handleClose() {
     <template #footer>
       <div class="flex gap-3">
         <BaseButton
-          type="button"
-          variant="secondary"
+          buttonType="primaryOutlined"
+          rounded="full"
           @click="handleClose"
           :disabled="isSubmitting"
           class="flex-1"
@@ -210,14 +214,14 @@ function handleClose() {
           Cancel
         </BaseButton>
         <BaseButton
-          type="submit"
-          variant="primary"
+          buttonType="primary"
+          rounded="full"
           :disabled="!canSubmit"
           :loading="isSubmitting"
           class="flex-1"
           @click="handleSubmit"
         >
-          {{ isSubmitting ? 'Creating...' : 'Create Post' }}
+          {{ isSubmitting ? 'Creating…' : 'Create Post' }}
         </BaseButton>
       </div>
     </template>

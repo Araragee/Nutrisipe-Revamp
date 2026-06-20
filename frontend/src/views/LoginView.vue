@@ -291,11 +291,6 @@ onMounted(() => {
   <div ref="pageRef" class="landing-page relative min-h-screen bg-[#0c0907] text-white">
     <SplashScreen :show="showSplash" />
 
-    <!-- Ambient low-poly ingredient field — drifts behind every section below the hero -->
-    <div class="fixed inset-0 z-0 pointer-events-none opacity-[0.28]" aria-hidden="true">
-      
-    </div>
-
     <!-- ════ HERO × LOGIN ════ -->
     <section class="relative z-10 min-h-[100dvh] flex flex-col overflow-hidden">
 
@@ -787,7 +782,7 @@ onMounted(() => {
   box-shadow: 0 16px 36px -8px rgba(255, 107, 53, 0.7);
 }
 .cta-btn:active:not(:disabled) {
-  transform: scale(0.99);
+  transform: scale(0.96);
 }
 .cta-btn:disabled {
   opacity: 0.6;

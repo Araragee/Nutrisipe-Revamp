@@ -258,6 +258,17 @@ async function main() {
   let recipeCount = 0
   let otherPostCount = 0
 
+  // Round-robin author assignment over a shuffled pool guarantees that EVERY
+  // user (admin, test accounts, and all 20 real users) authors posts/recipes.
+  // With ~105 posts across 24 users, each user gets roughly 4-5 posts.
+  const authorPool = [...usersData].sort(() => 0.5 - Math.random())
+  let authorCursor = 0
+  function nextAuthor() {
+    const u = authorPool[authorCursor % authorPool.length]
+    authorCursor++
+    return u
+  }
+
   for (const categoryKey of categoryKeys) {
     const isRecipeCategory = categoryKey === 'recipe'
     
@@ -267,7 +278,7 @@ async function main() {
       for (let i = 0; i < REAL_RECIPES.length; i++) {
         const recipeData = REAL_RECIPES[i]
         const postId = randomUUID()
-        const user = randomElement(usersData)
+        const user = nextAuthor()
         const photoId = images[i % images.length]
         const width = 800
         const heights = [1000, 1100, 1200, 900, 1050]
@@ -312,7 +323,7 @@ async function main() {
 
       for (let i = 0; i < POSTS_PER_CATEGORY; i++) {
         const postId = randomUUID()
-        const user = randomElement(usersData)
+        const user = nextAuthor()
         const title = cfg.titles[i % cfg.titles.length]
         const photoId = images[i % images.length]
         const width = 800
@@ -341,20 +352,55 @@ async function main() {
   console.log(`✅ Created ${recipeCount} recipes and ${otherPostCount} other posts`)
 
   console.log('🤝 Creating follows...')
+  // Build a realistic social graph: every user follows several others AND is
+  // followed back by several others. We use a Set to dedupe pairs, then ensure
+  // each user has at least MIN_FOLLOWING following and MIN_FOLLOWERS followers.
+  const MIN_FOLLOWING = 3
+  const MIN_FOLLOWERS = 3
+  const followPairs = new Set<string>() // key: `${followerId}->${followingId}`
+  const followersOf = new Map<string, Set<string>>() // followingId -> set of followerIds
+
+  function addFollow(followerId: string, followingId: string) {
+    if (followerId === followingId) return
+    const key = `${followerId}->${followingId}`
+    if (followPairs.has(key)) return
+    followPairs.add(key)
+    if (!followersOf.has(followingId)) followersOf.set(followingId, new Set())
+    followersOf.get(followingId)!.add(followerId)
+  }
+
+  // Pass 1: each user follows a random handful of others.
   for (const user of usersData) {
-    const targets = randomElements(usersData.filter(u => u.id !== user.id), randomInt(3, 8))
-    for (const target of targets) {
-      try {
-        await prisma.follow.create({
-          data: { followerId: user.id, followingId: target.id }
-        })
-      } catch (e) {
-        // Skip duplicates
-      }
+    const targets = randomElements(usersData.filter(u => u.id !== user.id), randomInt(MIN_FOLLOWING, 8))
+    for (const target of targets) addFollow(user.id, target.id)
+  }
+
+  // Pass 2: guarantee every user has at least MIN_FOLLOWERS followers.
+  for (const target of usersData) {
+    const current = followersOf.get(target.id)?.size ?? 0
+    if (current < MIN_FOLLOWERS) {
+      const candidates = randomElements(
+        usersData.filter(u => u.id !== target.id && !followPairs.has(`${u.id}->${target.id}`)),
+        MIN_FOLLOWERS - current,
+      )
+      for (const c of candidates) addFollow(c.id, target.id)
     }
   }
 
-  console.log('❤️ Creating engagement...')
+  // Persist all follow pairs.
+  let followCount = 0
+  for (const key of followPairs) {
+    const [followerId, followingId] = key.split('->')
+    try {
+      await prisma.follow.create({ data: { followerId, followingId } })
+      followCount++
+    } catch (e) {
+      // Skip duplicates
+    }
+  }
+  console.log(`✅ Created ${followCount} follows (social graph)`)
+
+  console.log('❤️ Creating likes...')
   const allPosts = await prisma.post.findMany({ select: { id: true } })
   for (const user of usersData) {
       const randomPosts = randomElements(allPosts, randomInt(5, 15))
@@ -368,6 +414,24 @@ async function main() {
           }
       }
   }
+
+  console.log('🔖 Creating saves...')
+  // Every user saves several posts so each profile has saved items.
+  let saveCount = 0
+  for (const user of usersData) {
+      const savedPosts = randomElements(allPosts, randomInt(4, 12))
+      for (const post of savedPosts) {
+          try {
+              await prisma.save.create({
+                  data: { userId: user.id, postId: post.id }
+              })
+              saveCount++
+          } catch (e) {
+              // Skip duplicates
+          }
+      }
+  }
+  console.log(`✅ Created ${saveCount} saves`)
 
   console.log('\n🎉 Seed completed successfully!')
   console.log(`\n🔑 Login with: admin@nutrisipe.com / password123`)

@@ -393,12 +393,12 @@ const selectedDayCalories = computed(() => {
         </div>
         <div class="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
           <div class="flex items-center gap-2">
-            <button @click="shiftWeek(-1)" aria-label="Previous week" class="w-10 h-10 shrink-0 rounded-full border-1.5 border-border bg-surface/70 hover:border-orange hover:text-orange transition-all">‹</button>
-            <button @click="jumpToday" class="px-4 h-10 shrink-0 rounded-full border-1.5 border-border bg-surface/70 text-xs font-bold hover:border-orange hover:text-orange transition-all">Today</button>
+            <button @click="shiftWeek(-1)" aria-label="Previous week" class="w-10 h-10 shrink-0 rounded-full border-1.5 border-border bg-surface hover:border-orange hover:text-orange transition-[border-color,color,transform] duration-200 active:scale-[0.94]">‹</button>
+            <button @click="jumpToday" class="px-4 h-10 shrink-0 rounded-full border-1.5 border-border bg-surface text-xs font-bold hover:border-orange hover:text-orange transition-[border-color,color,transform] duration-200 active:scale-[0.96]">Today</button>
             <span class="flex-1 text-center sm:flex-none px-1 sm:px-2 text-sm font-bold tabular-nums whitespace-nowrap">{{ weekLabel }}</span>
-            <button @click="shiftWeek(1)" aria-label="Next week" class="w-10 h-10 shrink-0 rounded-full border-1.5 border-border bg-surface/70 hover:border-orange hover:text-orange transition-all">›</button>
+            <button @click="shiftWeek(1)" aria-label="Next week" class="w-10 h-10 shrink-0 rounded-full border-1.5 border-border bg-surface hover:border-orange hover:text-orange transition-[border-color,color,transform] duration-200 active:scale-[0.94]">›</button>
           </div>
-          <RouterLink to="/groceries" class="btn-primary px-5 py-2.5 text-xs inline-flex items-center justify-center gap-1.5 sm:ml-2"><BaseIcons name="shopping-cart" size="sm" />Grocery List</RouterLink>
+          <RouterLink to="/groceries" class="btn-primary px-5 py-2.5 text-xs inline-flex items-center justify-center gap-1.5 sm:ml-2 shadow-[0_6px_24px_var(--orange-glow)] hover:shadow-[0_12px_32px_var(--orange-glow)] hover:-translate-y-0.5 transition-[transform,box-shadow,background-color] duration-200 active:scale-[0.96]"><BaseIcons name="shopping-cart" size="sm" />Grocery List</RouterLink>
         </div>
       </header>
 
@@ -439,9 +439,9 @@ const selectedDayCalories = computed(() => {
                 v-for="plan in selectedDayPlansBySlot[slot]"
                 :key="plan.id"
                 @click="router.push(`/recipes/${plan.postId}`)"
-                class="relative flex items-center gap-3 p-2 rounded-2xl bg-surface border-1.5 border-border active:scale-[0.99] transition-transform"
+                class="relative flex items-center gap-3 p-2 rounded-2xl bg-surface border border-border shadow-card active:scale-[0.99] transition-transform duration-200"
               >
-                <img :src="resolveImage(plan.post?.imageUrl, plan.postId)" :alt="plan.post?.title" class="w-16 h-16 rounded-xl object-cover shrink-0" />
+                <img :src="resolveImage(plan.post?.imageUrl, plan.postId)" :alt="plan.post?.title" class="w-16 h-16 rounded-xl object-cover shrink-0 outline outline-1 outline-black/10 dark:outline-white/10 -outline-offset-1" />
                 <div class="min-w-0 flex-1">
                   <p class="font-bold text-sm leading-tight line-clamp-2">{{ plan.post?.title }}</p>
                   <p class="text-xs text-text-dim mt-0.5">{{ plan.servings }} servings</p>
@@ -534,7 +534,7 @@ const selectedDayCalories = computed(() => {
       </div><!-- /desktop week grid -->
 
       <!-- Weekly nutrition summary -->
-      <div v-if="weekNutrition" class="mt-8 p-6 rounded-3xl bg-background-secondary/40 border-1.5 border-border">
+      <div v-if="weekNutrition" class="mt-8 p-6 rounded-card bg-surface border border-border shadow-card">
         <div class="flex items-center justify-between mb-5">
           <div>
             <p class="text-orange text-[11px] font-bold uppercase tracking-[0.3em] mb-1">Nutrition</p>
@@ -554,7 +554,7 @@ const selectedDayCalories = computed(() => {
               { label: 'Fat', value: weekNutrition.totals.fat, unit: 'g', color: 'text-teal-600 dark:text-teal-400' },
             ]"
             :key="m.label"
-            class="p-4 rounded-2xl bg-surface border border-border"
+            class="p-4 rounded-2xl bg-surface border border-border shadow-card"
           >
             <p class="text-[10px] font-bold uppercase tracking-widest text-text-dim mb-1">{{ m.label }}</p>
             <p :class="['font-montserrat font-extrabold text-2xl tabular-nums leading-none', m.color]">{{ m.value }}</p>
@@ -592,12 +592,13 @@ const selectedDayCalories = computed(() => {
     </div>
 
     <!-- Picker modal -->
+    <Transition name="picker-fade">
     <div
       v-if="showPicker"
-      class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60"
+      class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm"
       @click.self="showPicker = false"
     >
-      <div class="bg-surface border-1.5 border-border rounded-3xl p-6 max-w-2xl w-full max-h-[80vh] flex flex-col shadow-modal">
+      <div class="picker-panel bg-surface-solid border border-border rounded-card p-6 max-w-2xl w-full max-h-[80vh] flex flex-col shadow-modal">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h3 class="font-montserrat font-extrabold text-xl">Pick a recipe</h3>
@@ -605,7 +606,7 @@ const selectedDayCalories = computed(() => {
               {{ pickerCell.date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }) }} · {{ pickerCell.slot }}
             </p>
           </div>
-          <button @click="showPicker = false" class="text-text-dim text-xl">✕</button>
+          <button @click="showPicker = false" aria-label="Close" class="w-10 h-10 -mr-2 rounded-full flex items-center justify-center text-text-dim hover:text-text text-xl transition-[color,transform] duration-200 active:scale-[0.92]">✕</button>
         </div>
 
         <input
@@ -625,9 +626,9 @@ const selectedDayCalories = computed(() => {
               v-for="post in filteredPickerPosts"
               :key="post.id"
               @click="pickPost(post)"
-              class="flex gap-3 items-center p-2 rounded-2xl border border-border bg-background-secondary/40 hover:border-orange hover:bg-orange/5 transition-all text-left"
+              class="flex gap-3 items-center p-2 rounded-2xl border border-border bg-background-secondary/40 hover:border-orange hover:bg-orange-soft transition-[border-color,background-color,transform] duration-200 text-left active:scale-[0.98]"
             >
-              <img :src="resolveImage(post.imageUrl, post.id)" :alt="post.title" class="w-16 h-16 rounded-xl object-cover shrink-0" />
+              <img :src="resolveImage(post.imageUrl, post.id)" :alt="post.title" class="w-16 h-16 rounded-xl object-cover shrink-0 outline outline-1 outline-black/10 dark:outline-white/10 -outline-offset-1" />
               <div class="min-w-0">
                 <p class="font-bold text-sm truncate">{{ post.title }}</p>
                 <p class="text-xs text-text-dim">{{ post.recipe?.servings ?? '—' }} serv · {{ post.category }}</p>
@@ -637,6 +638,7 @@ const selectedDayCalories = computed(() => {
         </div>
       </div>
     </div>
+    </Transition>
   </div>
 </template>
 
@@ -650,8 +652,34 @@ const selectedDayCalories = computed(() => {
   font-size: 0.875rem;
   outline: none;
   color: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 .settings-input:focus {
   border-color: var(--orange, #ff6b35);
+  box-shadow: 0 0 0 3px var(--orange-soft);
+}
+
+.picker-fade-enter-active,
+.picker-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.picker-fade-enter-active .picker-panel {
+  transition: transform 0.25s cubic-bezier(0.34, 1.2, 0.64, 1), opacity 0.25s ease;
+}
+.picker-fade-enter-from,
+.picker-fade-leave-to {
+  opacity: 0;
+}
+.picker-fade-enter-from .picker-panel {
+  opacity: 0;
+  transform: translateY(12px) scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .picker-fade-enter-active .picker-panel,
+  .picker-fade-enter-active,
+  .picker-fade-leave-active {
+    transition: none;
+  }
 }
 </style>

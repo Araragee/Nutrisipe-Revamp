@@ -188,14 +188,14 @@ const recipeImage = computed(() =>
           <div class="absolute top-4 left-4 z-20 flex items-center gap-2">
             <button
               @click="toggleLike"
-              :class="['w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-card', post.isLiked ? 'bg-orange text-white' : 'bg-surface/95 text-text-muted hover:text-orange']"
+              :class="['w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 shadow-card', post.isLiked ? 'bg-orange text-white' : 'bg-surface/95 text-text-muted hover:text-orange']"
               :aria-label="post.isLiked ? 'Unlike' : 'Like'"
             >
               <BaseIcons name="heart" :solid="post.isLiked" size="sm" />
             </button>
             <button
               @click="toggleSave"
-              :class="['w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-card', post.isSaved ? 'bg-orange text-white' : 'bg-surface/95 text-text-muted hover:text-orange']"
+              :class="['w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 shadow-card', post.isSaved ? 'bg-orange text-white' : 'bg-surface/95 text-text-muted hover:text-orange']"
               :aria-label="post.isSaved ? 'Unsave' : 'Save'"
             >
               <BaseIcons name="bookmark" :solid="post.isSaved" size="sm" />
@@ -260,7 +260,7 @@ const recipeImage = computed(() =>
               <div
                 v-for="n in nutritionFacts"
                 :key="n.label"
-                :class="['rounded-2xl p-3.5 text-center border', n.accent ? 'bg-orange-soft border-transparent' : 'bg-background-secondary border-border']"
+                :class="['rounded-2xl p-3.5 text-center border transition-colors', n.accent ? 'bg-orange-soft border-transparent' : 'bg-background-secondary border-border hover:border-orange/40']"
               >
                 <BaseIcons
                   :name="n.icon"

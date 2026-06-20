@@ -421,7 +421,7 @@ onMounted(load)
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             Import CSV
           </button>
-          <button @click="newItem(); mobileTab = 'details'" class="px-4 py-2.5 rounded-xl bg-orange hover:bg-orange-deep text-white font-montserrat font-bold text-[13px] inline-flex items-center gap-2 hover:opacity-95 hover:-translate-y-0.5 transition-all">
+          <button @click="newItem(); mobileTab = 'details'" class="px-4 py-2.5 rounded-xl bg-orange hover:bg-orange-light text-white font-montserrat font-bold text-[13px] inline-flex items-center gap-2 shadow-[0_6px_24px_var(--orange-glow)] hover:shadow-[0_12px_32px_var(--orange-glow)] hover:-translate-y-0.5 transition-[transform,box-shadow,background-color] duration-200 active:scale-[0.96]">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             New Ingredient
           </button>
@@ -776,8 +776,8 @@ onMounted(load)
               <div class="flex-1 text-[13px] text-text-muted">
                 You have <strong class="text-text font-montserrat">unsaved changes</strong>{{ draft.food_item ? ` on ${draft.food_item}` : '' }}.
               </div>
-              <button @click="discard" class="px-4 py-2.5 rounded-[11px] border-1.5 border-border bg-transparent text-text font-montserrat font-bold text-xs hover:border-orange hover:text-orange transition-all">Discard</button>
-              <button @click="save" class="px-4 py-2.5 rounded-xl bg-orange hover:bg-orange-deep text-white font-montserrat font-bold text-[13px] inline-flex items-center gap-1.5 hover:opacity-95 transition-all">
+              <button @click="discard" class="px-4 py-2.5 rounded-[11px] border-1.5 border-border bg-transparent text-text font-montserrat font-bold text-xs hover:border-orange hover:text-orange transition-[border-color,color,transform] duration-200 active:scale-[0.96]">Discard</button>
+              <button @click="save" class="px-4 py-2.5 rounded-xl bg-orange hover:bg-orange-light text-white font-montserrat font-bold text-[13px] inline-flex items-center gap-1.5 shadow-[0_6px_24px_var(--orange-glow)] hover:shadow-[0_12px_32px_var(--orange-glow)] transition-[box-shadow,background-color,transform] duration-200 active:scale-[0.96]">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 {{ isCreating ? 'Create' : `Save & ${draftExtras.status === 'verified' ? 'keep verified' : 'submit'}` }}
               </button>

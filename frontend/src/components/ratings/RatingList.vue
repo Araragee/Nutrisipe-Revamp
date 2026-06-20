@@ -1,43 +1,47 @@
 <template>
   <div class="rating-list">
-    <div class="rating-header">
-      <h3 class="rating-list-title">
-        Reviews ({{ totalRatings }})
+    <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-border">
+      <h3 class="font-montserrat font-extrabold text-lg tracking-tight">
+        Reviews <span class="text-text-dim tabular-nums">({{ totalRatings }})</span>
       </h3>
 
-      <div class="rating-summary" v-if="averageRating > 0">
-        <StarRating :model-value="averageRating" readonly size="medium" show-value />
-        <span class="average-text">{{ averageRating.toFixed(1) }} out of 5</span>
+      <div v-if="averageRating > 0" class="flex items-center gap-2">
+        <StarRating :model-value="averageRating" readonly size="medium" />
+        <span class="text-sm text-text-muted font-medium tabular-nums">{{ averageRating.toFixed(1) }} out of 5</span>
       </div>
     </div>
 
-    <div v-if="isLoading" class="text-center py-10">
-      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-orange mx-auto"></div>
+    <div v-if="isLoading" class="text-center py-12">
+      <div class="animate-spin rounded-full h-9 w-9 border-2 border-orange border-t-transparent mx-auto"></div>
     </div>
 
-    <div v-else-if="ratings.length > 0" class="ratings-container">
-      <div
-        v-for="rating in ratings"
+    <ul v-else-if="ratings.length > 0" class="flex flex-col">
+      <li
+        v-for="(rating, idx) in ratings"
         :key="rating.id"
-        class="rating-item"
+        class="py-5 first:pt-0 last:pb-0"
+        :class="idx < ratings.length - 1 ? 'border-b border-border' : ''"
       >
-        <div class="rating-item-header">
-          <div class="user-info">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-start gap-3 min-w-0">
             <img
               v-if="rating.user.avatarUrl"
               :src="rating.user.avatarUrl"
               :alt="rating.user.username"
-              class="user-avatar"
+              class="w-10 h-10 rounded-full object-cover shrink-0 outline outline-1 outline-black/10 dark:outline-white/10"
             />
-            <div v-else class="user-avatar-placeholder">
+            <div
+              v-else
+              class="w-10 h-10 rounded-full shrink-0 grid place-items-center bg-orange text-white font-montserrat font-bold text-base"
+            >
               {{ rating.user.username[0].toUpperCase() }}
             </div>
 
-            <div class="user-details">
-              <div class="user-name">{{ rating.user.displayName }}</div>
-              <div class="rating-meta">
+            <div class="min-w-0">
+              <div class="font-montserrat font-bold text-[15px] truncate">{{ rating.user.displayName }}</div>
+              <div class="flex items-center gap-2.5 mt-0.5">
                 <StarRating :model-value="rating.rating" readonly size="small" />
-                <span class="rating-date">{{ formatDate(rating.createdAt) }}</span>
+                <span class="text-xs text-text-dim">{{ formatDate(rating.createdAt) }}</span>
               </div>
             </div>
           </div>
@@ -45,23 +49,26 @@
           <button
             v-if="canDelete(rating)"
             @click="handleDeleteRating(rating.id)"
-            class="delete-button"
-            title="Delete rating"
+            class="shrink-0 w-9 h-9 grid place-items-center rounded-full text-text-dim transition-colors duration-200 ease-out hover:bg-red-500/10 hover:text-red-500 active:scale-[0.92]"
+            title="Delete your review"
+            aria-label="Delete your review"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-[18px] h-[18px]">
               <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
             </svg>
           </button>
         </div>
 
-        <p v-if="rating.review" class="rating-review">
+        <p v-if="rating.review" class="mt-3 text-text-muted leading-relaxed text-pretty">
           {{ rating.review }}
         </p>
-      </div>
-    </div>
+      </li>
+    </ul>
 
-    <div v-else class="no-ratings">
-      <p>No reviews yet. Be the first to review this recipe!</p>
+    <div v-else class="text-center py-14 px-6 bg-background-secondary border border-dashed border-border rounded-card">
+      <div class="text-3xl mb-2 text-orange">★</div>
+      <p class="font-montserrat font-bold text-sm">No reviews yet</p>
+      <p class="text-sm text-text-dim mt-1">Be the first to share what you thought.</p>
     </div>
   </div>
 </template>
@@ -139,133 +146,3 @@ watch(() => props.postId, fetchRatings)
 
 defineExpose({ refresh: fetchRatings })
 </script>
-
-<style scoped>
-.rating-list {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-}
-
-.rating-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.rating-list-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #111827;
-}
-
-.rating-summary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.average-text {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.ratings-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.rating-item {
-  padding-bottom: 20px;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.rating-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.rating-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-
-.user-info {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.user-avatar-placeholder {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.user-details {
-  flex: 1;
-}
-
-.user-name {
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 4px;
-}
-
-.rating-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.rating-date {
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.rating-review {
-  color: #374151;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.delete-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #ef4444;
-  padding: 4px;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.delete-button:hover {
-  background: #fee2e2;
-}
-
-.no-ratings {
-  text-align: center;
-  padding: 40px 20px;
-  color: #6b7280;
-}
-</style>

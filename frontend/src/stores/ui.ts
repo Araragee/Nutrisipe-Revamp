@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useToast } from '@/composables/useToast'
+import { useToast, type ToastType, type ToastOptions } from '@/composables/useToast'
 
 export const useUiStore = defineStore('ui', () => {
   const pinModalOpen = ref(false)
@@ -30,9 +30,16 @@ export const useUiStore = defineStore('ui', () => {
     sidebarCollapsed.value = !sidebarCollapsed.value
   }
 
-  function showToast(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') {
+  // Backward-compatible: existing callers use showToast(message, type).
+  // New (optional) 4th arg accepts a duration (ms) or an options object
+  // ({ duration, action }) to render an action button like "Undo".
+  function showToast(
+    message: string,
+    type: ToastType = 'info',
+    options?: number | ToastOptions,
+  ) {
     const toast = useToast()
-    toast.addToast(message, type)
+    return toast.addToast(message, type, options)
   }
 
   return {

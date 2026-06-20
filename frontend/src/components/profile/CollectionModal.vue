@@ -5,6 +5,7 @@ import { ref, onMounted } from 'vue'
 import { collectionsApi, type Collection } from '@/http/endpoints/collections'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
+import { resolveImage } from '@/utils/imageUrl'
 import BaseModal from '@/components/base/BaseModal.vue'
 
 const props = defineProps<{
@@ -22,6 +23,7 @@ const collections = ref<Collection[]>([])
 const loading = ref(true)
 const newCollectionName = ref('')
 const isCreating = ref(false)
+const addingId = ref<string | null>(null)
 
 async function loadCollections() {
   if (!authStore.user) return
@@ -37,23 +39,27 @@ async function loadCollections() {
 }
 
 async function addToCollection(collectionId: string) {
+  if (addingId.value) return
+  addingId.value = collectionId
   try {
     await collectionsApi.addPost(collectionId, props.postId)
     uiStore.showToast('Added to collection', 'success')
     emit('close')
   } catch (error) {
     uiStore.showToast('Already in collection', 'info')
+  } finally {
+    addingId.value = null
   }
 }
 
 async function createAndAdd() {
-  if (!newCollectionName.value) return
+  if (!newCollectionName.value.trim()) return
   isCreating.value = true
   try {
-    const response = await collectionsApi.create({ name: newCollectionName.value })
+    const response = await collectionsApi.create({ name: newCollectionName.value.trim() })
     const newCol = response.data.data
     await collectionsApi.addPost(newCol.id, props.postId)
-    uiStore.showToast('Created and added!', 'success')
+    uiStore.showToast('Created and added', 'success')
     emit('close')
   } catch (error) {
     uiStore.showToast('Failed to create collection', 'error')
@@ -67,32 +73,56 @@ onMounted(loadCollections)
 
 <template>
   <BaseModal :show="show" title="Save to Collection" size="md" @close="emit('close')">
-    <div class="space-y-6">
+    <div class="space-y-4">
+      <!-- Loading -->
       <div v-if="loading" class="flex justify-center py-10">
-        <div class="w-8 h-8 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
+        <div class="h-8 w-8 animate-spin rounded-full border-4 border-orange border-t-transparent"></div>
       </div>
 
-      <div v-else class="max-h-96 overflow-y-auto space-y-3 -mx-6 px-6">
+      <!-- List -->
+      <div v-else-if="collections.length > 0" class="-mx-1 max-h-80 space-y-2 overflow-y-auto px-1">
         <button
           v-for="col in collections"
           :key="col.id"
           @click="addToCollection(col.id)"
-          class="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 hover:border-orange dark:hover:border-orange transition-all group"
+          :disabled="!!addingId"
+          class="group flex w-full items-center gap-4 rounded-2xl border border-border bg-background-secondary p-3 text-left transition-[transform,border-color] duration-200 ease-revamp hover:border-orange/40 active:scale-[0.99] disabled:opacity-60"
         >
-          <div class="w-12 h-12 bg-gray-200 dark:bg-zinc-600 rounded-lg flex items-center justify-center text-xl overflow-hidden flex-shrink-0">
-            <img v-if="col.thumbnailUrl" :src="col.thumbnailUrl" class="w-full h-full object-cover" />
-            <BaseIcons v-else name="folder" size="md" class="text-text-dim" />
+          <div
+            class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-surface text-text-dim outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
+          >
+            <img
+              v-if="col.thumbnailUrl"
+              :src="resolveImage(col.thumbnailUrl, col.id)"
+              :alt="col.name"
+              class="h-full w-full object-cover"
+            />
+            <BaseIcons v-else name="folder" size="md" />
           </div>
-          <div class="flex-1 text-left min-w-0">
-            <div class="font-semibold text-sm text-gray-900 dark:text-white truncate">{{ col.name }}</div>
-            <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">{{ col.postCount }} items</div>
+          <div class="min-w-0 flex-1">
+            <div class="truncate font-montserrat text-sm font-bold text-text">{{ col.name }}</div>
+            <div class="text-[11px] font-bold uppercase tracking-widest text-text-dim">
+              <span class="tabular-nums">{{ col.postCount ?? 0 }}</span> items
+            </div>
           </div>
-          <span class="opacity-0 group-hover:opacity-100 text-orange transition-opacity flex-shrink-0">+</span>
+          <span
+            class="grid h-7 w-7 shrink-0 place-items-center rounded-full text-orange opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+          >
+            <span
+              v-if="addingId === col.id"
+              class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+            ></span>
+            <BaseIcons v-else name="plus" size="sm" />
+          </span>
         </button>
+      </div>
 
-        <div v-if="collections.length === 0" class="text-center py-8">
-          <p class="text-gray-500 dark:text-gray-400 text-sm">You don't have any collections yet.</p>
+      <!-- Empty -->
+      <div v-else class="flex flex-col items-center gap-2 py-8 text-center">
+        <div class="grid h-12 w-12 place-items-center rounded-full bg-orange-soft text-orange">
+          <BaseIcons name="folder" size="md" />
         </div>
+        <p class="text-sm text-text-dim">No collections yet — create your first one below.</p>
       </div>
     </div>
 
@@ -101,14 +131,19 @@ onMounted(loadCollections)
         <input
           v-model="newCollectionName"
           type="text"
-          placeholder="New collection name..."
-          class="flex-1 bg-white dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 rounded-lg px-4 py-2 text-sm outline-none focus:border-orange dark:text-white dark:placeholder-gray-400"
+          placeholder="New collection name…"
+          class="flex-1 rounded-xl border-1.5 border-border bg-background-secondary px-4 py-2.5 text-sm text-text outline-none transition-colors duration-200 focus:border-orange"
+          @keyup.enter="createAndAdd"
         />
         <button
           @click="createAndAdd"
-          :disabled="!newCollectionName || isCreating"
-          class="bg-orange hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="!newCollectionName.trim() || isCreating"
+          class="inline-flex items-center gap-1.5 rounded-xl bg-orange px-5 py-2.5 font-montserrat text-xs font-bold uppercase tracking-widest text-white transition-[transform,background-color,opacity] duration-200 ease-revamp hover:bg-orange-light active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-50"
         >
+          <span
+            v-if="isCreating"
+            class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
+          ></span>
           Create
         </button>
       </div>

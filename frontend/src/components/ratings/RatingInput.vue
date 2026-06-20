@@ -1,28 +1,33 @@
 <template>
-  <div class="bg-surface border border-border rounded-xl p-6 shadow-card">
-    <h3 class="text-lg font-semibold text-text mb-5">{{ title }}</h3>
+  <div class="bg-surface border border-border rounded-card p-6 shadow-card">
+    <h3 class="font-montserrat font-extrabold text-lg tracking-tight text-text mb-5">{{ title }}</h3>
 
     <div class="mb-6">
-      <label class="block text-sm font-medium text-text-muted mb-2">Your Rating</label>
-      <StarRating v-model="localRating" :readonly="false" size="large" />
-      <p v-if="localRating > 0" class="mt-2 text-sm font-medium text-amber-500">
-        {{ getRatingText(localRating) }}
-      </p>
+      <label class="block text-[11px] font-montserrat font-bold uppercase tracking-widest text-text-dim mb-2.5">Your Rating</label>
+      <div class="flex flex-wrap items-center gap-3">
+        <StarRating v-model="localRating" :readonly="false" size="large" />
+        <span
+          v-if="localRating > 0"
+          class="px-3 py-1 rounded-full bg-orange-soft text-orange-deep dark:text-orange-light text-xs font-montserrat font-bold uppercase tracking-wide"
+        >
+          {{ getRatingText(localRating) }}
+        </span>
+      </div>
     </div>
 
     <div class="mb-6">
-      <label for="review" class="block text-sm font-medium text-text-muted mb-2">
-        Write a Review (Optional)
+      <label for="review" class="block text-[11px] font-montserrat font-bold uppercase tracking-widest text-text-dim mb-2.5">
+        Write a Review <span class="text-text-dim/60 normal-case tracking-normal font-medium">(optional)</span>
       </label>
       <textarea
         id="review"
         v-model="localReview"
         rows="5"
         maxlength="1000"
-        placeholder="Share your experience with this recipe..."
-        class="w-full p-3 bg-background-secondary border border-border rounded-lg text-sm text-text font-inherit resize-y transition-colors focus:outline-none focus:border-orange"
+        placeholder="Share your experience with this recipe…"
+        class="w-full p-3.5 bg-background border border-border rounded-2xl text-sm text-text leading-relaxed resize-y transition-colors duration-200 ease-out focus:outline-none focus:border-orange placeholder:text-text-dim"
       ></textarea>
-      <div class="text-right text-xs text-text-dim mt-1">
+      <div class="text-right text-xs text-text-dim mt-1.5 tabular-nums">
         {{ localReview.length }} / 1000
       </div>
     </div>

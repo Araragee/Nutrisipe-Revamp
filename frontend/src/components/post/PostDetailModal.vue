@@ -3,11 +3,15 @@ import { logger } from '@/utils/logger'
 import { ref, computed, onMounted, watch } from 'vue'
 import { postsApi } from '@/http/endpoints/posts'
 import { usePostActions } from '@/composables/usePostActions'
+import { resolveImage } from '@/utils/imageUrl'
+import { formatNumber } from '@/utils/format'
 import UserAvatar from '@/components/user/UserAvatar.vue'
+import FollowButton from '@/components/user/FollowButton.vue'
 import CommentSection from '@/components/post/CommentSection.vue'
-import BaseModal from '@/components/base/BaseModal.vue'
+import BaseIcons from '@/components/base/BaseIcons.vue'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import type { Post } from '@/typescript/interface/Post'
+import { useAuthStore } from '@/stores/auth'
 
 const props = defineProps<{
   postId: string | null
@@ -18,16 +22,24 @@ const emit = defineEmits<{
   close: []
 }>()
 
+const authStore = useAuthStore()
 const post = ref<Post | null>(null)
 const isLoading = ref(false)
 const activeTab = ref<'details' | 'comments'>('details')
 
 const { toggleLike, toggleSave, sharePost: handleShare } = usePostActions(post)
 
+const isOwnPost = computed(() => post.value?.user.id === authStore.user?.id)
+
 const formattedDate = computed(() => {
   if (!post.value) return ''
   const date = new Date(post.value.createdAt)
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+})
+
+const categoryLabel = computed(() => {
+  if (!post.value) return ''
+  return post.value.category.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())
 })
 
 async function loadPost() {
@@ -36,6 +48,7 @@ async function loadPost() {
   isLoading.value = true
   try {
     post.value = (await postsApi.getById(props.postId)).data.data
+    activeTab.value = 'details'
   } catch (error) {
     logger.error('Failed to load post:', error)
   } finally {
@@ -54,201 +67,233 @@ onMounted(() => {
   }
 })
 
-watch(() => [props.show, props.postId], ([show, postId]) => {
-  if (show && postId) {
-    loadPost()
-  }
-})
+watch(
+  () => [props.show, props.postId],
+  ([show, postId]) => {
+    if (show && postId) {
+      loadPost()
+    }
+  },
+)
 </script>
 
 <template>
-  <div
-    v-if="show"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-    @click.self="handleClose"
-  >
-    <div class="relative w-full rounded-2xl shadow-xl bg-white dark:bg-zinc-800 max-h-[90vh] overflow-hidden flex flex-col md:flex-row max-w-5xl">
-      <!-- Close Button -->
-      <button
-        @click="handleClose"
-        type="button"
-        aria-label="Close modal"
-        class="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-all"
+  <Transition name="modal">
+    <div
+      v-if="show"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-5"
+      @click.self="handleClose"
+    >
+      <div
+        class="modal-card relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border border-border bg-surface shadow-modal md:flex-row"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
+        <!-- Close -->
+        <button
+          @click="handleClose"
+          type="button"
+          aria-label="Close"
+          class="absolute right-4 top-4 z-30 grid h-9 w-9 place-items-center rounded-full bg-black/40 text-white backdrop-blur transition-[transform,background-color] duration-200 ease-revamp hover:bg-black/60 active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+        >
+          <BaseIcons name="x-mark" size="sm" />
+        </button>
 
-      <div v-if="isLoading" class="flex items-center justify-center w-full p-12">
-        <LoadingSpinner size="lg" color="border-orange-500" />
-      </div>
-
-      <template v-else-if="post">
-        <!-- Image Section -->
-        <div class="hidden md:flex md:w-2/3 bg-black flex-col items-center justify-center">
-          <img
-            :src="post.imageUrl"
-            :alt="post.title"
-            class="w-full h-full object-contain max-h-[90vh]"
-          />
+        <div v-if="isLoading" class="grid w-full place-items-center p-16">
+          <LoadingSpinner size="lg" color="border-orange" />
         </div>
 
-        <!-- Details Section -->
-        <div class="w-full md:w-1/3 flex flex-col max-h-[90vh]">
-          <!-- Header -->
-          <div class="p-4 border-b border-gray-200 dark:border-zinc-700 flex items-center justify-between flex-shrink-0">
-            <div class="flex items-center gap-3">
-              <RouterLink :to="`/profile/${post.user.id}`" @click="handleClose">
-                <UserAvatar :user="post.user" size="md" />
-              </RouterLink>
-              <div>
-                <RouterLink
-                  :to="`/profile/${post.user.id}`"
-                  @click="handleClose"
-                  class="font-semibold text-gray-900 dark:text-white hover:text-orange-500 dark:hover:text-orange-400 transition-colors"
-                >
-                  {{ post.user.displayName }}
+        <template v-else-if="post">
+          <!-- Image stage -->
+          <div class="hidden flex-col items-center justify-center bg-black md:flex md:w-3/5">
+            <img
+              :src="resolveImage(post.imageUrl, post.id)"
+              :alt="post.title"
+              class="max-h-[92vh] w-full object-contain"
+            />
+          </div>
+
+          <!-- Detail rail -->
+          <div class="flex w-full flex-col md:w-2/5">
+            <!-- Author header -->
+            <div class="flex shrink-0 items-center justify-between gap-3 border-b border-border p-4">
+              <div class="flex min-w-0 items-center gap-3">
+                <RouterLink :to="`/profile/${post.user.id}`" @click="handleClose">
+                  <UserAvatar :user="post.user" size="md" />
                 </RouterLink>
-                <p class="text-xs text-gray-500 dark:text-gray-400">@{{ post.user.username }}</p>
+                <div class="min-w-0">
+                  <RouterLink
+                    :to="`/profile/${post.user.id}`"
+                    @click="handleClose"
+                    class="block truncate font-montserrat text-sm font-bold text-text transition-colors hover:text-orange"
+                  >
+                    {{ post.user.displayName }}
+                  </RouterLink>
+                  <p class="truncate text-xs text-text-dim">@{{ post.user.username }}</p>
+                </div>
               </div>
+              <FollowButton
+                v-if="!isOwnPost"
+                :user-id="post.user.id"
+                :is-following="post.user.isFollowing"
+                size="sm"
+              />
             </div>
-          </div>
 
-          <!-- Tabs -->
-          <div class="flex border-b border-gray-200 dark:border-zinc-700 flex-shrink-0">
-            <button
-              @click="activeTab = 'details'"
-              :class="[
-                'flex-1 px-4 py-3 font-medium transition-colors',
-                activeTab === 'details'
-                  ? 'text-orange-500 border-b-2 border-orange-500'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300'
-              ]"
-            >
-              Details
-            </button>
-            <button
-              @click="activeTab = 'comments'"
-              :class="[
-                'flex-1 px-4 py-3 font-medium transition-colors flex items-center justify-center gap-2',
-                activeTab === 'comments'
-                  ? 'text-orange-500 border-b-2 border-orange-500'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300'
-              ]"
-            >
-              Comments
-              <span class="text-xs bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full">
-                {{ post.commentCount }}
-              </span>
-            </button>
-          </div>
+            <!-- Mobile image -->
+            <div class="bg-black md:hidden">
+              <img
+                :src="resolveImage(post.imageUrl, post.id)"
+                :alt="post.title"
+                class="max-h-64 w-full object-cover"
+              />
+            </div>
 
-          <!-- Content -->
-          <div v-if="activeTab === 'details'" class="flex-1 overflow-y-auto">
-            <div class="p-4 space-y-4">
-              <!-- Title -->
-              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ post.title }}</h2>
-
-              <!-- Category Badge -->
-              <div>
-                <span class="inline-block px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-sm font-medium">
-                  {{ post.category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) }}
-                </span>
-              </div>
-
-              <!-- Description -->
-              <p v-if="post.description" class="text-gray-700 dark:text-gray-300 leading-relaxed">
-                {{ post.description }}
-              </p>
-
-              <!-- Tags -->
-              <div v-if="post.tags && post.tags.length > 0" class="flex flex-wrap gap-2">
+            <!-- Tabs -->
+            <div class="flex shrink-0 gap-1 border-b border-border px-2">
+              <button
+                v-for="tab in (['details', 'comments'] as const)"
+                :key="tab"
+                @click="activeTab = tab"
+                :class="[
+                  'relative flex flex-1 items-center justify-center gap-1.5 px-4 py-3 font-montserrat text-xs font-bold uppercase tracking-widest transition-colors duration-200 ease-revamp',
+                  activeTab === tab ? 'text-orange' : 'text-text-dim hover:text-text',
+                ]"
+              >
+                {{ tab }}
                 <span
-                  v-for="tag in post.tags"
-                  :key="tag"
-                  class="px-3 py-1 bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 rounded-full text-sm"
+                  v-if="tab === 'comments'"
+                  class="rounded-full bg-background-secondary px-1.5 py-0.5 text-[10px] tabular-nums text-text-dim"
+                  >{{ post.commentCount }}</span
                 >
-                  #{{ tag }}
-                </span>
-              </div>
-
-              <!-- Date -->
-              <p class="text-sm text-gray-500 dark:text-gray-400">Posted on {{ formattedDate }}</p>
+                <span
+                  v-if="activeTab === tab"
+                  class="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-orange"
+                ></span>
+              </button>
             </div>
 
-            <!-- Actions -->
-            <div class="p-4 border-t border-gray-200 dark:border-zinc-700 space-y-3 flex-shrink-0">
-              <!-- Engagement Stats -->
-              <div class="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
-                <div class="flex items-center gap-1">
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
-                  </svg>
-                  <span>{{ post.likeCount }}</span>
+            <!-- Details -->
+            <div v-if="activeTab === 'details'" class="flex min-h-0 flex-1 flex-col">
+              <div class="flex-1 space-y-4 overflow-y-auto p-5">
+                <div>
+                  <span
+                    class="inline-flex items-center rounded-full bg-orange-soft px-3 py-1 font-montserrat text-[10px] font-bold uppercase tracking-widest text-orange"
+                    >{{ categoryLabel }}</span
+                  >
+                  <h2 class="mt-3 text-balance font-montserrat text-2xl font-extrabold tracking-tight text-text">
+                    {{ post.title }}
+                  </h2>
                 </div>
-                <div class="flex items-center gap-1">
-                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-                  </svg>
-                  <span>{{ post.saveCount }}</span>
+
+                <p v-if="post.description" class="text-pretty leading-relaxed text-text-muted">
+                  {{ post.description }}
+                </p>
+
+                <div v-if="post.tags && post.tags.length > 0" class="flex flex-wrap gap-2">
+                  <span
+                    v-for="tag in post.tags"
+                    :key="tag"
+                    class="rounded-full bg-background-secondary px-3 py-1 text-xs font-medium text-text-muted"
+                    >#{{ tag }}</span
+                  >
                 </div>
+
+                <p class="text-xs text-text-dim">Posted {{ formattedDate }}</p>
               </div>
 
-              <!-- Action Buttons -->
-              <div class="flex gap-2">
-                <button
-                  @click="toggleLike"
-                  :class="[
-                    'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all',
-                    post.isLiked
-                      ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30'
-                      : 'bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-600'
-                  ]"
-                >
-                  <svg class="w-5 h-5" :fill="post.isLiked ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                  {{ post.isLiked ? 'Liked' : 'Like' }}
-                </button>
+              <!-- Action bar -->
+              <div class="shrink-0 space-y-3 border-t border-border p-4">
+                <div class="flex items-center gap-5 text-sm text-text-dim">
+                  <span class="flex items-center gap-1.5">
+                    <BaseIcons name="heart" size="sm" :solid="post.isLiked" :class="post.isLiked ? 'text-orange' : ''" />
+                    <span class="tabular-nums">{{ formatNumber(post.likeCount) }}</span>
+                  </span>
+                  <span class="flex items-center gap-1.5">
+                    <BaseIcons name="bookmark" size="sm" :solid="post.isSaved" :class="post.isSaved ? 'text-orange' : ''" />
+                    <span class="tabular-nums">{{ formatNumber(post.saveCount) }}</span>
+                  </span>
+                </div>
 
-                <button
-                  @click="toggleSave"
-                  :class="[
-                    'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all',
-                    post.isSaved
-                      ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30'
-                      : 'bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-600'
-                  ]"
-                >
-                  <svg class="w-5 h-5" :fill="post.isSaved ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                  </svg>
-                  {{ post.isSaved ? 'Saved' : 'Save' }}
-                </button>
+                <div class="flex gap-2">
+                  <button
+                    @click="toggleLike"
+                    :class="[
+                      'flex flex-1 items-center justify-center gap-2 rounded-xl py-3 font-montserrat text-xs font-bold uppercase tracking-widest transition-[transform,background-color,color] duration-200 ease-revamp active:scale-[0.96]',
+                      post.isLiked
+                        ? 'bg-orange text-white shadow-[0_4px_16px_rgba(255,107,53,0.3)]'
+                        : 'bg-background-secondary text-text hover:text-orange',
+                    ]"
+                  >
+                    <BaseIcons name="heart" size="sm" :solid="post.isLiked" />
+                    {{ post.isLiked ? 'Liked' : 'Like' }}
+                  </button>
 
-                <button
-                  @click="handleShare"
-                  :class="[
-                    'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all',
-                    'bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-600'
-                  ]"
-                >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                  </svg>
-                  Share
-                </button>
+                  <button
+                    @click="toggleSave"
+                    :class="[
+                      'flex flex-1 items-center justify-center gap-2 rounded-xl py-3 font-montserrat text-xs font-bold uppercase tracking-widest transition-[transform,background-color,color] duration-200 ease-revamp active:scale-[0.96]',
+                      post.isSaved
+                        ? 'bg-orange-soft text-orange'
+                        : 'bg-background-secondary text-text hover:text-orange',
+                    ]"
+                  >
+                    <BaseIcons name="bookmark" size="sm" :solid="post.isSaved" />
+                    {{ post.isSaved ? 'Saved' : 'Save' }}
+                  </button>
+
+                  <button
+                    @click="handleShare"
+                    aria-label="Share"
+                    class="grid w-12 place-items-center rounded-xl bg-background-secondary text-text transition-[transform,color] duration-200 ease-revamp hover:text-orange active:scale-[0.94]"
+                  >
+                    <BaseIcons name="share" size="sm" />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Comments Tab Content -->
-          <div v-else-if="activeTab === 'comments'" class="flex-1 overflow-hidden">
-            <CommentSection :post-id="post.id" />
+            <!-- Comments -->
+            <div v-else-if="activeTab === 'comments'" class="min-h-0 flex-1 overflow-y-auto p-5">
+              <CommentSection :post-id="post.id" />
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
+      </div>
     </div>
-  </div>
+  </Transition>
 </template>
+
+<style scoped>
+.modal-enter-active {
+  transition: opacity 0.2s ease;
+}
+.modal-leave-active {
+  transition: opacity 0.18s ease;
+}
+.modal-enter-active .modal-card {
+  transition: transform 0.25s cubic-bezier(0.34, 1.2, 0.64, 1), opacity 0.25s ease;
+}
+.modal-leave-active .modal-card {
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+.modal-enter-from .modal-card {
+  opacity: 0;
+  transform: translateY(14px) scale(0.97);
+}
+.modal-leave-to .modal-card {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-enter-active,
+  .modal-leave-active,
+  .modal-enter-active .modal-card,
+  .modal-leave-active .modal-card {
+    transition: none;
+  }
+}
+</style>
