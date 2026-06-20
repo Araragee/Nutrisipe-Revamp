@@ -263,20 +263,29 @@ onMounted(() => {
   // Use IntersectionObserver instead of GSAP
   statDisplays.value = STATS.map(s => formatStat(s.target, s))
 
+  const BOWL_STAGES = [
+    '.pl-base .pl-item',
+    '.pl-grain .pl-item',
+    '.pl-top .pl-item, .pl-garnish .pl-item, .pl-fork',
+  ]
+
+  function revealBowlUpTo(stage: number) {
+    for (let i = 0; i <= stage; i++) {
+      document.querySelectorAll(BOWL_STAGES[i]).forEach(el => el.classList.add('revealed-pl'))
+    }
+  }
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('revealed')
-        entry.target.classList.add('is-active')
-        // For bowl layers, we can just reveal them all if we scroll, or just let CSS do it.
-        const plItems = document.querySelectorAll('.pl-item, .pl-fork')
-        plItems.forEach(el => {
-          el.classList.add('revealed-pl')
-        })
-        observer.unobserve(entry.target)
+      if (!entry.isIntersecting) return
+      entry.target.classList.add('revealed', 'is-active')
+      const stage = (entry.target as HTMLElement).dataset.stage
+      if (stage !== undefined) {
+        revealBowlUpTo(parseInt(stage))
       }
+      observer.unobserve(entry.target)
     })
-  }, { threshold: 0.1 })
+  }, { threshold: 0.3 })
 
   setTimeout(() => {
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el))
@@ -597,8 +606,9 @@ onMounted(() => {
           <!-- Scroll steps -->
           <ol class="how-steps">
             <li
-              v-for="step in STEPS"
+              v-for="(step, i) in STEPS"
               :key="step.num"
+              :data-stage="i"
               class="how-step py-8 md:min-h-[56vh] flex flex-col justify-center"
             >
               <span class="how-chip inline-flex w-fit items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4">
@@ -866,9 +876,19 @@ onMounted(() => {
 .how-step.is-active .how-num {
   -webkit-text-stroke-color: var(--orange);
 }
-/* Small screens: no scrubbing, every step reads fully */
+/* Small screens: steps slide up as they enter view */
 @media (max-width: 767px) {
-  .how-step { opacity: 1; }
+  .how-step {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+  .how-step.revealed {
+    opacity: 1;
+    transform: none;
+  }
+  .how-step:nth-child(2) { transition-delay: 0.1s; }
+  .how-step:nth-child(3) { transition-delay: 0.2s; }
 }
 
 /* ── Community: pinned polaroids ── */
@@ -955,6 +975,7 @@ onMounted(() => {
 .anim-ready .reveal {
   opacity: 0;
   transform: translateY(32px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .anim-ready .reveal.revealed {
   opacity: 1;

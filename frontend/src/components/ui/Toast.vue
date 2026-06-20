@@ -4,7 +4,6 @@ import type { Toast } from '@/composables/useToast'
 
 interface Props {
   toast: Toast
-  /** Skip the auto-dismiss timer + progress bar (e.g. prefers-reduced-motion). */
   reducedMotion?: boolean
 }
 
@@ -17,75 +16,42 @@ const emit = defineEmits<{
   (e: 'action', id: number): void
 }>()
 
-// --- role-aware styling -----------------------------------------------------
 const roleStyle = computed(() => ({
   success: {
     accent: 'text-emerald-600 dark:text-emerald-400',
     ring: 'bg-emerald-500/12 ring-emerald-500/25',
-    bar: 'bg-emerald-500 dark:bg-emerald-400',
   },
   error: {
     accent: 'text-red-600 dark:text-red-400',
     ring: 'bg-red-500/12 ring-red-500/25',
-    bar: 'bg-red-500 dark:bg-red-400',
   },
   warning: {
     accent: 'text-amber-600 dark:text-amber-400',
     ring: 'bg-amber-500/12 ring-amber-500/25',
-    bar: 'bg-amber-500 dark:bg-amber-400',
   },
   info: {
     accent: 'text-orange dark:text-orange',
     ring: 'bg-orange/12 ring-orange/25',
-    bar: 'bg-orange',
   },
 }[props.toast.type]))
 
-// error speaks assertively, everything else politely
 const liveMode = computed(() => (props.toast.type === 'error' ? 'assertive' : 'polite'))
 const liveRole = computed(() => (props.toast.type === 'error' ? 'alert' : 'status'))
 
-// --- auto-dismiss timer + progress -----------------------------------------
-const duration = computed(() => props.toast.duration)
-const hasTimer = computed(() => !props.reducedMotion && duration.value > 0)
-
-const progress = ref(1) // 1 -> 0
-const paused = ref(false)
-let rafId = 0
-let startedAt = 0
-let elapsedBeforePause = 0
-
-function tick(now: number) {
-  if (paused.value) return
-  const elapsed = elapsedBeforePause + (now - startedAt)
-  const remaining = Math.max(0, 1 - elapsed / duration.value)
-  progress.value = remaining
-  if (remaining <= 0) {
-    emit('dismiss', props.toast.id)
-    return
-  }
-  rafId = requestAnimationFrame(tick)
-}
+// --- auto-dismiss timer ----------------------------------------------------
+let timerId: ReturnType<typeof setTimeout> | null = null
 
 function startTimer() {
-  if (!hasTimer.value) return
-  startedAt = performance.now()
-  rafId = requestAnimationFrame(tick)
+  if (props.toast.duration <= 0) return
+  timerId = setTimeout(() => emit('dismiss', props.toast.id), props.toast.duration)
 }
 
-function pauseTimer() {
-  if (!hasTimer.value || paused.value) return
-  paused.value = true
-  cancelAnimationFrame(rafId)
-  elapsedBeforePause += performance.now() - startedAt
+function clearTimer() {
+  if (timerId) { clearTimeout(timerId); timerId = null }
 }
 
-function resumeTimer() {
-  if (!hasTimer.value || !paused.value) return
-  paused.value = false
-  startedAt = performance.now()
-  rafId = requestAnimationFrame(tick)
-}
+onMounted(startTimer)
+onBeforeUnmount(clearTimer)
 
 // --- swipe-to-dismiss -------------------------------------------------------
 const dragX = ref(0)
@@ -113,12 +79,11 @@ const cardOpacity = computed(() => {
 })
 
 function onPointerDown(e: PointerEvent) {
-  // ignore non-primary buttons; allow touch/pen/mouse
   if (e.button !== 0) return
   pointerId = e.pointerId
   pointerStartX = e.clientX
   dragging.value = true
-  pauseTimer()
+  clearTimer()
   ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
 }
 
@@ -137,9 +102,8 @@ function onPointerUp(e: PointerEvent) {
     // spring-y exit handled by CSS transition on `transform`
     window.setTimeout(() => emit('dismiss', props.toast.id), 260)
   } else {
-    // snap back, then keep counting down
     dragX.value = 0
-    resumeTimer()
+    startTimer()
   }
 }
 
@@ -153,9 +117,6 @@ function onActionClick() {
 function dismiss() {
   emit('dismiss', props.toast.id)
 }
-
-onMounted(startTimer)
-onBeforeUnmount(() => cancelAnimationFrame(rafId))
 </script>
 
 <template>
@@ -170,10 +131,6 @@ onBeforeUnmount(() => cancelAnimationFrame(rafId))
     @pointermove="onPointerMove"
     @pointerup="onPointerUp"
     @pointercancel="onPointerUp"
-    @mouseenter="pauseTimer"
-    @mouseleave="resumeTimer"
-    @focusin="pauseTimer"
-    @focusout="resumeTimer"
   >
     <div class="flex items-start gap-3 p-3.5 pr-2.5">
       <!-- role icon -->
@@ -209,20 +166,13 @@ onBeforeUnmount(() => cancelAnimationFrame(rafId))
         type="button"
         aria-label="Dismiss notification"
         class="relative -m-1 grid h-10 w-10 shrink-0 place-items-center rounded-full text-text-dim transition-[color,background-color,transform] duration-150 ease-revamp hover:bg-black/5 hover:text-text active:scale-[0.96] dark:hover:bg-white/10"
+        @pointerdown.stop
         @click.stop="dismiss"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
       </button>
     </div>
 
-    <!-- auto-dismiss progress bar -->
-    <div
-      v-if="hasTimer"
-      class="absolute inset-x-0 bottom-0 h-[3px] origin-left rounded-full transition-opacity duration-150"
-      :class="[roleStyle.bar, paused ? 'opacity-40' : 'opacity-90']"
-      :style="{ transform: `scaleX(${progress})` }"
-      aria-hidden="true"
-    />
   </div>
 </template>
 

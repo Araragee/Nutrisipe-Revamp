@@ -70,7 +70,7 @@ async function loadCreators() {
   if (creators.value.length > 0) return
   isLoadingCreators.value = true
   try {
-    const response = await usersApi.getPopular(12)
+    const response = await usersApi.getSuggestions(12)
     creators.value = response.data.data.map((u: any) => ({
       id: u.id,
       displayName: u.displayName,
@@ -87,8 +87,7 @@ async function loadCreators() {
   }
 }
 
-const fillPct = (i: number) =>
-  step.value > i ? '100%' : step.value === i ? '60%' : '0%'
+const fillPct = (i: number) => (step.value >= i ? '100%' : '0%')
 
 const ctaLabel = computed(() => (step.value < 2 ? 'Continue →' : 'Start exploring →'))
 
@@ -145,12 +144,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="onboarding-view relative min-h-screen bg-[#0c0907] overflow-hidden text-white">
+  <div class="onboarding-view relative h-screen bg-[#0c0907] overflow-hidden text-white">
     <!-- Radial glow in background -->
     <div class="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_100%,rgba(255,107,53,0.08),transparent_50%)] pointer-events-none"></div>
-    <div class="relative z-10 min-h-screen flex flex-col lg:flex-row">
+    <div class="relative z-10 h-full flex flex-col lg:flex-row">
       <!-- Left: copy + nav -->
-      <aside class="lg:w-2/5 xl:w-1/3 flex flex-col justify-between p-8 md:p-12 lg:p-16">
+      <aside class="lg:w-2/5 xl:w-1/3 flex flex-col justify-between p-8 md:p-12 lg:p-16 overflow-y-auto">
         <div>
           <div class="flex items-center gap-2.5 mb-12">
             <span class="logo-mark w-10 h-10 rounded-[12px] flex items-center justify-center shrink-0">
@@ -191,8 +190,11 @@ onMounted(() => {
                 <span
                   v-for="g in selectedGoals"
                   :key="g"
-                  class="px-3 py-1 rounded-full bg-white/5 text-white/80 text-xs font-bold border border-white/10"
-                >{{ goalIconMap[g] }} {{ goals.find(x => x.id === g)?.label }}</span>
+                  class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/5 text-white/80 text-xs font-bold border border-white/10"
+                >
+                  <BaseIcons :name="goalIconMap[g]" size="xs" />
+                  {{ goals.find(x => x.id === g)?.label }}
+                </span>
               </template>
             </div>
           </div>
@@ -221,8 +223,8 @@ onMounted(() => {
       </aside>
 
       <!-- Right: step content -->
-      <section class="flex-1 flex flex-col p-8 md:p-12 lg:p-16">
-        <div class="flex-1">
+      <section class="flex-1 flex flex-col p-8 md:p-12 lg:p-16 min-h-0 overflow-hidden">
+        <div class="flex-1 min-h-0 overflow-hidden">
           <!-- Step 0: Dietary -->
           <div v-if="step === 0" class="animate-fadeIn">
             <div class="flex flex-wrap gap-2.5 max-w-3xl">
@@ -265,61 +267,63 @@ onMounted(() => {
           </div>
 
           <!-- Step 2: Creators wall -->
-          <div v-else class="animate-fadeIn">
-            <div v-if="isLoadingCreators" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              <div
-                v-for="i in 8"
-                :key="i"
-                class="aspect-[3/4] bg-white/5 rounded-2xl animate-pulse"
-              ></div>
-            </div>
-
-            <div v-else-if="creators.length > 0">
-              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                <button
-                  v-for="c in creators"
-                  :key="c.id"
-                  @click="toggleCreator(c.id)"
-                  :class="[
-                    'creator-tile relative aspect-[3/4] rounded-2xl overflow-hidden group transition-all',
-                    selectedCreators.has(c.id)
-                      ? 'ring-2 ring-orange-light scale-[1.02] shadow-[0_0_20px_rgba(255,107,53,0.3)]'
-                      : 'ring-1 ring-white/10 hover:-translate-y-0.5 hover:ring-white/30',
-                  ]"
-                >
-                  <img
-                    :src="resolveImage(c.avatarUrl, c.id)"
-                    :alt="c.displayName"
-                    class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
-
-                  <div
-                    v-if="selectedCreators.has(c.id)"
-                    class="absolute top-2 right-2 w-7 h-7 rounded-full bg-orange-light flex items-center justify-center text-white text-sm font-bold shadow-lg"
-                  >✓</div>
-
-                  <div
-                    v-if="c.followerCount > 0"
-                    class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/55 text-white text-[10px] font-bold tracking-wider"
-                  >{{ c.followerCount }} ★</div>
-
-                  <div class="absolute inset-x-0 bottom-0 p-3 text-left">
-                    <p class="text-white font-montserrat font-extrabold text-sm leading-tight drop-shadow-md truncate">{{ c.displayName }}</p>
-                    <p class="text-white/75 text-[11px] font-bold truncate">@{{ c.username }}</p>
-                    <p class="text-white/60 text-[10px] mt-0.5">{{ c.postCount }} recipes</p>
-                  </div>
-                </button>
+          <div v-else class="animate-fadeIn h-full flex flex-col overflow-hidden">
+            <div class="flex-1 overflow-y-auto pr-1">
+              <div v-if="isLoadingCreators" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div
+                  v-for="i in 8"
+                  :key="i"
+                  class="aspect-[3/4] bg-white/5 rounded-2xl animate-pulse"
+                ></div>
               </div>
 
-              <p class="mt-6 text-white/40 text-sm">
-                <span class="font-extrabold text-orange-light tabular-nums">{{ selectedCreators.size }}</span> selected — follow as many as you like
-              </p>
+              <div v-else-if="creators.length > 0">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <button
+                    v-for="c in creators"
+                    :key="c.id"
+                    @click="toggleCreator(c.id)"
+                    :class="[
+                      'creator-tile relative aspect-[3/4] rounded-2xl overflow-hidden group transition-all',
+                      selectedCreators.has(c.id)
+                        ? 'ring-2 ring-orange-light scale-[1.02] shadow-[0_0_20px_rgba(255,107,53,0.3)]'
+                        : 'ring-1 ring-white/10 hover:-translate-y-0.5 hover:ring-white/30',
+                    ]"
+                  >
+                    <img
+                      :src="resolveImage(c.avatarUrl, c.id)"
+                      :alt="c.displayName"
+                      class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+
+                    <div
+                      v-if="selectedCreators.has(c.id)"
+                      class="absolute top-2 right-2 w-7 h-7 rounded-full bg-orange-light flex items-center justify-center text-white text-sm font-bold shadow-lg"
+                    >✓</div>
+
+                    <div
+                      v-if="c.followerCount > 0"
+                      class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/55 text-white text-[10px] font-bold tracking-wider"
+                    >{{ c.followerCount }} ★</div>
+
+                    <div class="absolute inset-x-0 bottom-0 p-3 text-left">
+                      <p class="text-white font-montserrat font-extrabold text-sm leading-tight drop-shadow-md truncate">{{ c.displayName }}</p>
+                      <p class="text-white/75 text-[11px] font-bold truncate">@{{ c.username }}</p>
+                      <p class="text-white/60 text-[10px] mt-0.5">{{ c.postCount }} recipes</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <div v-else class="text-center py-16 text-white/40">
+                <p class="text-base">No creators yet. You can find them later from the Explore page.</p>
+              </div>
             </div>
 
-            <div v-else class="text-center py-16 text-white/40">
-              <p class="text-base">No creators yet. You can find them later from the Explore page.</p>
-            </div>
+            <p v-if="!isLoadingCreators && creators.length > 0" class="mt-3 text-white/40 text-sm shrink-0">
+              <span class="font-extrabold text-orange-light tabular-nums">{{ selectedCreators.size }}</span> selected — follow as many as you like
+            </p>
           </div>
         </div>
 
