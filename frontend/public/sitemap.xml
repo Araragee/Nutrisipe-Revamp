@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://nutrisipe.com/</loc>
+    <lastmod>2026-06-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- ponytail: SPA is client-rendered. Public /recipes/:id pages need prerender/SSR
+       to be crawlable; append them here from a build step once that exists. -->
+</urlset>

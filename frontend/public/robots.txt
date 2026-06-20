@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Keep auth-gated / private areas out of crawl budget
+Disallow: /admin
+Disallow: /settings
+Disallow: /onboarding
+Disallow: /messages
+Disallow: /groceries
+Disallow: /plan
+Disallow: /saved
+
+Sitemap: https://nutrisipe.com/sitemap.xml
