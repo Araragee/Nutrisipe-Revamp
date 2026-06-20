@@ -22,7 +22,7 @@ export interface Toast {
   action?: ToastAction
 }
 
-const DEFAULT_DURATION = 4000
+const DEFAULT_DURATION = 3000
 
 const toasts = ref<Toast[]>([])
 let toastId = 0

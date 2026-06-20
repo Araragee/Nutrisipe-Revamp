@@ -1,13 +1,12 @@
 <script setup lang="ts">
-// Top-down stylised bowl for the landing "How it works" scrollytelling.
-// Food is split into named layer groups (.pl-base / .pl-grain / .pl-top /
-// .pl-garnish / .pl-fork) so the parent view can reveal them per scroll step
-// with GSAP. Layers default to fully visible — under reduced motion (no GSAP)
-// the bowl simply shows complete.
+// SVG bowl for scrollytelling. Food layers start hidden and are revealed by the
+// parent adding .revealed-pl (via IntersectionObserver). Pass instant=true to
+// skip the reveal (e.g. SplashScreen).
+defineProps<{ instant?: boolean }>()
 </script>
 
 <template>
-  <svg viewBox="0 0 360 360" class="w-full h-full" role="img" aria-label="A bowl filling with fresh ingredients">
+  <svg viewBox="0 0 360 360" class="w-full h-full" :class="{ 'pl-instant': instant }" role="img" aria-label="A bowl filling with fresh ingredients">
     <defs>
       <radialGradient id="ceramic" cx="42%" cy="34%" r="72%">
         <stop offset="0%" stop-color="#fffaf3" />
@@ -109,6 +108,42 @@
 </template>
 
 <style scoped>
+/* Ingredients start hidden; revealed via .revealed-pl from the parent observer */
+.pl-item,
+.pl-fork {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0.55);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.pl-grain .pl-item { transition-delay: 0.1s; }
+.pl-top   .pl-item { transition-delay: 0.22s; }
+.pl-garnish .pl-item { transition-delay: 0.34s; }
+.pl-fork { transition-delay: 0.48s; }
+
+.pl-item.revealed-pl,
+.pl-fork.revealed-pl {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-item,
+  .pl-fork {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.pl-instant .pl-item,
+.pl-instant .pl-fork {
+  opacity: 1;
+  transform: scale(1);
+  transition: none;
+}
+
 .pl-steam path {
   stroke-dasharray: 60;
   animation: steam 3.2s ease-in-out infinite;
