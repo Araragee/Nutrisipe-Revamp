@@ -18,7 +18,11 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ) {
-  logger.error('Error:', err)
+  if (err instanceof AppError && err.statusCode < 500) {
+    logger.warn(`${err.statusCode} ${err.message}`)
+  } else {
+    logger.error('Error:', err)
+  }
 
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
