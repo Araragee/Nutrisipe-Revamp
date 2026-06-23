@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { updateProfile, type UpdateProfileData } from '@/http/users'
+import { usersApi } from '@/http/endpoints/users'
 import { useAuthStore } from '@/stores/auth'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
@@ -36,13 +36,14 @@ async function handleSubmit() {
   error.value = null
 
   try {
-    const data: UpdateProfileData = {
+    const data = {
       displayName: displayName.value.trim(),
       bio: bio.value.trim() || undefined,
       avatarUrl: avatarUrl.value.trim() || undefined,
     }
 
-    const updatedUser = await updateProfile(data)
+    const response = await usersApi.updateProfile(data)
+    const updatedUser = response.data.data
 
     // Update auth store
     authStore.setUser(updatedUser)

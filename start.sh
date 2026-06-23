@@ -105,6 +105,12 @@ if [[ ! -f "$BACKEND/.env" ]]; then
   cp "$BACKEND/.env.example" "$BACKEND/.env"
 fi
 
+# Frontend env
+if [[ ! -f "$FRONTEND/.env" ]]; then
+  c "no frontend/.env — copying from .env.example"
+  cp "$FRONTEND/.env.example" "$FRONTEND/.env"
+fi
+
 # Install deps
 if [[ ! -d "$BACKEND/node_modules" ]]; then
   c "installing backend deps"

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import * as authService from '../services/authService'
 import { AuthRequest } from '../middleware/auth'
 import { AppError } from '../middleware/errorHandler'
+import { env } from '../config/env'
 
 const registerSchema = z.object({
   username: z.string().min(3).max(50),
@@ -16,6 +17,25 @@ const loginSchema = z.object({
   password: z.string().min(6),
 })
 
+function setAuthCookie(res: Response, token: string) {
+  res.cookie('auth_token', token, {
+    httpOnly: true,
+    secure: env.COOKIE_SECURE,
+    sameSite: env.COOKIE_SAMESITE,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/',
+  })
+}
+
+function clearAuthCookie(res: Response) {
+  res.clearCookie('auth_token', {
+    httpOnly: true,
+    secure: env.COOKIE_SECURE,
+    sameSite: env.COOKIE_SAMESITE,
+    path: '/',
+  })
+}
+
 export async function registerHandler(req: Request, res: Response, next: NextFunction) {
   try {
     const validated = registerSchema.parse(req.body)
@@ -26,9 +46,11 @@ export async function registerHandler(req: Request, res: Response, next: NextFun
       validated.displayName
     )
 
+    setAuthCookie(res, result.token)
+
     res.status(201).json({
       success: true,
-      data: result,
+      data: { user: result.user },
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -44,9 +66,11 @@ export async function loginHandler(req: Request, res: Response, next: NextFuncti
     const validated = loginSchema.parse(req.body)
     const result = await authService.login(validated.email, validated.password)
 
+    setAuthCookie(res, result.token)
+
     res.json({
       success: true,
-      data: result,
+      data: { user: result.user },
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -80,9 +104,11 @@ export async function googleLoginHandler(req: Request, res: Response, next: Next
     if (!email) throw new AppError(400, 'Email is required')
 
     const result = await authService.googleLogin(email, displayName, avatarUrl, googleId)
+    setAuthCookie(res, result.token)
+
     res.json({
       success: true,
-      data: result,
+      data: { user: result.user },
     })
   } catch (error) {
     next(error)
@@ -90,7 +116,7 @@ export async function googleLoginHandler(req: Request, res: Response, next: Next
 }
 
 export async function logoutHandler(_req: Request, res: Response, _next: NextFunction) {
-  // Placeholder for server-side token revocation if needed
+  clearAuthCookie(res)
   res.json({
     success: true,
     message: 'Logged out successfully',
@@ -98,13 +124,12 @@ export async function logoutHandler(_req: Request, res: Response, _next: NextFun
 }
 
 export async function logoutAllHandler(_req: Request, res: Response, _next: NextFunction) {
-  // JWT stateless; real multi-device revocation needs token versioning - out of scope.
+  clearAuthCookie(res)
   res.json({
     success: true,
     message: 'Logged out from all devices successfully',
   })
 }
-
 
 export async function devLoginHandler(req: Request, res: Response, next: NextFunction) {
   try {
@@ -112,9 +137,11 @@ export async function devLoginHandler(req: Request, res: Response, next: NextFun
     if (!email) throw new AppError(400, 'Email is required')
 
     const result = await authService.devLogin(email)
+    setAuthCookie(res, result.token)
+
     res.json({
       success: true,
-      data: result,
+      data: { user: result.user },
     })
   } catch (error) {
     next(error)

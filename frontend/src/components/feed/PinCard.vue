@@ -8,7 +8,7 @@ import UserAvatar from "@/components/user/UserAvatar.vue";
 import BaseIcons from "@/components/base/BaseIcons.vue";
 import MacroPills from "@/components/recipe/MacroPills.vue";
 import { formatNumber } from "@/utils/format";
-import { resolveSrcset } from "@/utils/imageUrl";
+import { resolveImage } from "@/utils/imageUrl";
 import type { Post } from "@/typescript/interface/Post";
 
 interface Props {
@@ -46,7 +46,7 @@ const aspectVariant = computed(() => {
 });
 
 const recipeImage = computed(() =>
-  resolveSrcset(props.post.imageUrl, props.post.id, [400, 800, 1200]),
+  resolveImage(props.post.imageUrl, props.post.id),
 );
 
 // Nutri-Score uses regulatory traffic-light colors — never re-themed.
@@ -116,7 +116,7 @@ async function toggleSave(event: Event) {
 
 <template>
   <div
-    class="recipe-card group relative cursor-pointer overflow-hidden rounded-card bg-[#111] shadow-card transition-all duration-revamp ease-revamp w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    class="recipe-card group relative cursor-pointer overflow-hidden rounded-card bg-surface shadow-card transition-all duration-revamp ease-revamp w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     role="button"
     tabindex="0"
     :aria-label="post.title"
@@ -127,8 +127,7 @@ async function toggleSave(event: Event) {
     <!-- Image stage -->
     <div :class="['relative overflow-hidden', aspectVariant.class]">
       <img
-        :src="recipeImage.src"
-        :srcset="recipeImage.srcset"
+        :src="recipeImage"
         sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
         :alt="post.title"
         loading="lazy"

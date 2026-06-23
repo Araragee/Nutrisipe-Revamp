@@ -25,7 +25,7 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
         env:
-          DATABASE_URL: "file:./ci.db"
+          DATABASE_URL: "postgresql://u:p@localhost:5432/db"
       - name: Setup test env
         run: cp .env.example .env
       - name: Type check

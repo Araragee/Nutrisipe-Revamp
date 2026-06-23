@@ -18,7 +18,7 @@ import CookMode from '@/components/recipe/CookMode.vue'
 import CollectionModal from '@/components/profile/CollectionModal.vue'
 import { variationsApi } from '@/http/endpoints/variations'
 import { ratingsApi } from '@/http/endpoints/ratings'
-import { resolveSrcset } from '@/utils/imageUrl'
+import { resolveImage } from '@/utils/imageUrl'
 import { scaleQuantity } from '@/utils/scaleQuantity'
 import { usePostActions } from '@/composables/usePostActions'
 import type { Post } from '@/typescript/interface/Post'
@@ -206,7 +206,7 @@ onMounted(loadPost)
 watch(postId, loadPost)
 
 const recipeImage = computed(() =>
-  resolveSrcset(post.value?.imageUrl, post.value?.id, [800, 1200, 1600]),
+  resolveImage(post.value?.imageUrl, post.value?.id),
 )
 </script>
 
@@ -220,8 +220,7 @@ const recipeImage = computed(() =>
        <!-- Cinematic hero — food fills the frame, chrome decorates the edges -->
        <header class="recipe-hero relative w-full overflow-hidden">
           <img
-            :src="recipeImage.src"
-            :srcset="recipeImage.srcset"
+            :src="recipeImage"
             sizes="100vw"
             :alt="post.title"
             class="absolute inset-0 w-full h-full object-cover"

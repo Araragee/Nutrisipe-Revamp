@@ -17,6 +17,15 @@ export const env = {
     .filter(Boolean),
   UPLOAD_DIR: process.env.UPLOAD_DIR || 'uploads',
   PUBLIC_URL: process.env.PUBLIC_URL || '',
+  SUPABASE_URL: process.env.SUPABASE_URL || '',
+  SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY || '',
+  SUPABASE_BUCKET: process.env.SUPABASE_BUCKET || 'uploads',
+  COOKIE_SECURE: process.env.COOKIE_SECURE === 'true' || (process.env.COOKIE_SECURE === undefined && process.env.NODE_ENV === 'production'),
+  COOKIE_SAMESITE: (process.env.COOKIE_SAMESITE as 'lax' | 'none' | 'strict') || 'lax',
+}
+
+if (env.NODE_ENV === 'production' && (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY)) {
+  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables must be set in production')
 }
 
 if (!env.DATABASE_URL) {

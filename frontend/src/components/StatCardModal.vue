@@ -26,7 +26,7 @@ const getStatusEmoji = (status: string) => {
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);">
+      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md">
         <!-- Backdrop click to close -->
         <div class="absolute inset-0" @click="emit('close')"></div>
 

@@ -36,35 +36,3 @@ export function resolveImage(
   if (/^(https?:)?\/\//i.test(url) || url.startsWith('data:')) return url
   return `${MEDIA_BASE}/${url.replace(/^\/+/, '')}`
 }
-
-const CLOUDINARY_RE = /\/image\/upload\//
-const DEFAULT_WIDTHS = [400, 800, 1200, 1600]
-
-export interface ResolvedSrcset {
-  src: string
-  srcset: string | undefined
-}
-
-export function resolveSrcset(
-  url?: string | null,
-  seed?: string | number | null,
-  widths: number[] = DEFAULT_WIDTHS,
-): ResolvedSrcset {
-  const resolved = resolveImage(url, seed)
-  if (resolved.startsWith('data:')) return { src: resolved, srcset: undefined }
-  if (!CLOUDINARY_RE.test(resolved)) return { src: resolved, srcset: undefined }
-
-  const variants = widths.map((w) => {
-    const transformed = resolved.replace(
-      CLOUDINARY_RE,
-      `/image/upload/w_${w},c_limit,q_auto,f_auto/`,
-    )
-    return `${transformed} ${w}w`
-  })
-  const largest = widths[widths.length - 1]
-  const src = resolved.replace(
-    CLOUDINARY_RE,
-    `/image/upload/w_${largest},c_limit,q_auto,f_auto/`,
-  )
-  return { src, srcset: variants.join(', ') }
-}

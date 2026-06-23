@@ -4,6 +4,7 @@ import { Server as SocketIOServer, Socket } from 'socket.io'
 import { verifyToken } from '../utils/jwt'
 import { prisma } from '../lib/prisma'
 import { env } from '../config/env'
+import cookie from 'cookie'
 
 interface AuthenticatedSocket extends Socket {
   userId?: string
@@ -23,13 +24,14 @@ export function initializeSocketServer(httpServer: HTTPServer) {
   // Authentication middleware
   io.use(async (socket: AuthenticatedSocket, next) => {
     try {
-      const token = socket.handshake.auth.token
+      const raw = socket.handshake.headers.cookie
+      const token = raw ? cookie.parse(raw).auth_token : socket.handshake.auth?.token
 
       if (!token) {
         return next(new Error('Authentication token required'))
       }
 
-      const payload = verifyToken(token)
+      const payload = verifyToken(token as string)
       socket.userId = payload.userId
 
       next()

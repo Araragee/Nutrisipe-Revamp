@@ -16,13 +16,12 @@ export async function auth(
   next: NextFunction
 ) {
   try {
-    const authHeader = req.headers.authorization
+    const token = req.cookies?.auth_token
+      ?? (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.substring(7) : undefined)
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       throw new AppError(401, 'Unauthorized - No token provided')
     }
-
-    const token = authHeader.substring(7)
 
     let payload;
     try {
@@ -67,13 +66,12 @@ export async function optionalAuthenticate(
   next: NextFunction
 ) {
   try {
-    const authHeader = req.headers.authorization
+    const token = req.cookies?.auth_token
+      ?? (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.substring(7) : undefined)
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       return next()
     }
-
-    const token = authHeader.substring(7)
     const payload = verifyToken(token)
 
     const user = await prisma.user.findUnique({

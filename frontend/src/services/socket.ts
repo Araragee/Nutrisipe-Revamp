@@ -28,10 +28,9 @@ class SocketService {
 
   connect() {
     const authStore = useAuthStore();
-    const token = authStore.token;
 
-    if (!token) {
-      logger.warn("Cannot connect to socket: No auth token");
+    if (!authStore.isAuthenticated) {
+      logger.warn("Cannot connect to socket: User is not authenticated");
       return;
     }
 
@@ -40,9 +39,7 @@ class SocketService {
     }
 
     this.socket = io(SOCKET_URL, {
-      auth: {
-        token,
-      },
+      withCredentials: true,
       transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionDelay: 1000,

@@ -336,7 +336,7 @@ const handleMouseMove = () => {
 
 .progress-filled {
   height: 100%;
-  background: #10b981;
+  background: var(--green);
   border-radius: 0.25rem;
   position: relative;
   transition: width 0.1s linear;

@@ -7,14 +7,12 @@ import type { User } from '@/typescript/interface/User'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
-  // TODO(audit:F-03) [HIGH] JWT in localStorage is readable by any XSS payload — move auth to httpOnly cookies (backend change required) or document the accepted risk.
-  const token = ref<string | null>(localStorage.getItem('auth_token'))
   const isLoading = ref(false)
   const isInitialized = ref(false)
   const error = ref<string | null>(null)
 
-  const isAuthenticated = computed(() => !!user.value && !!token.value)
-  const isAdmin = computed(() => user.value?.role === 'ADMIN' || (user.value as any)?.is_admin || false)
+  const isAuthenticated = computed(() => !!user.value)
+  const isAdmin = computed(() => user.value?.role === 'ADMIN' || false)
 
   async function login(email: string, password: string) {
     isLoading.value = true
@@ -22,9 +20,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       const response = await authApi.login({ email, password })
-      token.value = response.data.data.token
       user.value = response.data.data.user
-      localStorage.setItem('auth_token', response.data.data.token)
 
       // Initialize socket connection
       socketService.connect()
@@ -47,11 +43,9 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       const response = await authApi.googleLogin(googleData)
-      const { user: userData, token: authToken } = response.data.data || response.data
+      const userData = response.data.data.user
 
       user.value = userData
-      token.value = authToken
-      localStorage.setItem('auth_token', authToken)
 
       // Initialize socket connection
       socketService.connect()
@@ -70,11 +64,9 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       const response = await authApi.devLogin({ email })
-      const { user: userData, token: authToken } = response.data.data
+      const userData = response.data.data.user
 
       user.value = userData
-      token.value = authToken
-      localStorage.setItem('auth_token', authToken)
 
       // Initialize socket connection
       socketService.connect()
@@ -98,9 +90,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       const response = await authApi.register({ username, email, password, displayName })
-      token.value = response.data.data.token
       user.value = response.data.data.user
-      localStorage.setItem('auth_token', response.data.data.token)
 
       // Initialize socket connection
       socketService.connect()
@@ -114,40 +104,31 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout() {
     try {
-      if (token.value) {
+      if (user.value) {
         await authApi.logout()
       }
     } catch (err) {
       logger.error('Logout error:', err)
     } finally {
       user.value = null
-      token.value = null
-      localStorage.removeItem('auth_token')
       socketService.disconnect()
     }
   }
 
   async function logoutAll() {
     try {
-      if (token.value) {
+      if (user.value) {
         await authApi.logoutAll()
       }
     } catch (err) {
       logger.error('Logout all error:', err)
     } finally {
       user.value = null
-      token.value = null
-      localStorage.removeItem('auth_token')
       socketService.disconnect()
     }
   }
 
   async function fetchUser() {
-    if (!token.value) {
-      isInitialized.value = true
-      return
-    }
-    
     isLoading.value = true
     error.value = null
 
@@ -161,7 +142,8 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } catch (err: any) {
       if (err.response?.status === 401) {
-        logout()
+        user.value = null
+        socketService.disconnect()
       }
       error.value = err.response?.data?.message || 'Failed to fetch user'
     } finally {
@@ -179,7 +161,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     user,
-    token,
     isAuthenticated,
     isAdmin,
     isLoading,

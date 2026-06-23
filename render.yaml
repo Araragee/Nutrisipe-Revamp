@@ -19,6 +19,10 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_KEY
         sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: SUPABASE_BUCKET
+        value: uploads
 
   # The Vue 3 Vite Frontend (Render Free Tier)
   - type: web
@@ -28,12 +32,17 @@ services:
     buildCommand: npm install && npm run build
     publishPath: dist
     envVars:
-      - key: VITE_BACKEND_URL
-        fromService:
-          type: web
-          name: nutrisipe-backend
-          envVarKey: RENDER_EXTERNAL_URL
+      - key: VITE_API_URL
+        value: /api
+      - key: VITE_GOOGLE_CLIENT_ID
+        sync: false
     routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://nutrisipe-backend.onrender.com/api/*
+      - type: rewrite
+        source: /socket.io/*
+        destination: https://nutrisipe-backend.onrender.com/socket.io/*
       - type: rewrite
         source: /*
         destination: /index.html

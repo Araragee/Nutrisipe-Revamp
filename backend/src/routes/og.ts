@@ -5,7 +5,7 @@ import { logger } from '../utils/logger'
 
 const router = Router()
 
-const APP_URL = env.CORS_ORIGIN
+const APP_URL = (env.PUBLIC_URL || env.CORS_ORIGINS[0] || '').replace(/\/$/, '')
 
 function getAbsoluteImageUrl(url: string | null, req: Request): string {
   if (!url) return ''

@@ -5,7 +5,7 @@ vi.mock('./constants', () => ({
   API_URL: 'http://localhost:3001/api',
 }))
 
-import { resolveImage, placeholderImage, resolveSrcset, ogShareUrl, MEDIA_BASE } from './imageUrl'
+import { resolveImage, placeholderImage, ogShareUrl, MEDIA_BASE } from './imageUrl'
 
 describe('MEDIA_BASE', () => {
   it('strips /api suffix', () => {
@@ -66,43 +66,6 @@ describe('resolveImage', () => {
 
   it('handles leading slash in relative paths', () => {
     expect(resolveImage('/uploads/photo.jpg')).toBe('http://localhost:3001/uploads/photo.jpg')
-  })
-})
-
-describe('resolveSrcset', () => {
-  it('returns no srcset for non-Cloudinary URLs', () => {
-    const result = resolveSrcset('https://example.com/photo.jpg')
-    expect(result.srcset).toBeUndefined()
-    expect(result.src).toBe('https://example.com/photo.jpg')
-  })
-
-  it('returns no srcset for data URIs', () => {
-    const result = resolveSrcset('data:image/png;base64,abc')
-    expect(result.srcset).toBeUndefined()
-  })
-
-  it('generates srcset for Cloudinary URLs', () => {
-    const url = 'https://res.cloudinary.com/demo/image/upload/sample.jpg'
-    const result = resolveSrcset(url)
-    expect(result.srcset).toBeDefined()
-    expect(result.srcset).toContain('400w')
-    expect(result.srcset).toContain('800w')
-    expect(result.srcset).toContain('1200w')
-    expect(result.srcset).toContain('1600w')
-  })
-
-  it('Cloudinary src uses largest width transform', () => {
-    const url = 'https://res.cloudinary.com/demo/image/upload/sample.jpg'
-    const result = resolveSrcset(url)
-    expect(result.src).toContain('w_1600')
-  })
-
-  it('respects custom widths', () => {
-    const url = 'https://res.cloudinary.com/demo/image/upload/sample.jpg'
-    const result = resolveSrcset(url, null, [320, 640])
-    expect(result.srcset).toContain('320w')
-    expect(result.srcset).toContain('640w')
-    expect(result.src).toContain('w_640')
   })
 })
 

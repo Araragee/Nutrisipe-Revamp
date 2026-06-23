@@ -1,5 +1,5 @@
 import { httpClient } from '../client'
-import type { ApiResponse } from '@/types'
+import type { ApiResponse } from '@/typescript/interface/ApiResponse'
 
 interface CreateReportData {
   type: 'POST' | 'COMMENT' | 'USER'

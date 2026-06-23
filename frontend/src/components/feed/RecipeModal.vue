@@ -16,7 +16,7 @@ import CollectionModal from "@/components/profile/CollectionModal.vue";
 import ExperimentRecipeModal from "@/components/recipe/ExperimentRecipeModal.vue";
 import { variationsApi } from "@/http/endpoints/variations";
 import { ratingsApi } from "@/http/endpoints/ratings";
-import { resolveSrcset, ogShareUrl } from "@/utils/imageUrl";
+import { resolveImage, ogShareUrl } from "@/utils/imageUrl";
 import { useRouter } from "vue-router";
 import type { Post } from "@/typescript/interface/Post";
 
@@ -139,7 +139,7 @@ watch(
 );
 
 const recipeImage = computed(() =>
-  resolveSrcset(post.value?.imageUrl, post.value?.id, [800, 1200, 1600]),
+  resolveImage(post.value?.imageUrl, post.value?.id),
 );
 </script>
 
@@ -182,7 +182,7 @@ const recipeImage = computed(() =>
 
         <!-- Left: Image side -->
         <div class="hidden md:block w-[45%] h-full relative overflow-hidden bg-background-secondary">
-          <img :src="recipeImage.src" :srcset="recipeImage.srcset" sizes="(min-width:1024px) 50vw, 100vw" class="w-full h-full object-cover" />
+          <img :src="recipeImage" sizes="(min-width:1024px) 50vw, 100vw" class="w-full h-full object-cover" />
 
           <!-- Quick actions: flat white pills -->
           <div class="absolute top-4 left-4 z-20 flex items-center gap-2">

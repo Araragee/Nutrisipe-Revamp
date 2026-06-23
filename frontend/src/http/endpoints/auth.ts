@@ -12,7 +12,7 @@ export const authApi = {
   googleLogin: (data: { google_id: string; name: string; email: string; image?: string }) =>
     httpClient.post<ApiResponse<AuthResponse>>('/auth/google-login', data),
 
-  me: () => httpClient.get<ApiResponse<User>>('/auth/me'),
+  me: () => httpClient.get<ApiResponse<User>>('/auth/me', { skipErrorToast: true }),
 
   logout: () => httpClient.post<ApiResponse<void>>('/auth/logout'),
   

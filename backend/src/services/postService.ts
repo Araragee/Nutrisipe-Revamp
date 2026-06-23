@@ -109,6 +109,7 @@ export async function getFollowingFeed(userId: string, page: number = 1, limit: 
     where: {
       userId: { in: followedUserIds },
       isPublic: true,
+      user: { isBanned: false },
     },
     take: limit,
     skip,
@@ -160,6 +161,7 @@ export async function getFollowingFeed(userId: string, page: number = 1, limit: 
     where: {
       userId: { in: followedUserIds },
       isPublic: true,
+      user: { isBanned: false },
     },
   })
 
@@ -470,7 +472,7 @@ export async function getPostById(postId: string, userId?: string) {
 export async function getPostsByUser(targetUserId: string, currentUserId: string | undefined, page: number = 1, limit: number = 20, isPublic?: boolean) {
   const skip = (page - 1) * limit
 
-  let whereClause: any = { userId: targetUserId }
+  let whereClause: any = { userId: targetUserId, user: { isBanned: false } }
   if (targetUserId !== currentUserId || isPublic === true) {
     whereClause.isPublic = true
   } else if (isPublic === false) {

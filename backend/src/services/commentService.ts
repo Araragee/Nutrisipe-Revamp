@@ -114,7 +114,8 @@ export async function getCommentsByPost(
     prisma.comment.findMany({
       where: { 
         postId,
-        parentId: parentId || null
+        parentId: parentId || null,
+        user: { isBanned: false },
       },
       include: {
         user: {
@@ -138,7 +139,8 @@ export async function getCommentsByPost(
     prisma.comment.count({
       where: { 
         postId,
-        parentId: parentId || null
+        parentId: parentId || null,
+        user: { isBanned: false },
       },
     }),
   ])

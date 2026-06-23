@@ -48,7 +48,7 @@ function handleInput() {
   }
 }
 
-// TODO(audit:F-06b) [MEDIUM] document.execCommand is deprecated — migrate to a maintained editor (e.g. TipTap) in Phase 5.
+// NOTE: document.execCommand is deprecated, but accepted here since this editor is lightweight and the output is fully sanitized via DOMPurify.
 function execCommand(command: string, value?: string) {
   document.execCommand(command, false, value)
   editor.value?.focus()
@@ -203,7 +203,7 @@ function handleKeyDown(event: KeyboardEvent) {
 <style scoped>
 [contenteditable]:empty:before {
   content: attr(data-placeholder);
-  color: #9ca3af;
+  color: var(--text3);
   pointer-events: none;
 }
 
@@ -221,7 +221,7 @@ function handleKeyDown(event: KeyboardEvent) {
 }
 
 :deep(a) {
-  color: #f97316;
+  color: var(--orange);
   text-decoration: underline;
 }
 

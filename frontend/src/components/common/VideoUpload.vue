@@ -270,18 +270,18 @@ const formatDuration = (seconds: number): string => {
 }
 
 .upload-area {
-  border: 2px dashed #d1d5db;
+  border: 2px dashed var(--border);
   border-radius: 0.75rem;
   padding: 3rem 2rem;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
-  background: #f9fafb;
+  background: var(--bg2);
 }
 
 .upload-area:hover {
-  border-color: #10b981;
-  background: #f0fdf4;
+  border-color: var(--green);
+  background: var(--green-soft);
 }
 
 .file-input {
@@ -298,12 +298,12 @@ const formatDuration = (seconds: number): string => {
 .upload-icon {
   width: 4rem;
   height: 4rem;
-  background: #ecfdf5;
+  background: var(--green-soft);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #10b981;
+  color: var(--green);
 }
 
 .upload-icon svg {
@@ -314,12 +314,12 @@ const formatDuration = (seconds: number): string => {
 .upload-content h4 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text);
   margin: 0;
 }
 
 .upload-content p {
-  color: #6b7280;
+  color: var(--text2);
   margin: 0;
 }
 
@@ -332,11 +332,11 @@ const formatDuration = (seconds: number): string => {
 
 .file-info span {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--text3);
 }
 
 .video-preview {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
   overflow: hidden;
   background: #000;
@@ -360,7 +360,7 @@ const formatDuration = (seconds: number): string => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #6b7280;
+  color: var(--text2);
   font-size: 0.875rem;
 }
 
@@ -374,8 +374,8 @@ const formatDuration = (seconds: number): string => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #fee2e2;
-  color: #dc2626;
+  background: rgba(239, 68, 68, 0.15);
+  color: rgb(239, 68, 68);
   border: none;
   border-radius: 0.5rem;
   font-weight: 500;
@@ -384,7 +384,7 @@ const formatDuration = (seconds: number): string => {
 }
 
 .remove-button:hover {
-  background: #fecaca;
+  background: rgba(239, 68, 68, 0.25);
 }
 
 .remove-button svg {
@@ -395,15 +395,15 @@ const formatDuration = (seconds: number): string => {
 .upload-progress {
   margin-top: 1rem;
   padding: 1rem;
-  background: #f9fafb;
+  background: var(--bg2);
   border-radius: 0.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
 }
 
 .progress-bar {
   width: 100%;
   height: 0.5rem;
-  background: #e5e7eb;
+  background: var(--border);
   border-radius: 0.25rem;
   overflow: hidden;
   margin-bottom: 0.5rem;
@@ -411,13 +411,13 @@ const formatDuration = (seconds: number): string => {
 
 .progress-fill {
   height: 100%;
-  background: #10b981;
+  background: var(--green);
   transition: width 0.3s;
 }
 
 .progress-text {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text2);
 }
 
 .error-message {
@@ -426,10 +426,10 @@ const formatDuration = (seconds: number): string => {
   gap: 0.5rem;
   margin-top: 1rem;
   padding: 0.75rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.25);
   border-radius: 0.5rem;
-  color: #dc2626;
+  color: rgb(239, 68, 68);
   font-size: 0.875rem;
 }
 
@@ -442,18 +442,18 @@ const formatDuration = (seconds: number): string => {
 .thumbnail-section {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border);
 }
 
 .thumbnail-section h4 {
   font-size: 1rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text);
   margin-bottom: 1rem;
 }
 
 .thumbnail-upload {
-  border: 2px dashed #d1d5db;
+  border: 2px dashed var(--border);
   border-radius: 0.5rem;
   padding: 2rem;
   text-align: center;
@@ -462,8 +462,8 @@ const formatDuration = (seconds: number): string => {
 }
 
 .thumbnail-upload:hover {
-  border-color: #10b981;
-  background: #f0fdf4;
+  border-color: var(--green);
+  background: var(--green-soft);
 }
 
 .thumbnail-content {
@@ -471,7 +471,7 @@ const formatDuration = (seconds: number): string => {
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  color: #6b7280;
+  color: var(--text2);
 }
 
 .thumbnail-content svg {

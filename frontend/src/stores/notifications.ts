@@ -29,9 +29,12 @@ export const useNotificationsStore = defineStore('notifications', () => {
     try {
       await notificationsApi.markAsRead(notificationId)
 
-      const notification = notifications.value.find((n) => n.id === notificationId)
-      if (notification && !notification.isRead) {
-        notification.isRead = true
+      const index = notifications.value.findIndex((n) => n.id === notificationId)
+      if (index !== -1 && !notifications.value[index].isRead) {
+        const updated = { ...notifications.value[index], isRead: true }
+        const newNotifications = [...notifications.value]
+        newNotifications[index] = updated
+        notifications.value = newNotifications
         unreadCount.value = Math.max(0, unreadCount.value - 1)
       }
     } catch (err: any) {
@@ -45,9 +48,9 @@ export const useNotificationsStore = defineStore('notifications', () => {
     try {
       await notificationsApi.markAllAsRead()
 
-      notifications.value.forEach((n) => {
-        n.isRead = true
-      })
+      notifications.value = notifications.value.map((n) =>
+        n.isRead ? n : { ...n, isRead: true }
+      )
       unreadCount.value = 0
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to mark all notifications as read'

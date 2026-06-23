@@ -16,18 +16,8 @@ export const httpClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
-
-httpClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("auth_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
 
 httpClient.interceptors.response.use(
   (response) => response,
@@ -35,7 +25,6 @@ httpClient.interceptors.response.use(
     const skipErrorToast = error.config?.skipErrorToast;
 
     if (error.response?.status === 401) {
-      localStorage.removeItem("auth_token");
       if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
         window.location.href = "/login";
       }

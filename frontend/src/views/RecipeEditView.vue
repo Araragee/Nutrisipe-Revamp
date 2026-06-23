@@ -10,6 +10,7 @@ import IngredientAutocomplete from '@/components/recipe/IngredientAutocomplete.v
 import type { Post } from '@/typescript/interface/Post'
 import type { Ingredient } from '@/typescript/interface/Ingredient'
 import { calcRow } from '@/composables/useNutritionCalc'
+import { logger } from '@/utils/logger'
 
 const route = useRoute()
 const router = useRouter()
@@ -54,7 +55,7 @@ async function loadPost() {
         const origRes = await variationsApi.getOriginal(id)
         originalPostId.value = origRes.data.data.originalPost.id
       } catch (err) {
-        console.error('Failed to load original recipe id:', err)
+        logger.error('Failed to load original recipe id:', err)
       }
     }
     

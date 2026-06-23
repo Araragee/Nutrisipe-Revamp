@@ -267,7 +267,7 @@ function handleClose() {
 
                 <div class="relative inline-block w-12 h-7 align-middle select-none shrink-0 pointer-events-none">
                   <div class="block overflow-hidden h-7 rounded-full transition-colors duration-200"
-                       :class="form.isPublic ? 'bg-orange' : 'bg-border dark:bg-[#2A2A2A]'"></div>
+                       :class="form.isPublic ? 'bg-orange' : 'bg-border dark:bg-background-secondary'"></div>
                   <div class="absolute top-1 left-1 bg-white w-5 h-5 rounded-full transition-transform duration-200 shadow-sm"
                        :class="form.isPublic ? 'translate-x-5' : 'translate-x-0'"></div>
                 </div>
