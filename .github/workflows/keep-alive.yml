@@ -9,5 +9,15 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping backend health
-        run: curl -fsS --max-time 10 https://nutrisipe-backend.onrender.com/health || true
+      - name: Ping services to prevent spindown
+        run: |
+          for url in \
+            "https://nutrisipe-backend.onrender.com/health" \
+            "https://nutrisipe-frontend.onrender.com" \
+            "https://nutrisipe-frontend.onrender.com/api/health" \
+            "https://nutrisipe.onrender.com" \
+            "https://nutrisipe.onrender.com/api/health";
+          do
+            echo "Pinging $url..."
+            curl -fsS --max-time 10 "$url" > /dev/null || echo "Failed to ping $url (this is fine if domain is not deployed)"
+          done
