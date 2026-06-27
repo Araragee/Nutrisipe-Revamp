@@ -46,18 +46,17 @@ export const useNotificationsStore = defineStore('notifications', () => {
   async function markAllAsRead() {
     error.value = null
     try {
-      // Capture the ids that are unread at call time. The server marks these
-      // as read; reconciling by id ensures a notification pushed concurrently
-      // (e.g. via socket) after the request was sent stays unread and counted,
-      // instead of being blindly flipped and the count zeroed.
-      const readIds = new Set(
-        notifications.value.filter((n) => !n.isRead).map((n) => n.id)
-      )
+      // Capture the ids that are unread at call time and send them to the
+      // server so it marks exactly these — a notification pushed concurrently
+      // (e.g. via socket) after this point is left untouched on both sides,
+      // staying unread and counted instead of being blindly flipped.
+      const readIds = notifications.value.filter((n) => !n.isRead).map((n) => n.id)
+      const readIdSet = new Set(readIds)
 
-      await notificationsApi.markAllAsRead()
+      await notificationsApi.markAllAsRead(readIds)
 
       notifications.value = notifications.value.map((n) =>
-        readIds.has(n.id) ? { ...n, isRead: true } : n
+        readIdSet.has(n.id) ? { ...n, isRead: true } : n
       )
       // Recompute from current state rather than assuming zero, so any items
       // added concurrently remain accurately counted.

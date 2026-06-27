@@ -8,7 +8,7 @@ vi.mock('@/http/endpoints/notifications', () => ({
   notificationsApi: {
     getNotifications: vi.fn(),
     markAsRead: vi.fn(),
-    markAllAsRead: () => markAllAsReadMock(),
+    markAllAsRead: (...args: unknown[]) => markAllAsReadMock(...args),
     deleteNotification: vi.fn(),
   },
 }))
@@ -43,6 +43,8 @@ describe('notifications store - markAllAsRead', () => {
 
     expect(store.notifications.every((n) => n.isRead)).toBe(true)
     expect(store.unreadCount).toBe(0)
+    // Only the ids observed as unread are sent to the server.
+    expect(markAllAsReadMock).toHaveBeenCalledWith(['1', '3'])
   })
 
   it('leaves a concurrently-added notification unread and counted (reconcile by id)', async () => {
@@ -59,6 +61,10 @@ describe('notifications store - markAllAsRead', () => {
     })
 
     await store.markAllAsRead()
+
+    // The server is told to mark only the snapshot, never the late arrival,
+    // so client and server agree that '99' is still unread.
+    expect(markAllAsReadMock).toHaveBeenCalledWith(['1', '2'])
 
     const byId = Object.fromEntries(store.notifications.map((n) => [n.id, n]))
     expect(byId['1'].isRead).toBe(true)
