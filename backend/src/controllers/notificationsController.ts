@@ -68,7 +68,19 @@ export async function markAllAsReadHandler(
       throw new AppError(401, 'Unauthorized')
     }
 
-    await notificationService.markAllNotificationsAsRead(req.userId)
+    // Optional: the client may send the ids it observed as unread so only those
+    // are marked, avoiding read-state divergence with notifications that arrived
+    // after the client snapshot.
+    const { notificationIds } = req.body ?? {}
+    let ids: string[] | undefined
+    if (notificationIds !== undefined) {
+      if (!Array.isArray(notificationIds) || notificationIds.some((id) => typeof id !== 'string')) {
+        throw new AppError(400, 'notificationIds must be an array of strings')
+      }
+      ids = notificationIds
+    }
+
+    await notificationService.markAllNotificationsAsRead(req.userId, ids)
 
     res.json({
       success: true,

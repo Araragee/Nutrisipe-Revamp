@@ -21,7 +21,8 @@ export const notificationsApi = {
   markAsRead: (notificationId: string) =>
     httpClient.put<{ success: boolean }>(`/notifications/${notificationId}/read`),
 
-  markAllAsRead: () => httpClient.put<{ success: boolean }>('/notifications/read-all'),
+  markAllAsRead: (notificationIds?: string[]) =>
+    httpClient.put<{ success: boolean }>('/notifications/read-all', { notificationIds }),
 
   deleteNotification: (notificationId: string) =>
     httpClient.delete(`/notifications/${notificationId}`),

@@ -158,9 +158,17 @@ export async function markNotificationAsRead(notificationId: string, userId: str
   })
 }
 
-export async function markAllNotificationsAsRead(userId: string) {
+export async function markAllNotificationsAsRead(userId: string, notificationIds?: string[]) {
+  // When the caller provides the set of ids it observed as unread, only mark
+  // those — so a notification created after the client snapshot (but before
+  // this runs) is not silently flipped to read, keeping client and server in
+  // sync. With no ids provided, fall back to marking every unread row.
   await prisma.notification.updateMany({
-    where: { userId, isRead: false },
+    where: {
+      userId,
+      isRead: false,
+      ...(notificationIds ? { id: { in: notificationIds } } : {}),
+    },
     data: { isRead: true },
   })
 

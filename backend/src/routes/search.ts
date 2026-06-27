@@ -32,6 +32,7 @@ router.get('/', auth, async (req: AuthRequest, res) => {
       const posts = await prisma.post.findMany({
         where: {
           isPublic: true,
+          user: { isBanned: false },
           OR: [
             { title: { contains: searchQuery, mode: 'insensitive' } },
             { description: { contains: searchQuery, mode: 'insensitive' } },
@@ -112,6 +113,7 @@ router.get('/', auth, async (req: AuthRequest, res) => {
       posts: type === 'posts' ? await prisma.post.count({
         where: {
           isPublic: true,
+          user: { isBanned: false },
           OR: [
             { title: { contains: searchQuery, mode: 'insensitive' } },
             { description: { contains: searchQuery, mode: 'insensitive' } },
@@ -168,6 +170,7 @@ router.get('/trending', auth, async (req: AuthRequest, res) => {
     const posts = await prisma.post.findMany({
       where: {
         isPublic: true,
+        user: { isBanned: false },
         ...(period !== 'all' && { createdAt: dateFilter }),
       },
       include: {
@@ -199,6 +202,7 @@ router.get('/trending', auth, async (req: AuthRequest, res) => {
     const total = await prisma.post.count({
       where: {
         isPublic: true,
+        user: { isBanned: false },
         ...(period !== 'all' && { createdAt: dateFilter }),
       },
     })
@@ -227,6 +231,7 @@ router.get('/category/:category', auth, async (req: AuthRequest, res) => {
     const posts = await prisma.post.findMany({
       where: {
         isPublic: true,
+        user: { isBanned: false },
         category: {
           equals: category,
         },
@@ -256,6 +261,7 @@ router.get('/category/:category', auth, async (req: AuthRequest, res) => {
     const total = await prisma.post.count({
       where: {
         isPublic: true,
+        user: { isBanned: false },
         category: {
           equals: category,
         },
@@ -284,6 +290,7 @@ router.get('/categories', auth, async (_req: AuthRequest, res) => {
       by: ['category'],
       where: {
         isPublic: true,
+        user: { isBanned: false },
       },
       _count: {
         category: true,
@@ -316,6 +323,7 @@ router.get('/tag/:tag', auth, async (req: AuthRequest, res) => {
     const posts = await prisma.post.findMany({
       where: {
         isPublic: true,
+        user: { isBanned: false },
         tags: {
           contains: tag.toLowerCase(),
           mode: 'insensitive',
@@ -346,6 +354,7 @@ router.get('/tag/:tag', auth, async (req: AuthRequest, res) => {
     const total = await prisma.post.count({
       where: {
         isPublic: true,
+        user: { isBanned: false },
         tags: {
           contains: tag.toLowerCase(),
           mode: 'insensitive',
@@ -376,7 +385,7 @@ router.get('/trending-tags', async (req: AuthRequest, res) => {
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 
     const posts = await prisma.post.findMany({
-      where: { isPublic: true, createdAt: { gte: since } },
+      where: { isPublic: true, user: { isBanned: false }, createdAt: { gte: since } },
       select: { tags: true },
       take: 1000,
     })

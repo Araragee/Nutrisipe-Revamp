@@ -43,15 +43,24 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
   }
 
-  // TODO(audit:F-10) [MEDIUM] Items in `notifications` are mutated in place after the API call — if the list is refreshed concurrently (socket push) state desyncs; prefer replacing the array or reconciling by id.
   async function markAllAsRead() {
+    error.value = null
     try {
-      await notificationsApi.markAllAsRead()
+      // Capture the ids that are unread at call time and send them to the
+      // server so it marks exactly these — a notification pushed concurrently
+      // (e.g. via socket) after this point is left untouched on both sides,
+      // staying unread and counted instead of being blindly flipped.
+      const readIds = notifications.value.filter((n) => !n.isRead).map((n) => n.id)
+      const readIdSet = new Set(readIds)
+
+      await notificationsApi.markAllAsRead(readIds)
 
       notifications.value = notifications.value.map((n) =>
-        n.isRead ? n : { ...n, isRead: true }
+        readIdSet.has(n.id) ? { ...n, isRead: true } : n
       )
-      unreadCount.value = 0
+      // Recompute from current state rather than assuming zero, so any items
+      // added concurrently remain accurately counted.
+      unreadCount.value = notifications.value.filter((n) => !n.isRead).length
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to mark all notifications as read'
       throw err
