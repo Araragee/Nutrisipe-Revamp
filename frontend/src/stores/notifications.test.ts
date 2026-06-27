@@ -81,4 +81,18 @@ describe('notifications store - markAllAsRead', () => {
     expect(store.unreadCount).toBe(2)
     expect(store.error).toBe('boom')
   })
+
+  it('clears a stale error when a later call succeeds', async () => {
+    const store = useNotificationsStore()
+    store.notifications = [makeNotif('1')]
+    store.unreadCount = 1
+
+    markAllAsReadMock.mockRejectedValueOnce({ response: { data: { message: 'boom' } } })
+    await expect(store.markAllAsRead()).rejects.toBeDefined()
+    expect(store.error).toBe('boom')
+
+    // A subsequent successful call must not leave the store in an error state.
+    await store.markAllAsRead()
+    expect(store.error).toBeNull()
+  })
 })

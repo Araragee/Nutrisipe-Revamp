@@ -44,6 +44,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
   }
 
   async function markAllAsRead() {
+    error.value = null
     try {
       // Capture the ids that are unread at call time. The server marks these
       // as read; reconciling by id ensures a notification pushed concurrently
