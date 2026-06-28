@@ -2,6 +2,7 @@ import { prisma } from '../lib/prisma'
 import { hashPassword, comparePassword } from '../utils/hash'
 import { generateToken } from '../utils/jwt'
 import { AppError } from '../middleware/errorHandler'
+import crypto from 'crypto'
 
 export async function register(username: string, email: string, password: string, displayName: string) {
   const existingUser = await prisma.user.findFirst({
@@ -98,7 +99,7 @@ export async function googleLogin(email: string, displayName: string, avatarUrl?
 
   if (!user) {
     // Create new user if doesn't exist
-    const username = email.split('@')[0] + Math.floor(Math.random() * 1000)
+    const username = email.split('@')[0] + crypto.randomBytes(4).toString('hex').substring(0, 4)
     user = await prisma.user.create({
       data: {
         username,
