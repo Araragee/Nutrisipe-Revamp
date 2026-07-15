@@ -197,7 +197,6 @@ router.put('/users/:id/role', auth, adminOnly, async (req: AuthRequest, res) => 
 })
 
 // Ban user
-// TODO(audit:B-14) [MEDIUM] Ban only flips flags — banned user's posts/comments stay publicly visible. Decide policy: hide content of banned users in queries or soft-delete it here.
 router.post('/users/:id/ban', auth, adminOnly, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params
@@ -208,22 +207,31 @@ router.post('/users/:id/ban', auth, adminOnly, async (req: AuthRequest, res) => 
       return
     }
 
-    const user = await prisma.user.update({
-      where: { id },
-      data: {
-        isBanned: true,
-        bannedAt: new Date(),
-        banReason: reason,
-        isActive: false,
-      },
-      select: {
-        id: true,
-        username: true,
-        isBanned: true,
-        bannedAt: true,
-        banReason: true,
-      },
-    })
+    const [user] = await prisma.$transaction([
+      prisma.user.update({
+        where: { id },
+        data: {
+          isBanned: true,
+          bannedAt: new Date(),
+          banReason: reason,
+          isActive: false,
+        },
+        select: {
+          id: true,
+          username: true,
+          isBanned: true,
+          bannedAt: true,
+          banReason: true,
+        },
+      }),
+      prisma.post.updateMany({
+        where: { userId: id },
+        data: { isPublic: false },
+      }),
+      prisma.comment.deleteMany({
+        where: { userId: id },
+      }),
+    ])
 
     res.json({ data: user })
   } catch (error) {
