@@ -2,3 +2,7 @@
 **Vulnerability:** The `uploads/temp` directory was hardcoded in `backend/src/middleware/upload.ts` without ensuring it existed, leading to a potential DoS/error when the directory is missing. Additionally, file extensions were not sanitized in uploaded files.
 **Learning:** Hardcoded paths that bypass the central config (`env.UPLOAD_DIR`) and assume runtime environment conditions can cause crashes. Relying solely on `path.extname` for uploaded file extensions without stripping invalid/unexpected characters leaves a small vector for injection.
 **Prevention:** Always dynamically resolve temp paths, ensure they exist synchronously on module load or server startup, and strictly sanitize any components derived from user input (like file extensions).
+## 2026-07-18 - [MEDIUM] Banned User Visibility Bypass
+**Vulnerability:** Information about banned users could still be accessed via direct profile lookups and public follower/following lists, potentially leaking data or the existence of restricted accounts.
+**Learning:** Checking the `isBanned` flag needs to be enforced consistently across all user data retrieval vectors, not just at the authentication or main listing levels. Relying on unique constraint lookups (like `findUnique`) requires pulling the flag and verifying in-memory if Prisma relation filters aren't applicable.
+**Prevention:** Always verify account status flags (like `isBanned` or `isActive`) when serving user profiles or related lists (followers/following), and use 404s to avoid leaking account status.
