@@ -135,10 +135,11 @@ export async function getUserById(userId: string, currentUserId?: string) {
       followerCount: true,
       followingCount: true,
       createdAt: true,
+      isBanned: true,
     },
   })
 
-  if (!user) {
+  if (!user || user.isBanned) {
     throw new AppError(404, 'User not found')
   }
 
@@ -165,7 +166,7 @@ export async function getUserFollowers(userId: string, page: number = 1, limit: 
   const skip = (page - 1) * limit
 
   const followers = await prisma.follow.findMany({
-    where: { followingId: userId },
+    where: { followingId: userId, follower: { isBanned: false } },
     take: limit,
     skip,
     include: {
@@ -183,7 +184,7 @@ export async function getUserFollowers(userId: string, page: number = 1, limit: 
   })
 
   const total = await prisma.follow.count({
-    where: { followingId: userId },
+    where: { followingId: userId, follower: { isBanned: false } },
   })
 
   return {
@@ -201,7 +202,7 @@ export async function getUserFollowing(userId: string, page: number = 1, limit: 
   const skip = (page - 1) * limit
 
   const following = await prisma.follow.findMany({
-    where: { followerId: userId },
+    where: { followerId: userId, following: { isBanned: false } },
     take: limit,
     skip,
     include: {
@@ -219,7 +220,7 @@ export async function getUserFollowing(userId: string, page: number = 1, limit: 
   })
 
   const total = await prisma.follow.count({
-    where: { followerId: userId },
+    where: { followerId: userId, following: { isBanned: false } },
   })
 
   return {
