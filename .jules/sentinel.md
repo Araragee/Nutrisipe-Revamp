@@ -3,6 +3,7 @@
 **Learning:** Hardcoded paths that bypass the central config (`env.UPLOAD_DIR`) and assume runtime environment conditions can cause crashes. Relying solely on `path.extname` for uploaded file extensions without stripping invalid/unexpected characters leaves a small vector for injection.
 **Prevention:** Always dynamically resolve temp paths, ensure they exist synchronously on module load or server startup, and strictly sanitize any components derived from user input (like file extensions).
 
+<<<<<<< HEAD
 ## 2024-05-24 - Replaced Weak PRNG
 **Vulnerability:** Weak PRNGs like `Math.random()` were used to generate temporary file names in `upload.ts` and usernames in `authService.ts`. While `Math.random()` isn't highly predictable in standard JavaScript engines, it is not cryptographically secure and might lead to race conditions, file overrides or username collisions in extreme conditions.
 **Learning:** In a security-sensitive context like uploads or credentials generation, relying on non-cryptographic random numbers can lead to predictable patterns which attackers might exploit to target specific values or overwrite resources.
@@ -17,3 +18,9 @@
 **Vulnerability:** Information about banned users could still be accessed via direct profile lookups and public follower/following lists, potentially leaking data or the existence of restricted accounts.
 **Learning:** Checking the `isBanned` flag needs to be enforced consistently across all user data retrieval vectors, not just at the authentication or main listing levels. Relying on unique constraint lookups (like `findUnique`) requires pulling the flag and verifying in-memory if Prisma relation filters aren't applicable.
 **Prevention:** Always verify account status flags (like `isBanned` or `isActive`) when serving user profiles or related lists (followers/following), and use 404s to avoid leaking account status.
+=======
+## 2024-05-18 - Soft Delete Banned Users Content
+**Vulnerability:** Banning a user only flipped their `isBanned` flag. Their existing posts and comments remained publicly visible on feeds, direct object links, and search queries, which could continue spreading violating content.
+**Learning:** Depending exclusively on database queries to filter out banned user content is error-prone, as queries can easily miss the relationship check (e.g., `user: { isBanned: false }`).
+**Prevention:** Rather than trying to update all read queries, directly soft-delete (or completely delete) violating content at the time of the ban action (`/users/:id/ban`). This provides a robust, centralized safeguard against exposing problematic user data.
+>>>>>>> origin/fix/ban-content-soft-delete-6679204556589677171
