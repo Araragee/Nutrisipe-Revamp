@@ -2,6 +2,7 @@
 import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
+import crypto from 'crypto'
 import { AppError } from './errorHandler'
 import { env } from '../config/env'
 
@@ -18,7 +19,7 @@ const storage = multer.diskStorage({
     cb(null, TEMP_DIR)
   },
   filename: (_req: any, file: any, cb: any) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    const uniqueSuffix = Date.now() + '-' + crypto.randomBytes(8).toString('hex')
     // Sanitize extension to prevent injection via malicious filenames
     const ext = path.extname(file.originalname).replace(/[^a-zA-Z0-9.]/g, '')
     cb(null, file.fieldname + '-' + uniqueSuffix + ext)
