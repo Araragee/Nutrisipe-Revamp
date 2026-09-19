@@ -6,7 +6,7 @@ import { logger } from '@/utils/logger'
 import type { Post } from '@/typescript/interface/Post'
 import type { UserBasic } from '@/typescript/interface/User'
 
-export type SearchType = 'all' | 'recipes' | 'people'
+export type SearchType = 'all' | 'recipes' | 'people' | 'pantry'
 
 /**
  * Owns explore search state: the query, the active filter, and the post/user
@@ -19,6 +19,7 @@ export function useExploreSearch() {
 
   const searchQuery = ref('')
   const searchType = ref<SearchType>('all')
+  const difficulty = ref('')
   const postResults = ref<Post[] | null>(null)
   const userResults = ref<UserBasic[] | null>(null)
   const isSearching = ref(false)
@@ -39,6 +40,12 @@ export function useExploreSearch() {
     if (searchQuery.value.trim()) runSearch()
   }
 
+  function setDifficulty(value: string) {
+    if (difficulty.value === value) return
+    difficulty.value = value
+    if (searchQuery.value.trim()) runSearch()
+  }
+
   async function runSearch() {
     const q = searchQuery.value.trim()
     if (!q) {
@@ -48,8 +55,13 @@ export function useExploreSearch() {
 
     isSearching.value = true
     try {
-      if (searchType.value === 'recipes') {
-        const { data } = await postsApi.search(q, 1)
+      const recipeFilters = difficulty.value ? { difficulty: difficulty.value } : {}
+      if (searchType.value === 'pantry') {
+        const { data } = await postsApi.search('', 1, 20, { ...recipeFilters, ingredients: q })
+        postResults.value = data.data
+        userResults.value = []
+      } else if (searchType.value === 'recipes') {
+        const { data } = await postsApi.search(q, 1, 20, recipeFilters)
         postResults.value = data.data
         userResults.value = []
       } else if (searchType.value === 'people') {
@@ -88,6 +100,7 @@ export function useExploreSearch() {
   return {
     searchQuery,
     searchType,
+    difficulty,
     postResults,
     userResults,
     isSearching,
@@ -96,6 +109,7 @@ export function useExploreSearch() {
     runSearch,
     clearResults,
     setFilter,
+    setDifficulty,
     searchTag,
   }
 }

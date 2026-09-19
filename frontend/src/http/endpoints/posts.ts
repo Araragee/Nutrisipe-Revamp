@@ -31,9 +31,9 @@ export const postsApi = {
   getRelated: (id: string) =>
     httpClient.get<ApiResponse<Post[]>>(`/posts/${id}/related`),
 
-  search: (query: string, page = 1, limit = 20) =>
+  search: (query: string, page = 1, limit = 20, filters: { ingredients?: string; difficulty?: string } = {}) =>
     httpClient.get<PaginatedResponse<Post>>('/posts/search', {
-      params: { q: query, page, limit },
+      params: { q: query, page, limit, ...filters },
     }),
 
   getByTag: (tag: string, page = 1, limit = 20) =>

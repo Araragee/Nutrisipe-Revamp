@@ -2,15 +2,18 @@
 import RecipeMosaicBackground from '@/components/common/RecipeMosaicBackground.vue'
 import type { Post } from '@/typescript/interface/Post'
 import type { SearchType } from '@/composables/useExploreSearch'
+import { computed } from 'vue'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     query: string
     activeType: SearchType
     posts?: Post[]
+    difficulty?: string
   }>(),
   {
     posts: () => [],
+    difficulty: '',
   },
 )
 
@@ -19,13 +22,22 @@ const emit = defineEmits<{
   search: []
   clear: []
   'select-filter': [value: SearchType]
+  'select-difficulty': [value: string]
 }>()
 
 const filterChips: { label: string; value: SearchType }[] = [
   { label: 'All', value: 'all' },
   { label: 'Recipes', value: 'recipes' },
   { label: 'People', value: 'people' },
+  { label: 'My pantry', value: 'pantry' },
 ]
+const difficulties = ['', 'Easy', 'Medium', 'Hard']
+const placeholder = computed(() => ({
+  pantry: 'List what you have: chicken, garlic, rice…',
+  people: 'Search chefs by name or @username…',
+  recipes: 'Try ‘adobo’, ‘sinigang’, or a tag…',
+  all: 'Try ‘miso soup’, ‘chef’, or a tag…',
+}[props.activeType]))
 
 function onInput(event: Event) {
   const value = (event.target as HTMLInputElement).value
@@ -36,7 +48,7 @@ function onInput(event: Event) {
 
 <template>
   <div
-    class="explore-hero relative h-[420px] flex flex-col items-center justify-center text-center px-6 overflow-hidden"
+    class="explore-hero relative min-h-[420px] py-12 flex flex-col items-center justify-center text-center px-6 overflow-hidden"
   >
     <RecipeMosaicBackground :posts="posts" :count="12" :intensity="0.45" fallback-variant="sunset" />
 
@@ -64,7 +76,7 @@ function onInput(event: Event) {
           @input="onInput"
           @keyup.enter="emit('search')"
           type="text"
-          placeholder="Try ‘miso soup’, ‘chef’, or a tag…"
+          :placeholder="placeholder"
           class="w-full h-16 pl-14 pr-32 bg-surface/90 backdrop-blur-md border-1.5 border-border rounded-2xl text-[15px] font-medium outline-none focus:border-orange focus:ring-4 focus:ring-orange/10 shadow-card-hover transition-all"
         />
         <button
@@ -74,7 +86,7 @@ function onInput(event: Event) {
       </div>
 
       <!-- Type chips -->
-      <div class="flex gap-2 justify-center mt-5">
+      <div class="flex flex-wrap gap-2 justify-center mt-5">
         <button
           v-for="chip in filterChips"
           :key="chip.value"
@@ -86,6 +98,22 @@ function onInput(event: Event) {
               : 'bg-surface/70 border-border text-text-muted hover:border-orange hover:text-orange',
           ]"
         >{{ chip.label }}</button>
+      </div>
+
+      <!-- Difficulty (recipe searches only) -->
+      <div v-if="activeType === 'recipes' || activeType === 'pantry'" class="flex flex-wrap gap-1.5 justify-center mt-3" role="group" aria-label="Difficulty">
+        <button
+          v-for="d in difficulties"
+          :key="d || 'any'"
+          @click="emit('select-difficulty', d)"
+          :aria-pressed="difficulty === d"
+          :class="[
+            'px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border',
+            difficulty === d
+              ? 'bg-text text-background border-text dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100'
+              : 'bg-surface/60 border-border text-text-muted hover:text-text dark:bg-zinc-800/60',
+          ]"
+        >{{ d || 'Any difficulty' }}</button>
       </div>
     </div>
   </div>

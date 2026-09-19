@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { resolveImage } from '@/utils/imageUrl'
 import { toLocalIsoDate } from '@/utils/dateUtils'
+import { AMDR, macroDistribution } from '@/utils/nutritionTargets'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -317,6 +318,16 @@ const weekLabel = computed(() => {
   return `${from} – ${to}`
 })
 
+const macroBalance = computed(() =>
+  weekNutrition.value ? macroDistribution(weekNutrition.value.totals) : [],
+)
+const MACRO_LABEL = { carbs: 'Carbs', protein: 'Protein', fat: 'Fat' } as const
+const macroStatusClass = computed(() => ({
+  ok: 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-500/15',
+  low: 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-500/15',
+  high: 'text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-500/15',
+}))
+
 const weekNutrition = computed(() => {
   const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 }
   const byDay: Record<string, { calories: number; protein: number; carbs: number; fat: number }> = {}
@@ -560,6 +571,28 @@ const selectedDayCalories = computed(() => {
             <p :class="['font-montserrat font-extrabold text-2xl tabular-nums leading-none', m.color]">{{ m.value }}</p>
             <p class="text-[10px] text-text-dim mt-1">{{ m.unit }} · week</p>
           </div>
+        </div>
+
+        <!-- Macro balance vs FNRI PDRI -->
+        <div v-if="macroBalance.length" class="mb-6">
+          <p class="text-[10px] font-bold uppercase tracking-widest text-text-dim mb-2">Macro balance · % of calories</p>
+          <div class="space-y-2.5">
+            <div v-for="m in macroBalance" :key="m.macro" class="grid grid-cols-[4.5rem_1fr_auto] items-center gap-3">
+              <span class="text-xs font-bold">{{ MACRO_LABEL[m.macro] }}</span>
+              <div class="relative h-2.5 rounded-full bg-background-secondary dark:bg-white/10 overflow-hidden">
+                <div class="absolute inset-y-0 left-0 rounded-full bg-orange/80" :style="{ width: `${Math.min(m.pct, 100)}%` }"></div>
+                <div
+                  class="absolute inset-y-0 bg-green-500/25 border-x-2 border-green-600 dark:bg-green-400/25 dark:border-green-400"
+                  :style="{ left: `${AMDR[m.macro].min}%`, width: `${AMDR[m.macro].max - AMDR[m.macro].min}%` }"
+                  aria-hidden="true"
+                ></div>
+              </div>
+              <span :class="['text-[11px] font-bold tabular-nums px-2 py-0.5 rounded-full', macroStatusClass[m.status]]">
+                {{ m.pct }}% · {{ m.status === 'ok' ? 'in range' : m.status }}
+              </span>
+            </div>
+          </div>
+          <p class="text-[10px] text-text-dim mt-2">Green band = recommended range for adults (FNRI PDRI). General guide, not medical advice.</p>
         </div>
 
         <!-- Per-day calorie bars -->
