@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { postsApi } from '@/http/endpoints/posts'
-import type { Post } from '@/typescript/interface/Post'
+import type { Post } from '@/types/Post'
 
 interface CreatePostData {
   title: string
@@ -15,8 +15,8 @@ import { useFeedStore } from '@/stores/feed'
 import { useModal } from '@/composables/useModal'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
-import RichTextEditor from '@/components/ui/RichTextEditor.vue'
-import ImageUpload from '@/components/ui/ImageUpload.vue'
+import RichTextEditor from '@/components/common/RichTextEditor.vue'
+import ImageUpload from '@/components/common/ImageUpload.vue'
 
 const showImageUpload = ref(false)
 
@@ -39,7 +39,6 @@ const tags = ref('')
 const isSubmitting = ref(false)
 const error = ref<string | null>(null)
 
-// Handle modal body scroll lock
 useModal(() => props.show, () => emit('close'))
 
 const categories = [
@@ -78,10 +77,8 @@ async function handleSubmit() {
 
     const newPost = (await postsApi.create(data as Partial<Post>)).data.data
 
-    // Add to feed store
     feedStore.addPost(newPost)
 
-    // Reset form
     title.value = ''
     description.value = ''
     imageUrl.value = ''
@@ -107,7 +104,6 @@ function handleClose() {
 <template>
   <BaseModal :show="show" title="Create Post" size="lg" @close="handleClose">
     <form @submit.prevent="handleSubmit" class="space-y-6">
-      <!-- Error Message -->
       <div
         v-if="error"
         class="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400"
@@ -115,7 +111,6 @@ function handleClose() {
         {{ error }}
       </div>
 
-      <!-- Title -->
       <div>
         <label
           for="title"
@@ -133,7 +128,6 @@ function handleClose() {
         />
       </div>
 
-      <!-- Category -->
       <div>
         <label
           for="category"
@@ -153,7 +147,6 @@ function handleClose() {
         </select>
       </div>
 
-      <!-- Image Upload -->
       <div>
         <label
           class="mb-2 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-text-dim"
@@ -164,7 +157,6 @@ function handleClose() {
         <p class="mt-2 text-xs text-text-dim">Upload an image for your post (max 5MB).</p>
       </div>
 
-      <!-- Description -->
       <div>
         <label
           class="mb-2 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-text-dim"
@@ -174,7 +166,6 @@ function handleClose() {
         <RichTextEditor v-model="description" placeholder="Tell the story behind it…" :max-length="2000" />
       </div>
 
-      <!-- Tags -->
       <div>
         <label
           for="tags"

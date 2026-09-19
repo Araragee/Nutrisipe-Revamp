@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Ingredient } from '@/typescript/interface/Ingredient'
+import type { Ingredient } from '@/types/Ingredient'
 
 const props = defineProps<{
   title: string
@@ -17,7 +17,7 @@ const emit = defineEmits<{
 const getStatusEmoji = (status: string) => {
   if (status === 'verified') return '✅'
   if (status === 'pending') return '⏳'
-  return '📝' // draft
+  return '📝'
 }
 
 
@@ -27,13 +27,10 @@ const getStatusEmoji = (status: string) => {
   <Teleport to="body">
     <Transition name="fade">
       <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md">
-        <!-- Backdrop click to close -->
         <div class="absolute inset-0" @click="emit('close')"></div>
 
-        <!-- Modal content -->
         <div class="relative bg-surface dark:bg-zinc-900 border border-border rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row shadow-2xl">
           
-          <!-- Left side: Title -->
           <div class="w-full md:w-2/5 p-8 flex flex-col items-center justify-center bg-background-secondary border-b md:border-b-0 md:border-r border-border relative">
             <h2 class="font-montserrat font-black text-2xl text-text text-center mb-2 z-10">{{ title }}</h2>
             <p class="text-text-dim text-sm text-center mb-6 z-10">{{ items.length }} items</p>
@@ -43,7 +40,6 @@ const getStatusEmoji = (status: string) => {
             </button>
           </div>
 
-          <!-- Right side: List of items -->
           <div class="w-full md:w-3/5 p-6 flex flex-col max-h-[60vh] md:max-h-none">
             <div class="flex-1 overflow-y-auto pr-2 space-y-2 custom-scrollbar">
               <button

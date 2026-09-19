@@ -6,7 +6,7 @@ import { usersApi } from '@/http/endpoints/users'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { resolveImage } from '@/utils/imageUrl'
-import ImageUpload from '@/components/ui/ImageUpload.vue'
+import ImageUpload from '@/components/common/ImageUpload.vue'
 
 const emit = defineEmits<{
   close: []

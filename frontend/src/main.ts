@@ -2,7 +2,6 @@ import './assets/styles.css'
 
 import { createApp } from 'vue'
 
-// Wake Render backend on app load to minimize cold-start lag
 fetch(`${import.meta.env.VITE_API_URL}/health`, { method: 'HEAD' }).catch(() => {})
 import { createPinia } from 'pinia'
 import vue3GoogleLogin from 'vue3-google-login'
@@ -10,7 +9,6 @@ import vue3GoogleLogin from 'vue3-google-login'
 import App from './App.vue'
 import router from './router'
 
-// Safe ResizeObserver guard to prevent third-party library unmount race condition crashes
 if (typeof window !== 'undefined' && window.ResizeObserver) {
   const originalObserve = window.ResizeObserver.prototype.observe;
   window.ResizeObserver.prototype.observe = function (target, options) {

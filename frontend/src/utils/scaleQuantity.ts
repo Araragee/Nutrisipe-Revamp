@@ -10,7 +10,6 @@ const FRACTION_MAP: Record<string, number> = {
   '7/8': 0.875,
 }
 
-// Order matters: most-specific alternatives must come before \d+ (which would greedily match)
 const NUMERIC_RE = /^(\d+\s+\d+\/\d+|\d+\/\d+|\d+\.\d+|\d+)/
 
 function parseLeadingNumber(input: string): { value: number | null; rest: string } {

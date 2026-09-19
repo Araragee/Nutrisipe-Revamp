@@ -133,6 +133,5 @@ export async function deleteFile(relativeUrl: string): Promise<void> {
       throw new Error(error.message)
     }
   } catch (_) {
-    // Ignore error, log it or proceed
   }
 }

@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import type { Notification } from '@/typescript/interface/Notification'
+import type { Notification } from '@/types/Notification'
 
-// Mock the API layer so the store's network calls are controllable.
 const markAllAsReadMock = vi.fn()
 vi.mock('@/http/endpoints/notifications', () => ({
   notificationsApi: {
@@ -43,7 +42,6 @@ describe('notifications store - markAllAsRead', () => {
 
     expect(store.notifications.every((n) => n.isRead)).toBe(true)
     expect(store.unreadCount).toBe(0)
-    // Only the ids observed as unread are sent to the server.
     expect(markAllAsReadMock).toHaveBeenCalledWith(['1', '3'])
   })
 
@@ -52,9 +50,6 @@ describe('notifications store - markAllAsRead', () => {
     store.notifications = [makeNotif('1'), makeNotif('2')]
     store.unreadCount = 2
 
-    // Simulate a socket push arriving while the request is in flight: a new
-    // unread notification appears after markAllAsRead has captured the ids it
-    // intends to mark read. The new item must not be flipped or dropped.
     markAllAsReadMock.mockImplementation(async () => {
       store.notifications = [makeNotif('99'), ...store.notifications]
       return { data: { success: true } }
@@ -62,16 +57,12 @@ describe('notifications store - markAllAsRead', () => {
 
     await store.markAllAsRead()
 
-    // The server is told to mark only the snapshot, never the late arrival,
-    // so client and server agree that '99' is still unread.
     expect(markAllAsReadMock).toHaveBeenCalledWith(['1', '2'])
 
     const byId = Object.fromEntries(store.notifications.map((n) => [n.id, n]))
     expect(byId['1'].isRead).toBe(true)
     expect(byId['2'].isRead).toBe(true)
-    // The concurrently-added notification stays unread...
     expect(byId['99'].isRead).toBe(false)
-    // ...and the count reflects it rather than being blindly zeroed.
     expect(store.unreadCount).toBe(1)
   })
 
@@ -97,7 +88,6 @@ describe('notifications store - markAllAsRead', () => {
     await expect(store.markAllAsRead()).rejects.toBeDefined()
     expect(store.error).toBe('boom')
 
-    // A subsequent successful call must not leave the store in an error state.
     await store.markAllAsRead()
     expect(store.error).toBeNull()
   })

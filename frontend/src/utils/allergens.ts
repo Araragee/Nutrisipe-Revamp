@@ -1,6 +1,6 @@
-// NUTRITIONIST REVIEW: keyword lists are a first pass (English + common Filipino terms).
+// TODO(nutritionist): verify — keyword lists are a first pass (English + common Filipino terms).
 // Keys must match ALLERGENS in SettingsView.vue. Matching is whole-word, case-insensitive.
-// ponytail: keyword match only, misses brand names / hidden sources — upgrade to per-ingredient allergen tags in the DB.
+// TODO: keyword match only, misses brand names / hidden sources — upgrade to per-ingredient allergen tags in the DB.
 export const ALLERGEN_KEYWORDS: Record<string, string[]> = {
   Gluten: ['wheat', 'flour', 'harina', 'bread', 'breadcrumbs', 'panko', 'pasta', 'spaghetti', 'noodles', 'pancit', 'miki', 'canton', 'bihon', 'barley', 'rye', 'soy sauce', 'toyo', 'pandesal', 'lumpia wrapper', 'wonton'],
   Dairy: ['milk', 'gatas', 'cheese', 'keso', 'butter', 'mantikilya', 'cream', 'yogurt', 'evaporated', 'condensed', 'kesong puti', 'ghee', 'whey'],

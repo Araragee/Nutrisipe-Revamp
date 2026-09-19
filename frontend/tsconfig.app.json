@@ -18,40 +18,7 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ],
-      "@components": [
-        "./src/components/*"
-      ],
-      "@assets": [
-        "./src/assets/*"
-      ],
-      "@http": [
-        "./src/http/*"
-      ],
-      "@router": [
-        "./src/router/*"
-      ],
-      "@schema": [
-        "./src/schema/*"
-      ],
-      "@stores": [
-        "./src/stores/*"
-      ],
-      "@utils": [
-        "./src/utils/*"
-      ],
-      "@views": [
-        "./src/views/*"
-      ],
-      "@composables": [
-        "./src/composables/*"
-      ],
-      "@interface": [
-        "./src/typescript/interface/*"
-      ],
-      "@types": [
-        "./src/typescript/types/*"
-      ],
+      ]
     }
   }
 }

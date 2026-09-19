@@ -3,8 +3,8 @@ import { io, Socket } from "socket.io-client";
 import { useAuthStore } from "@/stores/auth";
 import { API_URL } from "@/utils/constants";
 import type { Message } from "@/http/endpoints/messages";
-import type { Post } from "@/typescript/interface/Post";
-import type { Notification } from "@/typescript/interface/Notification";
+import type { Post } from "@/types/Post";
+import type { Notification } from "@/types/Notification";
 
 interface PresenceStatus {
   userId: string;
@@ -18,7 +18,6 @@ interface PostSavePayload { postId: string; userId: string; saveCount: number }
 interface NotificationUpdatePayload { notificationId: string; isRead: boolean }
 interface MessageErrorPayload { error: string }
 
-// Derive socket origin from the same env var used by the HTTP client.
 const SOCKET_URL = API_URL.replace(/\/api\/?$/, '')
 
 class SocketService {
@@ -84,7 +83,6 @@ class SocketService {
     }
   }
 
-  // Event emitters
   sendMessage(recipientId: string, content: string) {
     this.socket?.emit("message:send", { recipientId, content });
   }
@@ -113,7 +111,6 @@ class SocketService {
     this.socket?.emit("presence:check", userIds);
   }
 
-  // Feed/Post events
   joinPost(postId: string) {
     this.socket?.emit("post:join", postId);
   }
@@ -122,7 +119,6 @@ class SocketService {
     this.socket?.emit("post:leave", postId);
   }
 
-  // Event listeners
   onMessageReceived(callback: (message: Message) => void) {
     this.socket?.on("message:new", callback);
   }
@@ -155,7 +151,6 @@ class SocketService {
     this.socket?.on("presence:status", callback);
   }
 
-  // Feed/Post event listeners
   onPostLiked(
     callback: (data: {
       postId: string;
@@ -211,7 +206,6 @@ class SocketService {
     this.socket?.on("feed:new-post", callback);
   }
 
-  // Remove event listeners
   offMessageReceived(callback: (message: Message) => void) {
     this.socket?.off("message:new", callback);
   }
@@ -268,7 +262,6 @@ class SocketService {
     this.socket?.off("feed:new-post", callback);
   }
 
-  // Utility
   get isConnected(): boolean {
     return this.socket?.connected || false;
   }

@@ -56,7 +56,6 @@ export interface UserRatingsResponse {
 }
 
 export const ratingsApi = {
-  // Create or update rating
   async createOrUpdateRating(postId: string, rating: number, review?: string) {
     const response = await httpClient.post('/ratings', {
       postId,
@@ -66,7 +65,6 @@ export const ratingsApi = {
     return response.data
   },
 
-  // Get ratings for a post
   async getPostRatings(
     postId: string,
     page = 1,
@@ -79,7 +77,6 @@ export const ratingsApi = {
     return response.data.data
   },
 
-  // Get user's ratings
   async getUserRatings(userId: string, page = 1, limit = 20): Promise<UserRatingsResponse> {
     const response = await httpClient.get(`/ratings/user/${userId}`, {
       params: { page, limit }
@@ -87,7 +84,6 @@ export const ratingsApi = {
     return response.data.data
   },
 
-  // Check if user rated a post
   async checkUserRating(postId: string): Promise<Rating | null> {
     try {
       const response = await httpClient.get(`/ratings/check/${postId}`)
@@ -97,7 +93,6 @@ export const ratingsApi = {
     }
   },
 
-  // Delete rating
   async deleteRating(ratingId: string) {
     const response = await httpClient.delete(`/ratings/${ratingId}`)
     return response.data

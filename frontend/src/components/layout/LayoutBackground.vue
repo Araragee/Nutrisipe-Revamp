@@ -1,7 +1,5 @@
 <template>
   <div class="relative isolate min-h-screen">
-    <!-- Decorative ambient blobs: isolated + clipped so mix-blend never washes
-         page content (dark mode bled a gray/red film without isolation). -->
     <div
       class="pointer-events-none fixed inset-0 -z-10 overflow-hidden blur-2xl opacity-30 dark:opacity-15"
       aria-hidden="true"

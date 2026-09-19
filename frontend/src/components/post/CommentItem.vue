@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import { commentsApi } from '@/http/endpoints/comments'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import BaseIcons from '@/components/base/BaseIcons.vue'
-import type { Comment } from '@/typescript/interface/Comment'
+import type { Comment } from '@/types/Comment'
 
 const props = defineProps<{
   comment: Comment
@@ -123,7 +123,6 @@ function formatDate(dateString: string) {
       <UserAvatar :user="comment.user" size="sm" class="mt-0.5 shrink-0" />
 
       <div class="min-w-0 flex-1">
-        <!-- Bubble -->
         <div class="rounded-2xl rounded-tl-md border border-border bg-background-secondary px-4 py-3">
           <div class="mb-0.5 flex items-center justify-between gap-2">
             <span class="truncate font-montserrat text-sm font-bold text-text">{{
@@ -134,7 +133,6 @@ function formatDate(dateString: string) {
             }}</time>
           </div>
 
-          <!-- Edit mode -->
           <div v-if="editingCommentId === comment.id" class="mt-2">
             <textarea
               v-model="editingCommentText"
@@ -162,7 +160,6 @@ function formatDate(dateString: string) {
           </p>
         </div>
 
-        <!-- Action row -->
         <div class="mt-1.5 flex items-center gap-1 px-1">
           <button
             @click="startReply"
@@ -206,7 +203,6 @@ function formatDate(dateString: string) {
           </div>
         </div>
 
-        <!-- Reply input -->
         <Transition name="reply">
           <div v-if="isReplying" class="mt-3 flex gap-2.5">
             <UserAvatar v-if="authStore.user" :user="authStore.user" size="xs" class="mt-1 shrink-0" />
@@ -241,7 +237,6 @@ function formatDate(dateString: string) {
           </div>
         </Transition>
 
-        <!-- Replies -->
         <div v-if="showReplies" class="mt-4 space-y-4 border-l-2 border-border pl-4">
           <div v-if="isLoadingReplies" class="flex justify-center py-2">
             <div class="h-4 w-4 animate-spin rounded-full border-2 border-orange border-t-transparent"></div>

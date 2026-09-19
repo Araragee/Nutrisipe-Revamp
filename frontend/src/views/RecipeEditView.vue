@@ -5,10 +5,10 @@ import { postsApi } from '@/http/endpoints/posts'
 import { variationsApi } from '@/http/endpoints/variations'
 import { useUiStore } from '@/stores/ui'
 import BaseIcons from '@/components/base/BaseIcons.vue'
-import ImageUpload from '@/components/ui/ImageUpload.vue'
+import ImageUpload from '@/components/common/ImageUpload.vue'
 import IngredientAutocomplete from '@/components/recipe/IngredientAutocomplete.vue'
-import type { Post } from '@/typescript/interface/Post'
-import type { Ingredient } from '@/typescript/interface/Ingredient'
+import type { Post } from '@/types/Post'
+import type { Ingredient } from '@/types/Ingredient'
 import { calcRow } from '@/composables/useNutritionCalc'
 import { logger } from '@/utils/logger'
 
@@ -88,7 +88,6 @@ async function loadPost() {
   }
 }
 
-// FCT ingredient linkage — keyed by ingredient array index
 const linkedFct = ref<Map<number, Ingredient>>(new Map())
 
 function onSelectIngredient(index: number, ing: Ingredient) {
@@ -141,7 +140,6 @@ function autoFillNutrition() {
 const addIngredient = () => formData.value.recipe.ingredients.push({ name: '', quantity: '' })
 const removeIngredient = (i: number) => {
   formData.value.recipe.ingredients.splice(i, 1)
-  // Rebuild index map after removal
   const next = new Map<number, Ingredient>()
   for (const [k, v] of linkedFct.value) {
     if (k < i) next.set(k, v)
@@ -156,7 +154,6 @@ const addStep = () => {
 }
 const removeStep = (i: number) => {
   formData.value.recipe.instructions.splice(i, 1)
-  // Re-index steps
   formData.value.recipe.instructions.forEach((s, idx) => s.step = idx + 1)
 }
 
@@ -210,7 +207,6 @@ onMounted(loadPost)
 
 const categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snack', 'Beverage']
 
-// Validation affordances
 const titleError = computed(() => formData.value.title.trim().length === 0)
 const filledIngredients = computed(
   () => formData.value.recipe.ingredients.filter((i) => i.name.trim() && i.quantity.trim()).length,
@@ -247,7 +243,6 @@ function attemptSave() {
          </header>
 
          <form @submit.prevent="attemptSave" class="space-y-5">
-            <!-- The basics -->
             <fieldset class="edit-card">
                <legend class="edit-section-title">The Basics</legend>
 
@@ -311,7 +306,6 @@ function attemptSave() {
                </div>
             </fieldset>
 
-            <!-- Ingredients -->
             <fieldset class="edit-card">
                <div class="flex items-baseline justify-between">
                   <legend class="edit-section-title">Ingredients</legend>
@@ -350,7 +344,6 @@ function attemptSave() {
                <button type="button" @click="addIngredient" class="edit-add">+ Add ingredient</button>
             </fieldset>
 
-            <!-- Method -->
             <fieldset class="edit-card">
                <div class="flex items-baseline justify-between">
                   <legend class="edit-section-title">Method</legend>
@@ -369,7 +362,6 @@ function attemptSave() {
                <button type="button" @click="addStep" class="edit-add">+ Add step</button>
             </fieldset>
 
-            <!-- Nutrition -->
             <fieldset class="edit-card">
                <div class="flex flex-wrap items-baseline justify-between gap-2">
                   <legend class="edit-section-title">Nutrition <span class="text-text-dim font-normal normal-case tracking-normal">per serving</span></legend>
@@ -398,7 +390,6 @@ function attemptSave() {
                </div>
             </fieldset>
 
-            <!-- Visibility -->
             <fieldset class="edit-card">
                <legend class="edit-section-title">Visibility</legend>
                <label for="toggleEdit" class="flex items-center gap-3.5 cursor-pointer">
@@ -425,7 +416,6 @@ function attemptSave() {
       </div>
     </div>
 
-    <!-- Sticky save bar -->
     <div v-if="!isLoading && post" class="fixed bottom-0 inset-x-0 z-30 border-t border-border bg-surface/90 backdrop-blur-md">
        <div class="max-w-3xl mx-auto px-5 sm:px-6 py-3.5 flex items-center gap-3">
           <p class="text-xs text-text-dim hidden sm:block">

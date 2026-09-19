@@ -399,9 +399,7 @@ const variations = [
 
 let finalRecipes: any[] = [];
 
-// Create 60 recipes by taking the 20 base recipes and making 3 variations each
 for (let base of baseRecipes) {
-  // Base
   finalRecipes.push({
     title: base.title,
     description: base.description,
@@ -410,7 +408,6 @@ for (let base of baseRecipes) {
     instructions: [...base.instructions]
   });
 
-  // Variations
   for (let i=0; i<2; i++) {
     const v = variations[i];
     finalRecipes.push({

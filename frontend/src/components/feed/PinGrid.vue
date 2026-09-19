@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import MasonryWall from './MasonryWall.vue'
 import PinCard from './PinCard.vue'
-import type { Post } from '@/typescript/interface/Post'
+import type { Post } from '@/types/Post'
 
 interface Props {
   posts: Post[]

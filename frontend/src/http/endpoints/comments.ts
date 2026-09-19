@@ -1,6 +1,6 @@
 import { httpClient } from '../client'
-import type { Comment } from '@/typescript/interface/Comment'
-import type { PaginatedResponse, ApiResponse } from '@/typescript/interface/ApiResponse'
+import type { Comment } from '@/types/Comment'
+import type { PaginatedResponse, ApiResponse } from '@/types/ApiResponse'
 
 export const commentsApi = {
   getByPost: (postId: string, page = 1, limit = 20, parentId?: string) =>

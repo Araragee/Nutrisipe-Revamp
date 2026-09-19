@@ -3,8 +3,8 @@ import { computed } from 'vue'
 import PinCard from '@/components/feed/PinCard.vue'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import FollowButton from '@/components/user/FollowButton.vue'
-import type { Post } from '@/typescript/interface/Post'
-import type { UserBasic } from '@/typescript/interface/User'
+import type { Post } from '@/types/Post'
+import type { UserBasic } from '@/types/User'
 import type { SearchType } from '@/composables/useExploreSearch'
 
 const props = withDefaults(
@@ -52,7 +52,6 @@ const isEmpty = computed(
     </div>
 
     <template v-else>
-      <!-- People -->
       <div v-if="users && users.length > 0" class="mb-10">
         <h3
           v-if="searchType === 'all'"
@@ -80,7 +79,6 @@ const isEmpty = computed(
         </div>
       </div>
 
-      <!-- Recipes -->
       <div v-if="posts && posts.length > 0">
         <h3
           v-if="searchType === 'all' && (users?.length ?? 0) > 0"
@@ -96,7 +94,6 @@ const isEmpty = computed(
         </div>
       </div>
 
-      <!-- Empty -->
       <div
         v-if="isEmpty"
         class="text-center py-12 bg-background-secondary rounded-3xl border-1.5 border-dashed border-border"

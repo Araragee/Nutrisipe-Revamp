@@ -8,9 +8,7 @@ export interface ToastAction {
 }
 
 export interface ToastOptions {
-  /** Auto-dismiss duration in ms. `0` (or less) keeps the toast until dismissed. */
   duration?: number
-  /** Optional action button, e.g. an "Undo" affordance. */
   action?: ToastAction
 }
 
@@ -27,11 +25,6 @@ const DEFAULT_DURATION = 3000
 const toasts = ref<Toast[]>([])
 let toastId = 0
 
-/**
- * Normalize the legacy `(message, type, duration)` call shape and the new
- * `(message, type, options)` shape into a single options object. Keeps every
- * existing `addToast`/`showToast` caller working unchanged.
- */
 function normalizeOptions(options?: number | ToastOptions): ToastOptions {
   if (typeof options === 'number') return { duration: options }
   return options ?? {}
@@ -45,7 +38,6 @@ export function useToast() {
   ) => {
     const { duration = DEFAULT_DURATION, action } = normalizeOptions(options)
 
-    // De-dupe identical, action-less toasts so rapid repeats don't stack.
     if (!action) {
       const isDuplicate = toasts.value.some(t => t.message === message && t.type === type && !t.action)
       if (isDuplicate) return -1

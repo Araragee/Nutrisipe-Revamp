@@ -11,7 +11,6 @@
       :class="textareaClass"
     ></textarea>
 
-    <!-- Mention Suggestions Dropdown -->
     <div
       v-if="showSuggestions && searchResults.length > 0"
       class="absolute z-50 bg-surface border border-border rounded-lg shadow-modal max-h-[200px] overflow-y-auto min-w-[250px]"
@@ -86,23 +85,19 @@ const localValue = ref(props.modelValue)
 const cursorPosition = ref(0)
 const suggestionsPosition = ref({ top: 0, left: 0 })
 
-// Update local value when prop changes
 watch(() => props.modelValue, (newValue) => {
   localValue.value = newValue
 })
 
-// Emit changes to parent
 watch(localValue, (newValue) => {
   emit('update:modelValue', newValue)
 })
 
-// Calculate suggestions dropdown position
 const suggestionsStyle = computed(() => ({
   top: `${suggestionsPosition.value.top}px`,
   left: `${suggestionsPosition.value.left}px`
 }))
 
-// Handle textarea input
 async function handleInput(event: Event) {
   const target = event.target as HTMLTextAreaElement
   cursorPosition.value = target.selectionStart
@@ -117,7 +112,6 @@ async function handleInput(event: Event) {
   }
 }
 
-// Calculate position for suggestions dropdown
 function calculateSuggestionsPosition() {
   if (!textareaRef.value) return
 
@@ -125,7 +119,7 @@ function calculateSuggestionsPosition() {
   const textBeforeCursor = localValue.value.substring(0, cursorPosition.value)
   const lines = textBeforeCursor.split('\n')
   const currentLine = lines.length
-  const lineHeight = 24 // Approximate line height in pixels
+  const lineHeight = 24
 
   suggestionsPosition.value = {
     top: currentLine * lineHeight,
@@ -133,7 +127,6 @@ function calculateSuggestionsPosition() {
   }
 }
 
-// Handle keyboard navigation
 function handleKeyDown(event: KeyboardEvent) {
   if (!showSuggestions.value) return
 
@@ -160,7 +153,6 @@ function handleKeyDown(event: KeyboardEvent) {
   }
 }
 
-// Select a user from suggestions
 function selectUser(user: MentionUser) {
   if (!textareaRef.value) return
 
@@ -183,14 +175,12 @@ function selectUser(user: MentionUser) {
   closeSuggestions()
 }
 
-// Close suggestions when clicking outside
 function handleClickOutside(event: MouseEvent) {
   if (wrapperRef.value && !wrapperRef.value.contains(event.target as Node)) {
     closeSuggestions()
   }
 }
 
-// Add/remove click outside listener
 watch(showSuggestions, (show) => {
   if (show) {
     document.addEventListener('mousedown', handleClickOutside)
@@ -199,7 +189,6 @@ watch(showSuggestions, (show) => {
   }
 })
 
-// Expose focus method
 defineExpose({
   focus: () => textareaRef.value?.focus()
 })

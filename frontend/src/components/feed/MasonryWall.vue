@@ -1,13 +1,4 @@
 <script setup lang="ts" generic="T">
-/**
- * Null-safe port of @yeger/vue-masonry-wall (v6.1.1).
- *
- * The upstream component reads `wall.value.children` / `wall.value.getBoundingClientRect()`
- * inside async (`await nextTick()`) layout passes without guarding the ref. On rapid
- * navigation or a post-login RouterView remount the component unmounts mid-pass, leaving
- * `wall.value` null → "Cannot read properties of null (reading 'children')" surfacing through
- * the Vue error boundary. Every ref access here bails when the element is gone.
- */
 import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
 
 const props = withDefaults(
@@ -85,7 +76,7 @@ async function fillColumns(itemIndex: number, assignedRedrawId: number): Promise
   await nextTick()
   if (currentRedrawId !== assignedRedrawId) return
   const el = wall.value
-  if (!el) return // unmounted mid-pass — bail instead of dereferencing null
+  if (!el) return
   const children = [...el.children] as HTMLElement[]
   if (children.length === 0) return
   const target = children.reduce((prev, curr) =>

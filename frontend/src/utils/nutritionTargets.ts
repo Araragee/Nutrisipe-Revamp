@@ -1,4 +1,4 @@
-// NUTRITIONIST REVIEW: FNRI-DOST PDRI 2015 Acceptable Macronutrient Distribution Ranges, adults 19+.
+// TODO(nutritionist): verify — FNRI-DOST PDRI 2015 Acceptable Macronutrient Distribution Ranges, adults 19+.
 // % of total energy. Children/pregnant/lactating ranges differ — not handled yet.
 export const AMDR = {
   carbs: { min: 55, max: 75, kcalPerGram: 4 },

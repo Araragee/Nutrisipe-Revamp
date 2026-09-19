@@ -72,7 +72,6 @@
       <span>{{ error }}</span>
     </div>
 
-    <!-- Optional thumbnail upload -->
     <div v-if="videoUrl && allowThumbnail" class="thumbnail-section">
       <h4>Custom Thumbnail (Optional)</h4>
       <div v-if="!customThumbnail" class="thumbnail-upload" @click="triggerThumbnailInput">
@@ -149,17 +148,14 @@ const triggerThumbnailInput = () => {
 }
 
 async function processFile(file: File) {
-  // Validate file
   error.value = null
 
-  // Check file size (100MB)
   if (file.size > 100 * 1024 * 1024) {
     error.value = 'Video file is too large. Maximum size is 100MB.'
     emit('error', error.value)
     return
   }
 
-  // Check file type
   const allowedTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo']
   if (!allowedTypes.includes(file.type)) {
     error.value = 'Invalid video format. Please use MP4, WebM, MOV, or AVI.'
@@ -226,7 +222,6 @@ const handleThumbnailSelect = async (event: Event) => {
 
   if (!file) return
 
-  // Create preview
   const reader = new FileReader()
   reader.onload = (e) => {
     customThumbnail.value = e.target?.result as string

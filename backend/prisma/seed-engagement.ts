@@ -91,7 +91,6 @@ function randomInt(min: number, max: number): number {
 async function main() {
   console.log('🌱 Starting engagement seed data generation...')
 
-  // Fetch users and posts created by seed.ts
   const users = await prisma.user.findMany()
   const posts = await prisma.post.findMany()
   const recipePosts = posts.filter(p => p.category === 'recipe')
@@ -121,14 +120,12 @@ async function main() {
   let mentionCount = 0
 
   for (const post of posts) {
-    // Determine how many comments this post gets (3 to 8 for popular posts, fewer for others)
     const count = randomInt(1, 8)
     const postComments = []
 
     for (let c = 0; c < count; c++) {
       const commenter = randomElement(users)
       
-      // 15% chance comment mentions another random user
       let content = randomElement(COMMENT_TEMPLATES)
       let mentionedUser = null
       if (Math.random() < 0.15) {
@@ -173,7 +170,6 @@ async function main() {
         })
       }
 
-      // Create notification for post owner
       if (commenter.id !== post.userId) {
         await prisma.notification.create({
           data: {
@@ -188,7 +184,6 @@ async function main() {
       }
     }
 
-    // Add nested replies (30% of comments get 1-2 replies)
     for (const comment of postComments) {
       if (Math.random() < 0.3) {
         const replyCount = randomInt(1, 2)
@@ -206,7 +201,6 @@ async function main() {
           })
           commentCount++
 
-          // Notification for original commenter
           if (replier.id !== comment.userId) {
             await prisma.notification.create({
               data: {
@@ -233,7 +227,7 @@ async function main() {
     let totalScore = 0
 
     for (const rUser of ratingUsers) {
-      const score = randomInt(3, 5) // mostly good reviews
+      const score = randomInt(3, 5)
       const hasReview = Math.random() < 0.6
       const reviewText = hasReview ? randomElement(REVIEW_TEMPLATES) : null
 
@@ -250,14 +244,13 @@ async function main() {
       totalScore += score
       ratingCount++
 
-      // Create notification for rating on owned recipe
       if (rUser.id !== recipePost.userId && score >= 4) {
         await prisma.notification.create({
           data: {
             id: randomUUID(),
             userId: recipePost.userId,
             actorId: rUser.id,
-            type: 'like', // Map high ratings as positive engagement
+            type: 'like',
             postId: recipePost.id
           }
         })
@@ -266,7 +259,6 @@ async function main() {
 
     const averageRating = Number((totalScore / numRatings).toFixed(2))
 
-    // Update aggregate post rating fields
     await prisma.post.update({
       where: { id: recipePost.id },
       data: {
@@ -278,15 +270,12 @@ async function main() {
   console.log(`✅ Seeded ${ratingCount} ratings and reviews.`)
 
   console.log('🔄 Seeding recipe variations and forks...')
-  // Select ~15 recipe posts to be targets of variations
   const targetRecipes = randomElements(recipePosts, Math.min(15, recipePosts.length))
   let variationCount = 0
 
   for (const originalPost of targetRecipes) {
-    // 1 to 3 forks per recipe
     const numForks = randomInt(1, 3)
     
-    // Fetch recipe data of original post
     const originalRecipe = await prisma.recipe.findUnique({
       where: { postId: originalPost.id }
     })
@@ -299,7 +288,6 @@ async function main() {
       const title = `Modified ${originalPost.title}`
       const varDescription = randomElement(VARIATION_DESCRIPTIONS)
 
-      // Create fork post
       await prisma.post.create({
         data: {
           id: variationPostId,
@@ -314,7 +302,6 @@ async function main() {
         }
       })
 
-      // Create fork recipe
       await prisma.recipe.create({
         data: {
           id: randomUUID(),
@@ -329,7 +316,6 @@ async function main() {
         }
       })
 
-      // Create variation relation
       await prisma.recipeVariation.create({
         data: {
           id: randomUUID(),
@@ -341,7 +327,6 @@ async function main() {
         }
       })
 
-      // Notify parent post creator
       await prisma.notification.create({
         data: {
           id: randomUUID(),
@@ -355,7 +340,6 @@ async function main() {
       variationCount++
     }
 
-    // Update parent variation count
     await prisma.post.update({
       where: { id: originalPost.id },
       data: {
@@ -364,10 +348,8 @@ async function main() {
     })
   }
 
-  // Seeding 2-3 multigenerational chains (original -> variation -> variation-of-variation)
   const chainRoots = randomElements(recipePosts.filter(p => p.variationCount > 0), 2)
   for (const rootPost of chainRoots) {
-    // Find one of its variations
     const firstGenVar = await prisma.recipeVariation.findFirst({
       where: { originalPostId: rootPost.id },
       include: { variationPost: { include: { recipe: true } } }
@@ -457,7 +439,6 @@ async function main() {
       })
       collectionCount++
 
-      // Add 4-10 posts
       const colPosts = randomElements(posts, randomInt(4, 10))
       for (const cPost of colPosts) {
         await prisma.collectionPost.create({
@@ -476,7 +457,6 @@ async function main() {
   let messageCount = 0
   let convoCount = 0
 
-  // Find users who follow each other (mutual follows)
   const follows = await prisma.follow.findMany()
   const mutualFollows: [string, string][] = []
   const checked = new Set<string>()
@@ -490,14 +470,12 @@ async function main() {
     checked.add(key)
   }
 
-  // If not enough mutual follows in seed, force some mutuals
   const seedMutualUsers = mutualFollows.length >= 15 ? mutualFollows : []
   if (seedMutualUsers.length < 15) {
     const potentialPairs = randomElements(users, 16)
     for (let i = 0; i < potentialPairs.length; i += 2) {
       const u1 = potentialPairs[i]
       const u2 = potentialPairs[i+1]
-      // Force follow both ways
       try {
         await prisma.follow.upsert({
           where: { followerId_followingId: { followerId: u1.id, followingId: u2.id } },
@@ -514,7 +492,6 @@ async function main() {
     }
   }
 
-  // Seed 15 conversations
   const activeMutuals = randomElements(seedMutualUsers, Math.min(15, seedMutualUsers.length))
   for (const [u1Id, u2Id] of activeMutuals) {
     const convoId = randomUUID()
@@ -530,7 +507,6 @@ async function main() {
     })
     convoCount++
 
-    // Add 5-25 messages
     const numMsgs = randomInt(5, 25)
     let lastMsgDate = new Date(Date.now() - numMsgs * 30 * 60 * 1000)
     let senderId = u1Id
@@ -538,13 +514,12 @@ async function main() {
     let unreadCount = 0
 
     for (let m = 0; m < numMsgs; m++) {
-      // Alternate sender
       senderId = m % 2 === 0 ? u1Id : u2Id
       recipientId = senderId === u1Id ? u2Id : u1Id
       lastMsgDate = new Date(lastMsgDate.getTime() + randomInt(5, 20) * 60 * 1000)
 
       const isLastMessage = m === numMsgs - 1
-      const isRead = isLastMessage ? Math.random() < 0.3 : true // Last message might be unread
+      const isRead = isLastMessage ? Math.random() < 0.3 : true
 
       if (!isRead) {
         unreadCount++
@@ -564,7 +539,6 @@ async function main() {
       messageCount++
     }
 
-    // Update conversation metadata
     await prisma.conversation.update({
       where: { id: convoId },
       data: {
@@ -580,7 +554,6 @@ async function main() {
   let storyCount = 0
   const activeStoryCreators = randomElements(users, 8)
   for (const sUser of activeStoryCreators) {
-    // Active story
     await prisma.story.create({
       data: {
         id: randomUUID(),
@@ -590,12 +563,11 @@ async function main() {
         postId: randomElement(recipePosts).id,
         views: randomInt(5, 80),
         createdAt: new Date(Date.now() - randomInt(1, 3) * 3600 * 1000),
-        expiresAt: new Date(Date.now() + 20 * 3600 * 1000) // Active
+        expiresAt: new Date(Date.now() + 20 * 3600 * 1000)
       }
     })
     storyCount++
 
-    // Expired story
     if (Math.random() < 0.5) {
       await prisma.story.create({
         data: {
@@ -605,7 +577,7 @@ async function main() {
           caption: `Flashback to this delicious feast!`,
           views: randomInt(30, 150),
           createdAt: new Date(Date.now() - 30 * 3600 * 1000),
-          expiresAt: new Date(Date.now() - 6 * 3600 * 1000) // Expired
+          expiresAt: new Date(Date.now() - 6 * 3600 * 1000)
         }
       })
       storyCount++
@@ -620,13 +592,11 @@ async function main() {
   const today = new Date()
 
   for (const mpUser of mealPlanUsers) {
-    // Seed dinner/lunch slots for the current week
     for (let dayOffset = -3; dayOffset <= 3; dayOffset++) {
       const date = new Date()
       date.setDate(today.getDate() + dayOffset)
       date.setHours(0, 0, 0, 0)
 
-      // Randomly schedule 1-2 meals per day
       const numMeals = randomInt(1, 2)
       const scheduledSlots = randomElements(slots, numMeals)
 
@@ -650,13 +620,11 @@ async function main() {
   console.log(`✅ Seeded ${mealPlanCount} meal plans.`)
 
   console.log('🔔 Deriving notifications for admin user inbox...')
-  // Specifically send comments/replies/likes to Admin so they have immediate inbox items to look at
   const adminPosts = posts.filter(p => p.userId === adminUser.id)
   let adminInboxCount = 0
   if (adminPosts.length > 0) {
     const notifyUsers = randomElements(users.filter(u => u.id !== adminUser.id), 8)
     for (const actor of notifyUsers) {
-      // Create follow notification
       await prisma.notification.create({
         data: {
           id: randomUUID(),
@@ -668,7 +636,6 @@ async function main() {
       })
       adminInboxCount++
 
-      // Create comment notification on admin's post
       const adminPost = randomElement(adminPosts)
       const adminComment = await prisma.comment.create({
         data: {

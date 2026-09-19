@@ -2,7 +2,6 @@
 import { ref, watch } from 'vue'
 import DOMPurify from 'dompurify'
 
-// Only the markup the toolbar can produce; everything else is stripped.
 const SANITIZE_OPTIONS = {
   ALLOWED_TAGS: ['b', 'strong', 'i', 'em', 'u', 'a', 'p', 'div', 'br', 'span', 'ul', 'ol', 'li'],
   ALLOWED_ATTR: ['href', 'target', 'rel'],
@@ -32,7 +31,6 @@ const emit = defineEmits<{
 const editor = ref<HTMLDivElement | null>(null)
 const isFocused = ref(false)
 
-// Sync content with v-model
 watch(
   () => props.modelValue,
   (newValue) => {
@@ -48,7 +46,6 @@ function handleInput() {
   }
 }
 
-// NOTE: document.execCommand is deprecated, but accepted here since this editor is lightweight and the output is fully sanitized via DOMPurify.
 function execCommand(command: string, value?: string) {
   document.execCommand(command, false, value)
   editor.value?.focus()
@@ -70,7 +67,6 @@ function handlePaste(event: ClipboardEvent) {
 }
 
 function handleKeyDown(event: KeyboardEvent) {
-  // Prevent exceeding max length
   if (editor.value && editor.value.textContent) {
     if (editor.value.textContent.length >= props.maxLength && event.key !== 'Backspace' && event.key !== 'Delete') {
       event.preventDefault()
@@ -88,9 +84,7 @@ function handleKeyDown(event: KeyboardEvent) {
         : 'border-gray-300 dark:border-gray-600',
     ]"
   >
-    <!-- Toolbar -->
     <div class="flex items-center gap-1 p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex-wrap">
-      <!-- Bold -->
       <button
         type="button"
         @click="execCommand('bold')"
@@ -102,7 +96,6 @@ function handleKeyDown(event: KeyboardEvent) {
         </svg>
       </button>
 
-      <!-- Italic -->
       <button
         type="button"
         @click="execCommand('italic')"
@@ -114,7 +107,6 @@ function handleKeyDown(event: KeyboardEvent) {
         </svg>
       </button>
 
-      <!-- Underline -->
       <button
         type="button"
         @click="execCommand('underline')"
@@ -128,7 +120,6 @@ function handleKeyDown(event: KeyboardEvent) {
 
       <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
 
-      <!-- Unordered List -->
       <button
         type="button"
         @click="execCommand('insertUnorderedList')"
@@ -140,7 +131,6 @@ function handleKeyDown(event: KeyboardEvent) {
         </svg>
       </button>
 
-      <!-- Ordered List -->
       <button
         type="button"
         @click="execCommand('insertOrderedList')"
@@ -154,7 +144,6 @@ function handleKeyDown(event: KeyboardEvent) {
 
       <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
 
-      <!-- Link -->
       <button
         type="button"
         @click="insertLink"
@@ -166,7 +155,6 @@ function handleKeyDown(event: KeyboardEvent) {
         </svg>
       </button>
 
-      <!-- Clear Formatting -->
       <button
         type="button"
         @click="execCommand('removeFormat')"
@@ -179,7 +167,6 @@ function handleKeyDown(event: KeyboardEvent) {
       </button>
     </div>
 
-    <!-- Editor Content -->
     <div
       ref="editor"
       contenteditable="true"
@@ -193,7 +180,6 @@ function handleKeyDown(event: KeyboardEvent) {
       :data-placeholder="placeholder"
     />
 
-    <!-- Character Count -->
     <div class="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
       {{ editor?.textContent?.length || 0 }} / {{ maxLength }} characters
     </div>
@@ -207,7 +193,6 @@ function handleKeyDown(event: KeyboardEvent) {
   pointer-events: none;
 }
 
-/* Prose styles for rich text */
 :deep(strong) {
   font-weight: 600;
 }

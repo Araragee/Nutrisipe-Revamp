@@ -7,14 +7,12 @@ const router = useRouter()
 
 <template>
   <div class="not-found-view relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-20 pb-24 md:py-16 overflow-hidden">
-    <!-- ambient warmth -->
     <div
       class="pointer-events-none absolute inset-0 -z-10 opacity-70"
       style="background: radial-gradient(60% 50% at 50% 30%, var(--orange-soft), transparent 70%)"
       aria-hidden="true"
     ></div>
 
-    <!-- floating pantry crumbs -->
     <div class="nf-float" aria-hidden="true">
       <span>🍅</span><span>🥑</span><span>🌿</span><span>🧄</span><span>🍋</span>
     </div>

@@ -3,17 +3,11 @@ import { useRoute } from 'vue-router'
 import { postsApi } from '@/http/endpoints/posts'
 import { searchApi } from '@/http/endpoints/search'
 import { logger } from '@/utils/logger'
-import type { Post } from '@/typescript/interface/Post'
-import type { UserBasic } from '@/typescript/interface/User'
+import type { Post } from '@/types/Post'
+import type { UserBasic } from '@/types/User'
 
 export type SearchType = 'all' | 'recipes' | 'people' | 'pantry'
 
-/**
- * Owns explore search state: the query, the active filter, and the post/user
- * result sets. Keeps the `?q=` route param in sync so deep links and the global
- * search bar drive the same state. `null` results mean "no search run yet";
- * an empty array means "searched, nothing found".
- */
 export function useExploreSearch() {
   const route = useRoute()
 
@@ -94,7 +88,6 @@ export function useExploreSearch() {
     }
   }
 
-  // Run once on setup (deep links) and on every subsequent `?q=` change.
   watch(() => route.query.q, applyQueryParam, { immediate: true })
 
   return {

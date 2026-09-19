@@ -1,6 +1,6 @@
 import { httpClient } from '../client'
-import type { Post } from '@/typescript/interface/Post'
-import type { PaginatedResponse, ApiResponse } from '@/typescript/interface/ApiResponse'
+import type { Post } from '@/types/Post'
+import type { PaginatedResponse, ApiResponse } from '@/types/ApiResponse'
 
 export const postsApi = {
   getFeed: (page = 1, limit = 20) =>

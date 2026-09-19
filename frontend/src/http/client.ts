@@ -34,7 +34,6 @@ httpClient.interceptors.response.use(
       const statusCode = error.response?.status;
       let message = error.response?.data?.message || error.message || 'An unexpected error occurred';
       
-      // Basic mappings
       if (statusCode === 401) message = 'Please log in to continue';
       else if (statusCode === 403) message = 'You do not have permission to do this';
       else if (statusCode === 500) message = 'Server error. Please try again later';

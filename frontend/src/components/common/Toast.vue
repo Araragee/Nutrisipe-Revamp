@@ -38,7 +38,6 @@ const roleStyle = computed(() => ({
 const liveMode = computed(() => (props.toast.type === 'error' ? 'assertive' : 'polite'))
 const liveRole = computed(() => (props.toast.type === 'error' ? 'alert' : 'status'))
 
-// --- auto-dismiss timer ----------------------------------------------------
 let timerId: ReturnType<typeof setTimeout> | null = null
 
 function startTimer() {
@@ -53,14 +52,13 @@ function clearTimer() {
 onMounted(startTimer)
 onBeforeUnmount(clearTimer)
 
-// --- swipe-to-dismiss -------------------------------------------------------
 const dragX = ref(0)
 const dragging = ref(false)
 const exiting = ref(false)
 let pointerId: number | null = null
 let pointerStartX = 0
 
-const SWIPE_THRESHOLD = 96 // px to trigger dismiss
+const SWIPE_THRESHOLD = 96
 
 const cardTransform = computed(() => {
   if (exiting.value) {
@@ -72,7 +70,6 @@ const cardTransform = computed(() => {
   return ''
 })
 
-// fade the card as it is dragged toward the dismiss edge
 const cardOpacity = computed(() => {
   if (dragX.value <= 0) return 1
   return Math.max(0.35, 1 - dragX.value / (SWIPE_THRESHOLD * 2.2))
@@ -89,7 +86,6 @@ function onPointerDown(e: PointerEvent) {
 
 function onPointerMove(e: PointerEvent) {
   if (!dragging.value || e.pointerId !== pointerId) return
-  // only allow rightward drag (matches exit direction)
   dragX.value = Math.max(0, e.clientX - pointerStartX)
 }
 
@@ -99,7 +95,6 @@ function onPointerUp(e: PointerEvent) {
   pointerId = null
   if (dragX.value >= SWIPE_THRESHOLD) {
     exiting.value = true
-    // spring-y exit handled by CSS transition on `transform`
     window.setTimeout(() => emit('dismiss', props.toast.id), 260)
   } else {
     dragX.value = 0
@@ -107,7 +102,6 @@ function onPointerUp(e: PointerEvent) {
   }
 }
 
-// --- handlers ---------------------------------------------------------------
 function onActionClick() {
   props.toast.action?.onClick()
   emit('action', props.toast.id)
@@ -133,7 +127,6 @@ function dismiss() {
     @pointercancel="onPointerUp"
   >
     <div class="flex items-start gap-3 p-3.5 pr-2.5">
-      <!-- role icon -->
       <span
         class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full ring-1"
         :class="[roleStyle.ring, roleStyle.accent]"
@@ -145,7 +138,6 @@ function dismiss() {
         <svg v-else width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
       </span>
 
-      <!-- message + action -->
       <div class="min-w-0 flex-1 pt-0.5">
         <p class="font-inter text-[13.5px] font-medium leading-snug text-text [text-wrap:pretty]">
           {{ toast.message }}
@@ -161,7 +153,6 @@ function dismiss() {
         </button>
       </div>
 
-      <!-- dismiss -->
       <button
         type="button"
         aria-label="Dismiss notification"
@@ -184,12 +175,10 @@ function dismiss() {
   will-change: transform;
 }
 
-/* while finger/pointer is down, follow it 1:1 with no easing lag */
 .toast-card.is-dragging {
   transition: none;
 }
 
-/* spring-y fling-off on dismiss */
 .toast-card.is-exiting {
   transition:
     transform 0.26s cubic-bezier(0.34, 1.2, 0.64, 1),

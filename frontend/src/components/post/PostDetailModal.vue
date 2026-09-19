@@ -9,8 +9,8 @@ import UserAvatar from '@/components/user/UserAvatar.vue'
 import FollowButton from '@/components/user/FollowButton.vue'
 import CommentSection from '@/components/post/CommentSection.vue'
 import BaseIcons from '@/components/base/BaseIcons.vue'
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
-import type { Post } from '@/typescript/interface/Post'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import type { Post } from '@/types/Post'
 import { useAuthStore } from '@/stores/auth'
 
 const props = defineProps<{
@@ -87,7 +87,6 @@ watch(
       <div
         class="modal-card relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border border-border bg-surface shadow-modal md:flex-row"
       >
-        <!-- Close -->
         <button
           @click="handleClose"
           type="button"
@@ -102,7 +101,6 @@ watch(
         </div>
 
         <template v-else-if="post">
-          <!-- Image stage -->
           <div class="hidden flex-col items-center justify-center bg-black md:flex md:w-3/5">
             <img
               :src="resolveImage(post.imageUrl, post.id)"
@@ -111,9 +109,7 @@ watch(
             />
           </div>
 
-          <!-- Detail rail -->
           <div class="flex w-full flex-col md:w-2/5">
-            <!-- Author header -->
             <div class="flex shrink-0 items-center justify-between gap-3 border-b border-border p-4">
               <div class="flex min-w-0 items-center gap-3">
                 <RouterLink :to="`/profile/${post.user.id}`" @click="handleClose">
@@ -138,7 +134,6 @@ watch(
               />
             </div>
 
-            <!-- Mobile image -->
             <div class="bg-black md:hidden">
               <img
                 :src="resolveImage(post.imageUrl, post.id)"
@@ -147,7 +142,6 @@ watch(
               />
             </div>
 
-            <!-- Tabs -->
             <div class="flex shrink-0 gap-1 border-b border-border px-2">
               <button
                 v-for="tab in (['details', 'comments'] as const)"
@@ -171,7 +165,6 @@ watch(
               </button>
             </div>
 
-            <!-- Details -->
             <div v-if="activeTab === 'details'" class="flex min-h-0 flex-1 flex-col">
               <div class="flex-1 space-y-4 overflow-y-auto p-5">
                 <div>
@@ -200,7 +193,6 @@ watch(
                 <p class="text-xs text-text-dim">Posted {{ formattedDate }}</p>
               </div>
 
-              <!-- Action bar -->
               <div class="shrink-0 space-y-3 border-t border-border p-4">
                 <div class="flex items-center gap-5 text-sm text-text-dim">
                   <span class="flex items-center gap-1.5">
@@ -251,7 +243,6 @@ watch(
               </div>
             </div>
 
-            <!-- Comments -->
             <div v-else-if="activeTab === 'comments'" class="min-h-0 flex-1 overflow-y-auto p-5">
               <CommentSection :post-id="post.id" />
             </div>

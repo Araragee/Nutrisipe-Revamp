@@ -1,7 +1,3 @@
-/**
- * Creates a debounced function that delays invoking the provided function
- * until after `delay` milliseconds have elapsed since the last time it was invoked.
- */
 export function debounce<T extends (...args: any[]) => any>(
   fn: T,
   delay: number
@@ -20,10 +16,6 @@ export function debounce<T extends (...args: any[]) => any>(
   }
 }
 
-/**
- * Creates a throttled function that only invokes the provided function
- * at most once per `limit` milliseconds.
- */
 export function throttle<T extends (...args: any[]) => any>(
   fn: T,
   limit: number

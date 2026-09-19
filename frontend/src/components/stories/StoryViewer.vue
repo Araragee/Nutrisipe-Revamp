@@ -33,7 +33,6 @@ const STORY_DURATION = 5000
 let rafId: number | null = null
 let lastTimestamp = 0
 
-// Touch / swipe state
 let touchStartX = 0
 let touchStartY = 0
 let isSwiping = false
@@ -104,7 +103,6 @@ function prevStory() {
   }
 }
 
-// Swipe to jump between story groups (horizontal) or dismiss (vertical)
 function onTouchStart(e: TouchEvent) {
   const t = e.touches[0]
   touchStartX = t.clientX
@@ -121,8 +119,6 @@ function onTouchMove(e: TouchEvent) {
 
 function onTouchEnd(e: TouchEvent) {
   isPaused.value = false
-  // Reset lastTimestamp so the RAF loop doesn't count the pause duration
-  // as elapsed story time (prevents the progress bar from jumping forward)
   lastTimestamp = 0
   if (!isSwiping) return
 
@@ -131,16 +127,13 @@ function onTouchEnd(e: TouchEvent) {
   const absDx = Math.abs(dx)
   const absDy = Math.abs(dy)
 
-  // Vertical swipe down → dismiss
   if (absDy > absDx && dy > 60) {
     emit('close', groupIndex.value)
     return
   }
 
-  // Horizontal swipe → next / prev group (threshold 60px)
   if (absDx > absDy && absDx > 60) {
     if (dx < 0) {
-      // swipe left = next group
       if (groupIndex.value < props.groups.length - 1) {
         cancel()
         groupIndex.value++
@@ -151,7 +144,6 @@ function onTouchEnd(e: TouchEvent) {
         emit('close', groupIndex.value)
       }
     } else {
-      // swipe right = prev group
       if (groupIndex.value > 0) {
         cancel()
         groupIndex.value--
@@ -222,7 +214,6 @@ onUnmounted(() => {
       @touchmove.passive="onTouchMove"
       @touchend="onTouchEnd"
     >
-      <!-- Progress bars -->
       <div class="flex gap-1 p-3 pt-5">
         <div
           v-for="(_, i) in currentGroup.stories"
@@ -238,7 +229,6 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Header -->
       <header class="flex items-center justify-between px-5 pb-3">
         <div class="flex items-center gap-3">
           <UserAvatar :user="currentGroup.user" size="sm" class="border-2 border-white" />
@@ -262,7 +252,6 @@ onUnmounted(() => {
         </div>
       </header>
 
-      <!-- Image -->
       <div class="flex-1 relative overflow-hidden">
         <img
           :src="resolveImage(currentStory.imageUrl, currentStory.id)"
@@ -270,11 +259,9 @@ onUnmounted(() => {
           :alt="currentStory.caption || ''"
         />
 
-        <!-- Tap zones (only fire when not a swipe gesture) -->
         <button @click="onTap('left')" class="absolute top-0 left-0 bottom-0 w-1/3" aria-label="Previous"></button>
         <button @click="onTap('right')" class="absolute top-0 right-0 bottom-0 w-1/3" aria-label="Next"></button>
 
-        <!-- Caption -->
         <div
           v-if="currentStory.caption"
           class="absolute inset-x-6 bottom-20 text-white font-bold text-base text-center drop-shadow-md"
@@ -282,7 +269,6 @@ onUnmounted(() => {
           {{ currentStory.caption }}
         </div>
 
-        <!-- Linked post CTA -->
         <button
           v-if="currentStory.postId"
           @click="openLinkedPost"

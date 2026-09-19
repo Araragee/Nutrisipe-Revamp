@@ -6,7 +6,7 @@ import { authenticate } from '../middleware/auth'
 const router = Router()
 
 const deletionLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
+  windowMs: 60 * 60 * 1000,
   max: 3,
   standardHeaders: true,
   legacyHeaders: false,

@@ -1,6 +1,6 @@
 import { httpClient } from '../client'
-import type { ApiResponse, PaginatedResponse } from '@/typescript/interface/ApiResponse'
-import type { Post } from '@/typescript/interface/Post'
+import type { ApiResponse, PaginatedResponse } from '@/types/ApiResponse'
+import type { Post } from '@/types/Post'
 
 export interface Variation {
   id: string

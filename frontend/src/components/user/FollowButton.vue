@@ -23,8 +23,6 @@ const isLoading = ref(false)
 const localIsFollowing = ref(props.isFollowing || false)
 const isHovered = ref(false)
 
-// Keep local state in sync when the parent re-fetches or the component is
-// reused for a different user (e.g. navigating between profiles).
 watch(
   () => props.isFollowing,
   (val) => {
@@ -41,14 +39,11 @@ const sizeClass = computed(
     })[props.size],
 )
 
-// Label flips to "Unfollow" on hover so the destructive action reads clearly,
-// while resting state stays calm ("Following").
 const fullLabel = computed(() => {
   if (!localIsFollowing.value) return 'Follow'
   return isHovered.value ? 'Unfollow' : 'Following'
 })
 
-// Backend already knows the true state; treat these as a state-sync, not a failure.
 function messageSaysAlreadyFollowing(msg: string) {
   return /already following/i.test(msg)
 }
@@ -72,7 +67,6 @@ async function toggleFollow() {
     }
   } catch (error: any) {
     const msg = error?.response?.data?.message || ''
-    // Reconcile UI with the server's actual state instead of showing an error.
     if (messageSaysAlreadyFollowing(msg)) {
       localIsFollowing.value = true
     } else if (messageSaysNotFollowing(msg)) {
@@ -87,7 +81,6 @@ async function toggleFollow() {
 </script>
 
 <template>
-  <!-- Icon-only pill (compact lists, avatar overlays) -->
   <button
     v-if="iconOnly"
     type="button"
@@ -123,7 +116,6 @@ async function toggleFollow() {
     </span>
   </button>
 
-  <!-- Full pill button -->
   <button
     v-else
     type="button"
@@ -143,7 +135,6 @@ async function toggleFollow() {
     ]"
     :aria-pressed="localIsFollowing"
   >
-    <!-- Loading overlay (cross-fades over the label) -->
     <span
       class="absolute inset-0 grid place-items-center transition-[opacity,transform,filter] duration-200 ease-revamp"
       :class="isLoading ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-75 blur-[2px] pointer-events-none'"

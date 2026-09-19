@@ -3,7 +3,7 @@ import { RouterLink } from 'vue-router'
 import UserAvatar from './UserAvatar.vue'
 import FollowButton from './FollowButton.vue'
 import { formatNumber } from '@/utils/format'
-import type { User } from '@/typescript/interface/User'
+import type { User } from '@/types/User'
 
 interface Props {
   user: User

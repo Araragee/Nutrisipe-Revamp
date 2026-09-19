@@ -117,7 +117,6 @@ async function unbanUser(userId: string) {
         </div>
       </div>
 
-      <!-- Filters -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-8">
         <input
           v-model="filters.search"
@@ -194,7 +193,6 @@ async function unbanUser(userId: string) {
         </table>
       </div>
 
-      <!-- Pagination -->
       <div v-if="pagination && pagination.pages > 1" class="flex justify-center gap-4 mt-10">
          <button :disabled="pagination.page === 1" @click="loadUsers(pagination.page - 1)" class="btn-secondary px-6 disabled:opacity-40 disabled:pointer-events-none active:scale-[0.96] transition-transform">Prev</button>
          <span class="flex items-center font-bold text-sm tabular-nums">Page {{ pagination.page }} of {{ pagination.pages }}</span>
@@ -202,7 +200,6 @@ async function unbanUser(userId: string) {
       </div>
     </div>
 
-    <!-- Ban Modal -->
     <Transition name="modal-fade">
     <div v-if="showBanModal" class="fixed inset-0 z-[100] flex items-center justify-center p-6">
        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showBanModal = false"></div>

@@ -50,7 +50,6 @@ export async function getFeed(userId: string) {
     include: { user: { select: USER_SELECT } },
   })
 
-  // Group by user
   const groups: Record<string, { user: any; stories: any[] }> = {}
   for (const s of stories) {
     if (!groups[s.userId]) {
@@ -67,7 +66,6 @@ export async function getFeed(userId: string) {
     })
   }
 
-  // Place current user first
   const ordered = Object.values(groups).sort((a, b) => {
     if (a.user.id === userId) return -1
     if (b.user.id === userId) return 1

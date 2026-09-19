@@ -150,7 +150,6 @@ function formatDate(date: string) {
       </div>
     </div>
 
-    <!-- Resolution Modal -->
     <Transition name="modal-fade">
     <div v-if="showResolutionModal" class="fixed inset-0 z-[100] flex items-center justify-center p-6">
        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showResolutionModal = false"></div>

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { notificationsApi } from '@/http/endpoints/notifications'
-import type { Notification } from '@/typescript/interface/Notification'
+import type { Notification } from '@/types/Notification'
 
 export const useNotificationsStore = defineStore('notifications', () => {
   const notifications = ref<Notification[]>([])
@@ -15,7 +15,6 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
     try {
       const response = await notificationsApi.getNotifications(limit)
-      // API shape is flat: { success, data: Notification[], unreadCount, pagination }
       notifications.value = response.data.data ?? []
       unreadCount.value = response.data.unreadCount ?? 0
     } catch (err: any) {
@@ -46,10 +45,6 @@ export const useNotificationsStore = defineStore('notifications', () => {
   async function markAllAsRead() {
     error.value = null
     try {
-      // Capture the ids that are unread at call time and send them to the
-      // server so it marks exactly these — a notification pushed concurrently
-      // (e.g. via socket) after this point is left untouched on both sides,
-      // staying unread and counted instead of being blindly flipped.
       const readIds = notifications.value.filter((n) => !n.isRead).map((n) => n.id)
       const readIdSet = new Set(readIds)
 
@@ -58,8 +53,6 @@ export const useNotificationsStore = defineStore('notifications', () => {
       notifications.value = notifications.value.map((n) =>
         readIdSet.has(n.id) ? { ...n, isRead: true } : n
       )
-      // Recompute from current state rather than assuming zero, so any items
-      // added concurrently remain accurately counted.
       unreadCount.value = notifications.value.filter((n) => !n.isRead).length
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to mark all notifications as read'

@@ -190,7 +190,6 @@ export async function getSavedPostsHandler(req: AuthRequest, res: Response, next
     const { id } = req.params
     const { page, limit } = parsePagination(req)
 
-    // Self always allowed; others gated by privacy flag.
     if (id !== req.userId) {
       await userService.assertPrivacyAllowed(id, req.userId, 'showSaved')
     }

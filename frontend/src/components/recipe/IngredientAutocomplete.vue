@@ -2,7 +2,7 @@
 import { logger } from '@/utils/logger'
 import { ref, onMounted, computed } from 'vue'
 import { ingredientsApi } from '@/http/endpoints/ingredients'
-import type { Ingredient } from '@/typescript/interface/Ingredient'
+import type { Ingredient } from '@/types/Ingredient'
 
 const props = defineProps<{
   modelValue: string

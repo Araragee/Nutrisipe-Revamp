@@ -251,7 +251,7 @@ const handleMouseMove = () => {
 .video-container {
   position: relative;
   width: 100%;
-  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  padding-top: 56.25%;
 }
 
 .video-element {

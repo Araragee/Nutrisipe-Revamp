@@ -31,7 +31,6 @@ const sizeClasses = computed(() => {
     }
   }
 
-  // Default sizes based on tag
   switch (props.as) {
     case 'h1': return 'text-4xl md:text-5xl'
     case 'h2': return 'text-3xl md:text-4xl'

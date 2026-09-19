@@ -8,7 +8,7 @@ interface CacheEntry<T> {
 
 class CacheManager {
   private cache = new Map<string, CacheEntry<any>>()
-  private defaultTTL = 5 * 60 * 1000 // 5 minutes
+  private defaultTTL = 5 * 60 * 1000
 
   set<T>(key: string, data: T, ttl: number = this.defaultTTL): void {
     this.cache.set(key, {
@@ -45,7 +45,6 @@ class CacheManager {
     this.cache.clear()
   }
 
-  // Invalidate all cache entries matching a pattern
   invalidatePattern(pattern: RegExp): void {
     const keys = Array.from(this.cache.keys())
     keys.forEach((key) => {
@@ -55,7 +54,6 @@ class CacheManager {
     })
   }
 
-  // Get cache statistics
   getStats() {
     return {
       size: this.cache.size,
@@ -70,7 +68,6 @@ export function useCache() {
   return {
     cache: cacheManager,
 
-    // Helper to cache API responses
     async cacheApiCall<T>(
       key: string,
       fetchFn: () => Promise<T>,
@@ -88,7 +85,6 @@ export function useCache() {
       return data
     },
 
-    // Helper to invalidate related cache entries
     invalidateCache(pattern: string | RegExp): void {
       if (typeof pattern === 'string') {
         cacheManager.delete(pattern)
@@ -97,12 +93,10 @@ export function useCache() {
       }
     },
 
-    // Clear all cache
     clearCache(): void {
       cacheManager.clear()
     },
   }
 }
 
-// Export cache manager for direct access
 export { cacheManager }

@@ -8,7 +8,7 @@ import { useUiStore } from '@/stores/ui'
 import { debounce } from '@/utils/debounce'
 import UserAvatar from './UserAvatar.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
-import type { User } from '@/typescript/interface/User'
+import type { User } from '@/types/User'
 
 const props = defineProps<{
   show: boolean

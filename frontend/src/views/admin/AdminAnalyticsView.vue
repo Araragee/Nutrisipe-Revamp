@@ -77,7 +77,6 @@ async function loadStats() {
       </div>
 
       <div v-else-if="stats" class="space-y-10">
-        <!-- Growth Section -->
         <section>
            <h2 class="font-montserrat font-extrabold text-xl mb-5 tracking-tight">User Growth</h2>
            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -99,7 +98,6 @@ async function loadStats() {
            </div>
         </section>
 
-        <!-- Content Section -->
         <section>
            <h2 class="font-montserrat font-extrabold text-xl mb-5 tracking-tight">Content & Engagement</h2>
            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -121,7 +119,6 @@ async function loadStats() {
            </div>
         </section>
 
-        <!-- Technical Status -->
         <div class="border border-orange/25 rounded-card p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 shadow-card" style="background: linear-gradient(135deg, var(--orange-soft), transparent 70%)">
            <div class="w-20 h-20 bg-orange-soft rounded-full flex items-center justify-center shrink-0"><BaseIcons name="chart-bar" size="xl" class="text-orange" /></div>
            <div class="flex-1 text-center md:text-left">

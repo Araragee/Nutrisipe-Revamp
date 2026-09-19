@@ -145,10 +145,8 @@ onMounted(() => {
 
 <template>
   <div class="onboarding-view relative h-screen bg-[#0c0907] overflow-hidden text-white">
-    <!-- Radial glow in background -->
     <div class="absolute inset-0 bg-[radial-gradient(100%_100%_at_100%_100%,rgba(255,107,53,0.08),transparent_50%)] pointer-events-none"></div>
     <div class="relative z-10 h-full flex flex-col lg:flex-row">
-      <!-- Left: copy + nav -->
       <aside class="lg:w-2/5 xl:w-1/3 flex flex-col justify-between p-8 md:p-12 lg:p-16 overflow-y-auto">
         <div>
           <div class="flex items-center gap-2.5 mb-12">
@@ -177,7 +175,6 @@ onMounted(() => {
             <template v-else>Follow chefs and home cooks whose food makes you hungry. Tap any tile.</template>
           </p>
 
-          <!-- Live taste preview -->
           <div v-if="step > 0" class="mt-10 space-y-3">
             <p class="text-white/40 text-[10px] font-bold uppercase tracking-widest">Your taste so far</p>
             <div class="flex flex-wrap gap-2">
@@ -200,7 +197,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Progress bars + Skip -->
         <div class="mt-12">
           <div class="flex gap-2 mb-4">
             <div
@@ -222,10 +218,8 @@ onMounted(() => {
         </div>
       </aside>
 
-      <!-- Right: step content -->
       <section class="flex-1 flex flex-col p-8 md:p-12 lg:p-16 min-h-0 overflow-hidden">
         <div class="flex-1 min-h-0 overflow-hidden">
-          <!-- Step 0: Dietary -->
           <div v-if="step === 0" class="animate-fadeIn">
             <div class="flex flex-wrap gap-2.5 max-w-3xl">
               <button
@@ -242,7 +236,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Step 1: Goals -->
           <div v-else-if="step === 1" class="animate-fadeIn">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
               <button
@@ -266,7 +259,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Step 2: Creators wall -->
           <div v-else class="animate-fadeIn h-full flex flex-col overflow-hidden">
             <div class="flex-1 overflow-y-auto pr-1">
               <div v-if="isLoadingCreators" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -327,7 +319,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Footer CTA -->
         <div class="flex gap-3 mt-10 max-w-3xl">
           <button
             v-if="step > 0"

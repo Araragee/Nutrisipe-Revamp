@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { RecipeNutrition } from '@/typescript/interface/Recipe'
+import type { RecipeNutrition } from '@/types/Recipe'
 
 interface Props {
   nutrition?: RecipeNutrition

@@ -1,7 +1,6 @@
 import { getPostsByUser } from './postService';
-import prisma from '../lib/prisma';
+import { prisma } from '../lib/prisma'
 
-// Mock the prisma client — postService uses the named export, this file the default.
 jest.mock('../lib/prisma', () => {
   const client = {
     post: {
@@ -26,7 +25,6 @@ describe('getPostsByUser Performance', () => {
   });
 
   it('should verify N+1 query behavior', async () => {
-    // Setup 20 mock posts
     const POST_COUNT = 20;
     const mockPosts = Array.from({ length: POST_COUNT }, (_, i) => ({
       id: `post-${i}`,
@@ -40,14 +38,11 @@ describe('getPostsByUser Performance', () => {
     (prisma.post.count as jest.Mock).mockResolvedValue(POST_COUNT);
     (prisma.like.findUnique as jest.Mock).mockResolvedValue(null);
     (prisma.save.findUnique as jest.Mock).mockResolvedValue(null);
-    // These might be called if optimized, so mock them too
     (prisma.like.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.save.findMany as jest.Mock).mockResolvedValue([]);
 
     await getPostsByUser('target-user', 'current-user');
 
-    // Check query counts
-    // For N posts, optimized code calls findMany once for likes and once for saves
     expect(prisma.like.findUnique).toHaveBeenCalledTimes(0);
     expect(prisma.save.findUnique).toHaveBeenCalledTimes(0);
 

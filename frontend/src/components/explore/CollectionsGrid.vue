@@ -49,7 +49,6 @@ const collectionGradients = [
           :src="resolveImage(col.thumbnailUrl, col.id)"
           class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <!-- color accent (top) + readability scrim (bottom) -->
         <div :class="['absolute inset-0 bg-gradient-to-br opacity-30 mix-blend-multiply', collectionGradients[idx % collectionGradients.length]]"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
         <div class="absolute inset-0 p-6 flex flex-col justify-end">

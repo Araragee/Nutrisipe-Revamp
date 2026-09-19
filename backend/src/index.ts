@@ -9,7 +9,6 @@ import path from 'path'
 import { env } from './config/env'
 import { logger } from './utils/logger'
 
-// Startup validation: ensure UPLOAD_DIR and subdirectories exist and are writable (B-13).
 const UPLOAD_DIR = env.UPLOAD_DIR || 'uploads'
 try {
   mkdirSync(path.join(UPLOAD_DIR, 'temp'), { recursive: true })
@@ -57,7 +56,6 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }))
 const allowedOrigins = env.CORS_ORIGINS
 app.use(cors({
   origin: (origin, callback) => {
-    // No origin = same-origin / curl / server-to-server. Allow.
     if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -67,8 +65,6 @@ app.use(cors({
   credentials: true,
 }))
 
-// Global rate limiter — raised to 500 req/15min to accommodate SPA page loads,
-// socket handshakes, and realtime polling without false positives.
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 500,
@@ -77,7 +73,6 @@ const limiter = rateLimit({
   message: 'Too many requests from this IP, please try again after 15 minutes',
 })
 
-// Stricter limit for credential endpoints; relaxed in dev so demo logins aren't throttled.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: env.NODE_ENV === 'production' ? 10 : 100,
@@ -87,11 +82,8 @@ const authLimiter = rateLimit({
   message: 'Too many authentication attempts, please try again after 15 minutes',
 })
 
-// Apply the rate limiting middleware to all requests
 app.use(limiter)
 
-// Admin bulk ingredient import sends a large JSON array; allow more on that path only.
-// It runs before the global parser, which then skips the already-parsed body.
 app.use('/api/ingredients/bulk', express.json({ limit: '10mb' }))
 app.use(express.json({ limit: '1mb' }))
 app.use(express.urlencoded({ extended: true, limit: '1mb' }))
@@ -140,10 +132,8 @@ app.use('/og', ogRoutes)
 
 app.use(errorHandler)
 
-// Initialize Socket.IO
 const io = initializeSocketServer(httpServer)
 
-// Make io available to routes if needed
 app.set('io', io)
 
 httpServer.listen(env.PORT, () => {
@@ -153,8 +143,6 @@ httpServer.listen(env.PORT, () => {
   console.log(`⚡ WebSocket server initialized`)
 })
 
-// ── Background jobs ────────────────────────────────────────────────────────
-// Purge expired stories every hour
 setInterval(async () => {
   try {
     const { deleted } = await purgeExpiredStories()
@@ -164,7 +152,6 @@ setInterval(async () => {
   }
 }, 60 * 60 * 1000)
 
-// Purge grace-period-expired account deletions every 6 hours
 setInterval(async () => {
   try {
     const { purged } = await purgeScheduledDeletions()

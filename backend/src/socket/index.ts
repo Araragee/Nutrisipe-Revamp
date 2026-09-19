@@ -18,10 +18,8 @@ export function initializeSocketServer(httpServer: HTTPServer) {
     }
   })
 
-  // Store socket instance for use in other modules
   socketInstance = io
 
-  // Authentication middleware
   io.use(async (socket: AuthenticatedSocket, next) => {
     try {
       const raw = socket.handshake.headers.cookie
@@ -40,24 +38,19 @@ export function initializeSocketServer(httpServer: HTTPServer) {
     }
   })
 
-  // Connection handler
   io.on('connection', async (socket: AuthenticatedSocket) => {
     const userId = socket.userId!
     logger.log(`User connected: ${userId}`)
 
-    // Update user presence to online
     await updateUserPresence(userId, true, socket.id)
 
-    // Join user's personal room for notifications
     socket.join(`user:${userId}`)
 
-    // Handle disconnection
     socket.on('disconnect', async () => {
       logger.log(`User disconnected: ${userId}`)
       await updateUserPresence(userId, false)
     })
 
-    // Direct Messaging Events
     socket.on('message:send', async (data) => {
       await handleSendMessage(io, socket, data)
     })
@@ -70,7 +63,6 @@ export function initializeSocketServer(httpServer: HTTPServer) {
       await handleTypingIndicator(io, socket, data)
     })
 
-    // Conversation Events
     socket.on('conversation:join', (conversationId: string) => {
       socket.join(`conversation:${conversationId}`)
     })
@@ -79,18 +71,15 @@ export function initializeSocketServer(httpServer: HTTPServer) {
       socket.leave(`conversation:${conversationId}`)
     })
 
-    // Real-time Notifications
     socket.on('notification:read', async (notificationId: string) => {
       await handleNotificationRead(socket, notificationId)
     })
 
-    // Presence Events
     socket.on('presence:check', async (userIds: string[]) => {
       const presences = await getUsersPresence(userIds)
       socket.emit('presence:status', presences)
     })
 
-    // Feed Events - Join/Leave post rooms for real-time updates
     socket.on('post:join', (postId: string) => {
       socket.join(`post:${postId}`)
     })
@@ -102,8 +91,6 @@ export function initializeSocketServer(httpServer: HTTPServer) {
 
   return io
 }
-
-// Helper Functions
 
 async function updateUserPresence(
   userId: string,
@@ -159,7 +146,6 @@ async function handleSendMessage(
     const senderId = socket.userId!
     const { recipientId, content } = data
 
-    // Find or create conversation
     let conversation = await prisma.conversation.findFirst({
       where: {
         OR: [
@@ -179,7 +165,6 @@ async function handleSendMessage(
       })
     }
 
-    // Create message
     const message = await prisma.message.create({
       data: {
         conversationId: conversation.id,
@@ -199,7 +184,6 @@ async function handleSendMessage(
       }
     })
 
-    // Update conversation
     const isUser1 = conversation.user1Id === senderId
     await prisma.conversation.update({
       where: { id: conversation.id },
@@ -211,10 +195,8 @@ async function handleSendMessage(
       }
     })
 
-    // Emit to recipient
     io.to(`user:${recipientId}`).emit('message:new', message)
 
-    // Emit to sender (for multi-device sync)
     socket.emit('message:sent', message)
   } catch (error) {
     logger.error('Error sending message:', error)
@@ -231,7 +213,6 @@ async function handleMarkMessageRead(
     const userId = socket.userId!
     const { messageId } = data
 
-    // Update message
     const message = await prisma.message.update({
       where: {
         id: messageId,
@@ -243,7 +224,6 @@ async function handleMarkMessageRead(
       }
     })
 
-    // Update conversation unread count
     const conversation = await prisma.conversation.findUnique({
       where: { id: message.conversationId }
     })
@@ -260,7 +240,6 @@ async function handleMarkMessageRead(
       })
     }
 
-    // Notify sender
     io.to(`user:${message.senderId}`).emit('message:read', {
       messageId,
       readAt: message.readAt
@@ -278,7 +257,6 @@ async function handleTypingIndicator(
   const senderId = socket.userId!
   const { recipientId, isTyping } = data
 
-  // Emit to recipient
   io.to(`user:${recipientId}`).emit('message:typing', {
     userId: senderId,
     isTyping
@@ -301,7 +279,6 @@ async function handleNotificationRead(
   }
 }
 
-// Helper functions to emit real-time feed updates
 let socketInstance: SocketIOServer | null = null
 
 export function getSocketInstance(): SocketIOServer | null {
@@ -366,7 +343,6 @@ export function emitPostUnsaved(postId: string, userId: string, newSaveCount: nu
 
 export function emitNewPost(post: Record<string, unknown>) {
   if (socketInstance) {
-    // Broadcast to all connected users (they can filter on client side)
     socketInstance.emit('feed:new-post', post)
   }
 }

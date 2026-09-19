@@ -166,7 +166,6 @@ async function main() {
   console.log('👥 Preparing users...')
   const usersData = []
   
-  // Fixed Admin — upsert so re-seeding is idempotent
   const adminId = randomUUID()
   const admin = await prisma.user.upsert({
     where: { email: 'admin@nutrisipe.com' },
@@ -191,7 +190,6 @@ async function main() {
   })
   usersData.push({ id: admin.id, username: admin.username })
 
-  // ── TEST ACCOUNTS (deterministic) — upsert so re-seeding is idempotent ──
   const TEST_USERS = [
     { username: 'cook', displayName: 'Test Cook' },
     { username: 'chef', displayName: 'Test Chef' },
@@ -258,9 +256,6 @@ async function main() {
   let recipeCount = 0
   let otherPostCount = 0
 
-  // Round-robin author assignment over a shuffled pool guarantees that EVERY
-  // user (admin, test accounts, and all 20 real users) authors posts/recipes.
-  // With ~105 posts across 24 users, each user gets roughly 4-5 posts.
   const authorPool = [...usersData].sort(() => 0.5 - Math.random())
   let authorCursor = 0
   function nextAuthor() {
@@ -352,13 +347,10 @@ async function main() {
   console.log(`✅ Created ${recipeCount} recipes and ${otherPostCount} other posts`)
 
   console.log('🤝 Creating follows...')
-  // Build a realistic social graph: every user follows several others AND is
-  // followed back by several others. We use a Set to dedupe pairs, then ensure
-  // each user has at least MIN_FOLLOWING following and MIN_FOLLOWERS followers.
   const MIN_FOLLOWING = 3
   const MIN_FOLLOWERS = 3
-  const followPairs = new Set<string>() // key: `${followerId}->${followingId}`
-  const followersOf = new Map<string, Set<string>>() // followingId -> set of followerIds
+  const followPairs = new Set<string>()
+  const followersOf = new Map<string, Set<string>>()
 
   function addFollow(followerId: string, followingId: string) {
     if (followerId === followingId) return
@@ -369,13 +361,11 @@ async function main() {
     followersOf.get(followingId)!.add(followerId)
   }
 
-  // Pass 1: each user follows a random handful of others.
   for (const user of usersData) {
     const targets = randomElements(usersData.filter(u => u.id !== user.id), randomInt(MIN_FOLLOWING, 8))
     for (const target of targets) addFollow(user.id, target.id)
   }
 
-  // Pass 2: guarantee every user has at least MIN_FOLLOWERS followers.
   for (const target of usersData) {
     const current = followersOf.get(target.id)?.size ?? 0
     if (current < MIN_FOLLOWERS) {
@@ -387,7 +377,6 @@ async function main() {
     }
   }
 
-  // Persist all follow pairs.
   let followCount = 0
   for (const key of followPairs) {
     const [followerId, followingId] = key.split('->')
@@ -395,7 +384,6 @@ async function main() {
       await prisma.follow.create({ data: { followerId, followingId } })
       followCount++
     } catch (e) {
-      // Skip duplicates
     }
   }
   console.log(`✅ Created ${followCount} follows (social graph)`)
@@ -410,13 +398,11 @@ async function main() {
                   data: { userId: user.id, postId: post.id }
               })
           } catch (e) {
-              // Skip duplicates
           }
       }
   }
 
   console.log('🔖 Creating saves...')
-  // Every user saves several posts so each profile has saved items.
   let saveCount = 0
   for (const user of usersData) {
       const savedPosts = randomElements(allPosts, randomInt(4, 12))
@@ -427,7 +413,6 @@ async function main() {
               })
               saveCount++
           } catch (e) {
-              // Skip duplicates
           }
       }
   }

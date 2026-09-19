@@ -7,7 +7,7 @@ import { commentsApi } from '@/http/endpoints/comments'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import CommentItem from './CommentItem.vue'
 import MentionInput from '@/components/common/MentionInput.vue'
-import type { Comment } from '@/typescript/interface/Comment'
+import type { Comment } from '@/types/Comment'
 
 const props = defineProps<{
   postId: string
@@ -86,7 +86,6 @@ onMounted(() => {
       >
     </div>
 
-    <!-- Composer -->
     <div v-if="authStore.isAuthenticated" class="mb-8 flex gap-3">
       <UserAvatar v-if="authStore.user" :user="authStore.user" size="md" class="mt-0.5 shrink-0" />
       <div class="flex-1">
@@ -129,7 +128,6 @@ onMounted(() => {
       </button>
     </div>
 
-    <!-- Loading -->
     <div v-if="isLoading" class="space-y-6">
       <div v-for="i in 3" :key="i" class="flex animate-pulse gap-3">
         <div class="h-8 w-8 shrink-0 rounded-full bg-background-secondary"></div>
@@ -140,7 +138,6 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- List -->
     <div v-else-if="comments.length > 0" class="space-y-6">
       <CommentItem
         v-for="comment in comments"
@@ -152,7 +149,6 @@ onMounted(() => {
       />
     </div>
 
-    <!-- Empty -->
     <div v-else class="flex flex-col items-center justify-center py-12 text-center">
       <div class="mb-3 grid h-12 w-12 place-items-center rounded-full bg-orange-soft text-orange">
         <BaseIcons name="chat-bubble-left-right" size="md" />

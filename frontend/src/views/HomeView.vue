@@ -10,8 +10,8 @@ import { postsApi } from '@/http/endpoints/posts'
 import PinGrid from '@/components/feed/PinGrid.vue'
 import PinSkeleton from '@/components/feed/PinSkeleton.vue'
 import RecipeModal from '@/components/feed/RecipeModal.vue'
-import StoriesRail from '@/components/feed/StoriesRail.vue'
-import type { Post } from '@/typescript/interface/Post'
+import StoriesRail from '@/components/stories/StoriesRail.vue'
+import type { Post } from '@/types/Post'
 
 const router = useRouter()
 const feedStore = useFeedStore()
@@ -148,7 +148,6 @@ watch(isNearBottom, (near) => {
 
     <div class="px-5 sm:px-8 md:pt-6 md:pb-8 max-w-[1400px] mx-auto">
 
-      <!-- ── Dashboard header ── -->
       <header v-if="!isTagMode" class="mb-6">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
           <div>
@@ -161,7 +160,6 @@ watch(isNearBottom, (near) => {
 
         </div>
 
-        <!-- Scope tabs -->
         <div class="flex items-center gap-1 p-1 rounded-2xl bg-background-secondary/70 w-fit max-w-full overflow-x-auto scrollbar-hide">
           <button
             v-for="tab in SCOPE_TABS"
@@ -182,7 +180,6 @@ watch(isNearBottom, (near) => {
         </div>
       </header>
 
-      <!-- Category chips -->
       <div class="flex items-center gap-2 mb-6 overflow-x-auto scrollbar-hide -mx-1 px-1">
         <button
           v-for="cat in CATEGORIES"
@@ -200,10 +197,8 @@ watch(isNearBottom, (near) => {
         </button>
       </div>
 
-      <!-- Stories -->
       <StoriesRail v-if="!isTagMode" class="mb-7" />
 
-      <!-- Tag-mode header -->
       <div v-if="isTagMode" class="mb-6">
         <button @click="() => { activeTag = ''; router.push('/'); }" class="mb-3 inline-flex items-center gap-1.5 text-sm text-text-dim hover:text-orange transition-colors font-medium">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -218,14 +213,12 @@ watch(isNearBottom, (near) => {
         </div>
       </div>
 
-      <!-- Feed grid -->
       <PinGrid
         v-if="displayPosts.length > 0"
         :posts="displayPosts"
         @post-click="handlePostClick"
       />
 
-      <!-- Skeletons -->
       <div
         v-if="feedStore.isLoading || isSearching"
         class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 mt-4"
@@ -233,7 +226,6 @@ watch(isNearBottom, (near) => {
         <PinSkeleton v-for="i in 10" :key="i" />
       </div>
 
-      <!-- Empty state -->
       <div
         v-if="!feedStore.isLoading && !isSearching && displayPosts.length === 0"
         class="flex flex-col items-center justify-center py-20 text-center"
@@ -268,7 +260,6 @@ watch(isNearBottom, (near) => {
       </div>
     </div>
 
-    <!-- Post Detail Modal -->
     <RecipeModal
       :post-id="selectedPostId"
       :show="showPostModal"

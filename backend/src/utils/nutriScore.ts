@@ -12,13 +12,9 @@ interface NutritionData {
 }
 
 export function calculateNutriScore(nutrition: NutritionData): NutriScore {
-  // Simple algorithm inspired by Nutri-Score (but simplified for this app)
-  // Negative points (higher is worse): Calories, Sat Fat, Sugar, Sodium
-  // Positive points (higher is better): Fiber, Protein
   
   let points = 0
   
-  // Energy (kJ) - approx 4.18 * kcal
   const energy = nutrition.calories * 4.18
   if (energy > 3350) points += 10
   else if (energy > 3015) points += 9
@@ -31,7 +27,6 @@ export function calculateNutriScore(nutrition: NutritionData): NutriScore {
   else if (energy > 670) points += 2
   else if (energy > 335) points += 1
 
-  // Sugars (g)
   const sugar = nutrition.sugar || 0
   if (sugar > 45) points += 10
   else if (sugar > 40) points += 9
@@ -44,7 +39,6 @@ export function calculateNutriScore(nutrition: NutritionData): NutriScore {
   else if (sugar > 9) points += 2
   else if (sugar > 4.5) points += 1
 
-  // Saturated Fat (g)
   const satFat = nutrition.saturatedFat || 0
   if (satFat > 10) points += 10
   else if (satFat > 9) points += 9
@@ -57,7 +51,6 @@ export function calculateNutriScore(nutrition: NutritionData): NutriScore {
   else if (satFat > 2) points += 2
   else if (satFat > 1) points += 1
 
-  // Fiber (g) (Positive)
   const fiber = nutrition.fiber || 0
   let fiberPoints = 0
   if (fiber > 4.7) fiberPoints = 5
@@ -66,7 +59,6 @@ export function calculateNutriScore(nutrition: NutritionData): NutriScore {
   else if (fiber > 1.9) fiberPoints = 2
   else if (fiber > 0.9) fiberPoints = 1
 
-  // Protein (g) (Positive)
   const protein = nutrition.protein || 0
   let proteinPoints = 0
   if (protein > 8.0) proteinPoints = 5

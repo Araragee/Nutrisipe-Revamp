@@ -12,12 +12,10 @@ interface CreateNotificationData {
 }
 
 export async function createNotification(data: CreateNotificationData) {
-  // Don't create notification if user is acting on their own content
   if (data.userId === data.actorId) {
     return null
   }
 
-  // Dedup check + create inside a transaction to close the check-then-create race (B-07).
   const notification = await prisma.$transaction(async (tx) => {
     const existing = await tx.notification.findFirst({
       where: {
@@ -107,7 +105,6 @@ export async function getNotifications(
     }),
   ])
 
-  // Fetch related posts manually since there is no relation in schema
   const postIds = notificationsRaw
     .map((n) => n.postId)
     .filter((id): id is string => id !== null)
@@ -159,10 +156,6 @@ export async function markNotificationAsRead(notificationId: string, userId: str
 }
 
 export async function markAllNotificationsAsRead(userId: string, notificationIds?: string[]) {
-  // When the caller provides the set of ids it observed as unread, only mark
-  // those — so a notification created after the client snapshot (but before
-  // this runs) is not silently flipped to read, keeping client and server in
-  // sync. With no ids provided, fall back to marking every unread row.
   await prisma.notification.updateMany({
     where: {
       userId,

@@ -1,5 +1,5 @@
 import { computed, type Ref } from 'vue'
-import type { Ingredient } from '@/typescript/interface/Ingredient'
+import type { Ingredient } from '@/types/Ingredient'
 
 export interface NutritionRow {
   ingredient: Ingredient | null

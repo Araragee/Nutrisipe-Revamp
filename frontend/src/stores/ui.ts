@@ -30,9 +30,6 @@ export const useUiStore = defineStore('ui', () => {
     sidebarCollapsed.value = !sidebarCollapsed.value
   }
 
-  // Backward-compatible: existing callers use showToast(message, type).
-  // New (optional) 4th arg accepts a duration (ms) or an options object
-  // ({ duration, action }) to render an action button like "Undo".
   function showToast(
     message: string,
     type: ToastType = 'info',

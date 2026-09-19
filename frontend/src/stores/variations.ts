@@ -9,7 +9,6 @@ export const useVariationsStore = defineStore('variations', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  // Fork a recipe
   const forkRecipe = async (postId: string, data: any) => {
     loading.value = true
     error.value = null
@@ -17,7 +16,6 @@ export const useVariationsStore = defineStore('variations', () => {
     try {
       const response = await variationsApi.fork(postId, data)
 
-      // Clear cached variations for the original post
       variations.value.delete(postId)
 
       return response.data
@@ -29,7 +27,6 @@ export const useVariationsStore = defineStore('variations', () => {
     }
   }
 
-  // Get variations for a post
   const getVariations = async (postId: string, page = 1, limit = 20) => {
     loading.value = true
     error.value = null
@@ -46,7 +43,6 @@ export const useVariationsStore = defineStore('variations', () => {
     }
   }
 
-  // Get original recipe
   const getOriginalRecipe = async (postId: string) => {
     loading.value = true
     error.value = null
@@ -65,7 +61,6 @@ export const useVariationsStore = defineStore('variations', () => {
     }
   }
 
-  // Get variation chain
   const getVariationChain = async (postId: string) => {
     loading.value = true
     error.value = null
@@ -82,7 +77,6 @@ export const useVariationsStore = defineStore('variations', () => {
     }
   }
 
-  // Delete variation
   const deleteVariation = async (variationId: string, originalPostId: string) => {
     loading.value = true
     error.value = null
@@ -100,17 +94,14 @@ export const useVariationsStore = defineStore('variations', () => {
     }
   }
 
-  // Get cached variations for a post
   const getPostVariations = computed(() => (postId: string) => {
     return variations.value.get(postId) || []
   })
 
-  // Get cached variation chain
   const getPostVariationChain = computed(() => (postId: string) => {
     return variationChains.value.get(postId) || []
   })
 
-  // Get cached original recipe
   const getPostOriginalRecipe = computed(() => (postId: string) => {
     return originalRecipes.value.get(postId)
   })

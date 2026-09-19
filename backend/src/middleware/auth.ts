@@ -10,7 +10,7 @@ export interface AuthRequest extends Request {
   files?: any
 }
 
-export async function auth(
+export async function authenticate(
   req: AuthRequest,
   _res: Response,
   next: NextFunction
@@ -30,7 +30,6 @@ export async function auth(
       throw new AppError(401, 'Unauthorized - Invalid token')
     }
 
-    // Fetch user with role information
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
       select: {
@@ -58,7 +57,6 @@ export async function auth(
   }
 }
 
-export const authenticate = auth
 
 export async function optionalAuthenticate(
   req: AuthRequest,
@@ -86,7 +84,6 @@ export async function optionalAuthenticate(
     
     next()
   } catch (error) {
-    // Just continue without user
     next()
   }
 }

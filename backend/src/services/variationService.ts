@@ -1,4 +1,4 @@
-import prisma from '../lib/prisma'
+import { prisma } from '../lib/prisma'
 import { AppError } from '../middleware/errorHandler'
 import { transformPost } from '../utils/modelTransformer'
 import { createNotification } from './notificationService'
@@ -17,7 +17,6 @@ export async function forkRecipe(
 ) {
   const { title, description, variationDescription, recipeData } = data
 
-  // Verify original post exists and has a recipe
   const originalPost = await prisma.post.findUnique({
     where: { id: originalPostId },
     include: {
@@ -40,20 +39,17 @@ export async function forkRecipe(
     throw new AppError(400, 'Post does not have a recipe to fork')
   }
 
-  // Cannot fork your own recipe
   if (originalPost.userId === userId) {
     throw new AppError(400, 'Cannot fork your own recipe')
   }
 
-  // Create new post and recipe in a transaction
   const result = await prisma.$transaction(async (tx) => {
-    // Create variation post
     const variationPost = await tx.post.create({
       data: {
         userId,
         title,
         description,
-        imageUrl: originalPost.imageUrl, // Copy original image by default
+        imageUrl: originalPost.imageUrl,
         category: originalPost.category,
         tags: originalPost.tags || '[]',
         isVariation: true,
@@ -61,7 +57,6 @@ export async function forkRecipe(
       }
     })
 
-    // Create variation recipe with modified or original data
     const variationRecipe = await tx.recipe.create({
       data: {
         postId: variationPost.id,
@@ -82,7 +77,6 @@ export async function forkRecipe(
       }
     })
 
-    // Create variation relationship
     const variation = await tx.recipeVariation.create({
       data: {
         originalPostId,
@@ -92,7 +86,6 @@ export async function forkRecipe(
       }
     })
 
-    // Update variation count on original post
     await tx.post.update({
       where: { id: originalPostId },
       data: {
@@ -114,7 +107,6 @@ export async function forkRecipe(
     }
   })
 
-  // Create notification for original post owner
   await createNotification({
     userId: originalPost.userId,
     actorId: userId,
@@ -177,8 +169,6 @@ export async function getVariations(
   ])
 
   return {
-    // transformPost already parses recipe.ingredients/instructions/nutrition.
-    // Do NOT re-parse here — it double-parses an already-parsed array into "[object Object]".
     variations: variations.map(v => ({
       ...v,
       variationPost: transformPost(v.variationPost)
@@ -193,7 +183,6 @@ export async function getVariations(
 }
 
 export async function getOriginalRecipe(postId: string) {
-  // Check if this post is a variation
   const variation = await prisma.recipeVariation.findUnique({
     where: { variationPostId: postId },
     include: {
@@ -219,7 +208,6 @@ export async function getOriginalRecipe(postId: string) {
 
   return {
     variation,
-    // transformPost already parses the recipe — re-parsing double-parses into "[object Object]".
     originalPost: transformPost(variation.originalPost)
   }
 }
@@ -227,7 +215,6 @@ export async function getOriginalRecipe(postId: string) {
 export async function getVariationChain(postId: string) {
   const chain: any[] = []
 
-  // Find if this is a variation and get the original
   let currentPost = await prisma.post.findUnique({
     where: { id: postId },
     include: {
@@ -262,7 +249,6 @@ export async function getVariationChain(postId: string) {
     throw new AppError(404, 'Post not found')
   }
 
-  // Traverse up to find the root
   while (currentPost.variationOf) {
     chain.unshift({
       post: transformPost(currentPost.variationOf.originalPost),
@@ -302,7 +288,6 @@ export async function getVariationChain(postId: string) {
     if (!currentPost) break
   }
 
-  // Add the current post at the end
   const finalPost = await prisma.post.findUnique({
     where: { id: postId },
     include: {
@@ -339,12 +324,10 @@ export async function deleteVariation(variationId: string, userId: string) {
     throw new AppError(404, 'Variation not found')
   }
 
-  // Only the creator can delete the variation relationship
   if (variation.userId !== userId) {
     throw new AppError(403, 'You can only delete your own variations')
   }
 
-  // Delete variation relationship and update count
   await prisma.$transaction([
     prisma.recipeVariation.delete({
       where: { id: variationId }

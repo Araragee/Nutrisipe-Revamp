@@ -248,8 +248,6 @@ const CATEGORY_ORDER: Category[] = [
 
 export function classify(name: string): Category {
   const haystack = name.toLowerCase()
-  // Longest-match wins — prevents short keywords (e.g. 'corn') from
-  // shadowing more-specific ones (e.g. 'peppercorn', 'cornstarch').
   let best: { category: Category; len: number } | null = null
   for (const { category, words } of CATEGORY_KEYWORDS) {
     for (const word of words) {
@@ -318,7 +316,6 @@ export async function getGroceryList(userId: string, from: Date, to: Date) {
     }
   }
 
-  // Sum numeric quantities per (name, unit) + classify
   const items = Object.entries(buckets).map(([key, item]) => {
     const [, unit] = key.split('|')
     let total = 0

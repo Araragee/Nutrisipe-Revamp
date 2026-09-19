@@ -1,18 +1,14 @@
 #!/bin/bash
 
-# Project Migration Setup Script
-# This script initializes the Laravel backend and Vue 3 frontend
 
 echo "🚀 Starting Project Migration Setup..."
 echo ""
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Function to print colored output
 print_success() {
     echo -e "${GREEN}✓ $1${NC}"
 }
@@ -25,7 +21,6 @@ print_info() {
     echo -e "${YELLOW}ℹ $1${NC}"
 }
 
-# Check if required tools are installed
 echo "Checking required tools..."
 
 command -v php >/dev/null 2>&1 || { print_error "PHP is required but not installed. Aborting."; exit 1; }
@@ -36,9 +31,6 @@ command -v npm >/dev/null 2>&1 || { print_error "npm is required but not install
 print_success "All required tools are installed"
 echo ""
 
-# =================
-# BACKEND SETUP
-# =================
 echo "📦 Setting up Laravel Backend..."
 echo ""
 
@@ -59,13 +51,11 @@ else
     cd backend
 fi
 
-# Generate application key if not set
 if ! grep -q "APP_KEY=base64:" .env 2>/dev/null; then
     print_info "Generating application key..."
     php artisan key:generate
 fi
 
-# Create necessary directories
 print_info "Creating backend directory structure..."
 mkdir -p app/Services
 mkdir -p app/Http/Requests
@@ -75,9 +65,6 @@ print_success "Backend setup complete"
 cd ..
 echo ""
 
-# =================
-# FRONTEND SETUP
-# =================
 echo "🎨 Setting up Vue 3 Frontend..."
 echo ""
 
@@ -102,7 +89,6 @@ if [ ! -d "frontend" ]; then
     
     print_success "Frontend dependencies installed"
     
-    # Create directory structure
     print_info "Creating frontend directory structure..."
     mkdir -p src/components
     mkdir -p src/composables
@@ -125,13 +111,9 @@ fi
 
 echo ""
 
-# =================
-# CONFIGURATION FILES
-# =================
 echo "⚙️  Creating configuration files..."
 echo ""
 
-# Create Tailwind config if it doesn't exist
 if [ ! -f "frontend/tailwind.config.js" ]; then
     cat > frontend/tailwind.config.js << 'EOF'
 /** @type {import('tailwindcss').Config} */
@@ -154,7 +136,6 @@ EOF
     print_success "Created tailwind.config.js"
 fi
 
-# Create main CSS file if it doesn't exist
 if [ ! -f "frontend/src/assets/styles/main.css" ]; then
     mkdir -p frontend/src/assets/styles
     cat > frontend/src/assets/styles/main.css << 'EOF'
@@ -167,7 +148,6 @@ EOF
     print_success "Created main.css"
 fi
 
-# Create basic API service
 if [ ! -f "frontend/src/services/api.ts" ]; then
     cat > frontend/src/services/api.ts << 'EOF'
 import axios, { AxiosInstance } from 'axios'
@@ -213,7 +193,6 @@ EOF
     print_success "Created api.ts service"
 fi
 
-# Create basic types file
 if [ ! -f "frontend/src/types/models.ts" ]; then
     cat > frontend/src/types/models.ts << 'EOF'
 // Base model interface
@@ -252,7 +231,6 @@ EOF
     print_success "Created models.ts types"
 fi
 
-# Create environment file for frontend
 if [ ! -f "frontend/.env" ]; then
     cat > frontend/.env << 'EOF'
 VITE_API_URL=http://localhost:8000/api/v1
@@ -262,9 +240,6 @@ fi
 
 echo ""
 
-# =================
-# FINAL INSTRUCTIONS
-# =================
 echo "✅ Setup Complete!"
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

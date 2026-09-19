@@ -5,7 +5,6 @@ import * as storiesController from '../controllers/storiesController'
 
 const router = Router()
 
-// 20 story creations per IP per hour
 const createLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 20,

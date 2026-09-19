@@ -77,7 +77,6 @@ export async function getPostsByUserHandler(req: AuthRequest, res: Response, nex
     const { userId } = req.params
     const { page, limit } = parsePagination(req)
 
-    // Assert that the viewer has access to the user's profile/posts
     await userService.assertPrivacyAllowed(userId, req.userId, 'publicProfile')
 
     const isPublicParam = req.query.isPublic as string | undefined

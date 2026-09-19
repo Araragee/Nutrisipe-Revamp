@@ -4,21 +4,18 @@ import { ref, computed } from 'vue'
 import { mentionsApi, type Mention } from '@/http/endpoints/mentions'
 
 export const useMentionsStore = defineStore('mentions', () => {
-  // State
   const mentions = ref<Mention[]>([])
   const isLoading = ref(false)
   const hasMore = ref(true)
   const currentOffset = ref(0)
   const limit = ref(50)
 
-  // Computed
   const unreadMentions = computed(() =>
     mentions.value.filter(m => !m.comment || !m.comment.id)
   )
 
   const unreadCount = computed(() => unreadMentions.value.length)
 
-  // Actions
   async function loadMentions(reset = false) {
     if (isLoading.value) return
 
@@ -57,7 +54,6 @@ export const useMentionsStore = defineStore('mentions', () => {
   }
 
   function addMention(mention: Mention) {
-    // Add to the beginning of the list
     mentions.value.unshift(mention)
   }
 
@@ -75,14 +71,12 @@ export const useMentionsStore = defineStore('mentions', () => {
   }
 
   return {
-    // State
     mentions,
     isLoading,
     hasMore,
     unreadMentions,
     unreadCount,
 
-    // Actions
     loadMentions,
     loadMore,
     refresh,

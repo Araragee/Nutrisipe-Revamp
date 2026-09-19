@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import PinCard from '@/components/feed/PinCard.vue'
-import type { Post } from '@/typescript/interface/Post'
+import type { Post } from '@/types/Post'
 
 withDefaults(
   defineProps<{

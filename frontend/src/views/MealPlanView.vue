@@ -8,7 +8,7 @@ import { usersApi } from '@/http/endpoints/users'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { resolveImage } from '@/utils/imageUrl'
-import { toLocalIsoDate } from '@/utils/dateUtils'
+import { toLocalIsoDate } from '@/utils/date'
 import { AMDR, macroDistribution } from '@/utils/nutritionTargets'
 
 const router = useRouter()
@@ -33,7 +33,6 @@ function startOfWeek(d: Date): Date {
 }
 
 const weekStart = ref(startOfWeek(new Date()))
-// Mobile shows one day at a time; desktop shows the full week grid.
 const selectedDate = ref(new Date())
 
 const weekEnd = computed(() => {
@@ -103,7 +102,7 @@ function shiftWeek(delta: number) {
   const next = new Date(weekStart.value)
   next.setDate(next.getDate() + 7 * delta)
   weekStart.value = next
-  selectedDate.value = new Date(next) // keep mobile's selected day inside the visible week
+  selectedDate.value = new Date(next)
   loadWeek()
 }
 
@@ -120,7 +119,6 @@ function isSelected(d: Date): boolean {
   return fmtIso(d) === fmtIso(selectedDate.value)
 }
 
-// Picker modal
 const showPicker = ref(false)
 const pickerCell = ref<{ date: Date; slot: MealSlot } | null>(null)
 const pickerSearch = ref('')
@@ -177,11 +175,9 @@ async function removePlan(id: string) {
   }
 }
 
-// ── Drag and drop (desktop HTML5 DnD + mobile pointer events) ──────────────
 const draggingId = ref<string | null>(null)
 const dragOverCell = ref<string | null>(null)
 
-// HTML5 DnD (desktop)
 function onDragStart(event: DragEvent, planId: string) {
   draggingId.value = planId
   if (event.dataTransfer) {
@@ -232,7 +228,6 @@ async function onDrop(event: DragEvent, date: Date, slot: MealSlot) {
   await performDrop(id, date, slot)
 }
 
-// Touch/pointer drag (mobile — HTML5 DnD is silent on iOS/Android)
 let touchCloneEl: HTMLElement | null = null
 
 function createTouchClone(source: HTMLElement): HTMLElement {
@@ -257,7 +252,7 @@ function createTouchClone(source: HTMLElement): HTMLElement {
 }
 
 function onChipPointerDown(e: PointerEvent, planId: string) {
-  if (e.pointerType === 'mouse') return // handled by HTML5 DnD
+  if (e.pointerType === 'mouse') return
   e.preventDefault()
   draggingId.value = planId
   touchCloneEl = createTouchClone(e.currentTarget as HTMLElement)
@@ -270,7 +265,6 @@ function onGlobalPointerMove(e: PointerEvent) {
   touchCloneEl.style.left = `${e.clientX - w / 2}px`
   touchCloneEl.style.top = `${e.clientY - h / 2}px`
 
-  // Hit-test the cell under the finger
   touchCloneEl.style.display = 'none'
   const el = document.elementFromPoint(e.clientX, e.clientY)
   touchCloneEl.style.display = ''
@@ -413,7 +407,6 @@ const selectedDayCalories = computed(() => {
         </div>
       </header>
 
-      <!-- ── Mobile: day picker + single-day stacked meals ── -->
       <div class="md:hidden">
         <div class="flex gap-2 overflow-x-auto scrollbar-hide -mx-6 px-6 pb-1 mb-6">
           <button
@@ -476,7 +469,6 @@ const selectedDayCalories = computed(() => {
         </div>
       </div>
 
-      <!-- ── Desktop: full week grid ── -->
       <div class="hidden md:block">
       <div class="grid grid-cols-[110px_repeat(7,minmax(0,1fr))] gap-2 mb-2">
         <div></div>
@@ -542,9 +534,8 @@ const selectedDayCalories = computed(() => {
           >+</button>
         </div>
       </div>
-      </div><!-- /desktop week grid -->
+      </div>
 
-      <!-- Weekly nutrition summary -->
       <div v-if="weekNutrition" class="mt-8 p-6 rounded-card bg-surface border border-border shadow-card">
         <div class="flex items-center justify-between mb-5">
           <div>
@@ -573,7 +564,6 @@ const selectedDayCalories = computed(() => {
           </div>
         </div>
 
-        <!-- Macro balance vs FNRI PDRI -->
         <div v-if="macroBalance.length" class="mb-6">
           <p class="text-[10px] font-bold uppercase tracking-widest text-text-dim mb-2">Macro balance · % of calories</p>
           <div class="space-y-2.5">
@@ -595,7 +585,6 @@ const selectedDayCalories = computed(() => {
           <p class="text-[10px] text-text-dim mt-2">Green band = recommended range for adults (FNRI PDRI). General guide, not medical advice.</p>
         </div>
 
-        <!-- Per-day calorie bars -->
         <div class="grid grid-cols-7 gap-1.5 items-end" style="height: 96px;">
           <div v-for="d in days" :key="d.toISOString()" class="flex flex-col items-center gap-1 h-full justify-end">
             <p v-if="weekNutrition.byDay[fmtIso(d)]" class="text-[9px] tabular-nums text-text-dim leading-none mb-0.5">
@@ -624,7 +613,6 @@ const selectedDayCalories = computed(() => {
       <div v-if="isLoading" class="text-center text-text-dim mt-6 text-sm">Loading…</div>
     </div>
 
-    <!-- Picker modal -->
     <Transition name="picker-fade">
     <div
       v-if="showPicker"

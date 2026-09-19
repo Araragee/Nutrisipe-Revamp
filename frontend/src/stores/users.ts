@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { usersApi } from '@/http/endpoints/users'
 import { socialApi } from '@/http/endpoints/social'
-import type { User } from '@/typescript/interface/User'
+import type { User } from '@/types/User'
 
 export const useUsersStore = defineStore('users', () => {
   const suggestedUsers = ref<User[]>([])

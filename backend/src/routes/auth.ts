@@ -11,7 +11,6 @@ router.post('/google-login', authController.googleLoginHandler)
 router.post('/logout', authenticate, authController.logoutHandler)
 router.post('/logout-all', authenticate, authController.logoutAllHandler)
 
-// Passwordless demo login for seeded accounts — never registered in production.
 if (env.NODE_ENV !== 'production') {
   router.post('/dev-login', authController.devLoginHandler)
 }

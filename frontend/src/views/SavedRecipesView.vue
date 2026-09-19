@@ -12,7 +12,7 @@ import { resolveImage } from '@/utils/imageUrl'
 import PinGrid from '@/components/feed/PinGrid.vue'
 import PinSkeleton from '@/components/feed/PinSkeleton.vue'
 import RecipeModal from '@/components/feed/RecipeModal.vue'
-import type { Post } from '@/typescript/interface/Post'
+import type { Post } from '@/types/Post'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -35,8 +35,6 @@ const newDescription = ref('')
 const newPublic = ref(false)
 const isCreating = ref(false)
 
-// Fallback tints only show when a collection has no thumbnail — never as the
-// dominant treatment over real food photography.
 const collectionGradients = [
   'from-orange/70 to-red-500/70',
   'from-green/70 to-emerald-500/70',
@@ -150,7 +148,6 @@ watch(isNearBottom, (near) => {
 <template>
   <div class="saved-recipes-view min-h-screen md:pt-8">
     <div class="mx-auto max-w-6xl px-5 sm:px-8 md:py-6">
-      <!-- Header -->
       <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <h1 class="text-balance font-montserrat text-3xl font-extrabold tracking-tight text-text">
@@ -168,7 +165,6 @@ watch(isNearBottom, (near) => {
         </button>
       </div>
 
-      <!-- Tabs -->
       <div class="mb-8 flex gap-1 border-b border-border">
         <button
           v-for="t in tabs"
@@ -187,7 +183,6 @@ watch(isNearBottom, (near) => {
         </button>
       </div>
 
-      <!-- Collections tab -->
       <div v-if="activeTab === 'collections'">
         <div
           v-if="isLoadingCollections"
@@ -201,7 +196,6 @@ watch(isNearBottom, (near) => {
         </div>
 
         <div v-else class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <!-- Create card always first -->
           <button
             @click="openNewModal"
             class="group flex h-52 flex-col items-center justify-center gap-3 rounded-card border-2 border-dashed border-border bg-background-secondary/50 text-text-dim transition-[transform,border-color,color] duration-200 ease-revamp hover:-translate-y-1 hover:border-orange/50 hover:text-orange active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -226,7 +220,6 @@ watch(isNearBottom, (near) => {
               loading="lazy"
               class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
             />
-            <!-- Tint fallback for thumbnail-less boards + readability scrim -->
             <div
               v-if="!col.thumbnailUrl"
               :class="['absolute inset-0 bg-gradient-to-br opacity-90', collectionGradients[idx % collectionGradients.length]]"
@@ -255,7 +248,6 @@ watch(isNearBottom, (near) => {
           </article>
         </div>
 
-        <!-- Truly empty (no collections at all) -->
         <div
           v-if="!isLoadingCollections && collections.length === 0"
           class="mt-5 flex flex-col items-center justify-center rounded-card border-2 border-dashed border-border bg-background-secondary/50 px-6 py-16 text-center"
@@ -270,7 +262,6 @@ watch(isNearBottom, (near) => {
         </div>
       </div>
 
-      <!-- All saved tab -->
       <div v-else-if="activeTab === 'all'">
         <PinGrid v-if="posts.length > 0" :posts="posts" @post-click="handlePostClick" />
         <div
@@ -295,7 +286,6 @@ watch(isNearBottom, (near) => {
       </div>
     </div>
 
-    <!-- New collection modal -->
     <Transition name="modal">
       <div
         v-if="showNewModal"

@@ -1,7 +1,4 @@
 <script setup lang="ts">
-// SVG bowl for scrollytelling. Food layers start hidden and are revealed by the
-// parent adding .revealed-pl (via IntersectionObserver). Pass instant=true to
-// skip the reveal (e.g. SplashScreen).
 defineProps<{ instant?: boolean }>()
 </script>
 
@@ -35,17 +32,14 @@ defineProps<{ instant?: boolean }>()
       </filter>
     </defs>
 
-    <!-- bowl shadow on the table -->
     <ellipse cx="182" cy="312" rx="132" ry="24" fill="#000" opacity="0.28" />
 
-    <!-- ceramic bowl -->
     <circle cx="180" cy="180" r="146" fill="url(#ceramic)" />
     <circle cx="180" cy="180" r="146" fill="none" stroke="#fff" stroke-opacity="0.5" stroke-width="2" />
     <circle cx="180" cy="182" r="118" fill="url(#well)" />
     <circle cx="180" cy="182" r="118" fill="none" stroke="#000" stroke-opacity="0.08" stroke-width="6" />
 
     <g clip-path="url(#bowlClip)" filter="url(#soft)">
-      <!-- ── leafy base ── -->
       <g class="pl-base">
         <ellipse class="pl-item" cx="138" cy="206" rx="58" ry="40" fill="url(#leaf)" transform="rotate(-18 138 206)" />
         <ellipse class="pl-item" cx="214" cy="214" rx="62" ry="42" fill="url(#leaf)" transform="rotate(14 214 214)" />
@@ -54,7 +48,6 @@ defineProps<{ instant?: boolean }>()
         <ellipse class="pl-item" cx="126" cy="158" rx="40" ry="28" fill="#4e8a36" transform="rotate(-26 126 158)" />
       </g>
 
-      <!-- ── grains + protein ── -->
       <g class="pl-grain">
         <path class="pl-item" d="M120 188c14-26 50-34 78-22 26 11 30 36 12 52-22 19-66 16-86-4-12-12-12-16-4-26z" fill="#e3c283" />
         <ellipse class="pl-item" cx="150" cy="196" rx="26" ry="18" fill="#b5662f" transform="rotate(-12 150 196)" />
@@ -64,7 +57,6 @@ defineProps<{ instant?: boolean }>()
         <circle class="pl-item" cx="196" cy="178" r="5" fill="#d9a85a" />
       </g>
 
-      <!-- ── colourful toppings ── -->
       <g class="pl-top">
         <path class="pl-item" d="M150 150l30 6-14 28z" fill="url(#tomato)" />
         <path class="pl-item" d="M214 158l22 18-26 12z" fill="url(#tomato)" />
@@ -77,7 +69,6 @@ defineProps<{ instant?: boolean }>()
         <circle class="pl-item" cx="190" cy="150" r="8" fill="#ffd23f" />
       </g>
 
-      <!-- ── herbs + seeds garnish ── -->
       <g class="pl-garnish">
         <path class="pl-item" d="M150 138c8 10 8 24 2 34" fill="none" stroke="#2f6a22" stroke-width="3.5" stroke-linecap="round" />
         <path class="pl-item" d="M212 134c-6 12-4 26 4 34" fill="none" stroke="#2f6a22" stroke-width="3.5" stroke-linecap="round" />
@@ -90,14 +81,12 @@ defineProps<{ instant?: boolean }>()
       </g>
     </g>
 
-    <!-- steam -->
     <g class="pl-steam" stroke="#fff" stroke-opacity="0.4" stroke-width="4" stroke-linecap="round" fill="none">
       <path d="M150 96c-8-12 8-20 0-32" />
       <path d="M182 88c-8-12 8-20 0-32" />
       <path d="M214 96c-8-12 8-20 0-32" />
     </g>
 
-    <!-- serving fork (revealed on the final "share your fork" step) -->
     <g class="pl-fork" transform="rotate(34 286 196)">
       <rect x="280" y="120" width="12" height="150" rx="6" fill="url(#fork)" />
       <rect x="270" y="108" width="6" height="34" rx="3" fill="url(#fork)" />
@@ -108,7 +97,6 @@ defineProps<{ instant?: boolean }>()
 </template>
 
 <style scoped>
-/* Ingredients start hidden; revealed via .revealed-pl from the parent observer */
 .pl-item,
 .pl-fork {
   opacity: 0;
