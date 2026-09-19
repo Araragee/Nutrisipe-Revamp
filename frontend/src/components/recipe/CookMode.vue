@@ -21,6 +21,17 @@ const currentIndex = ref(0)
 let wakeLock: any = null
 const wakeLockActive = ref(false)
 
+interface StepTimer {
+  id: number
+  label: string
+  remaining: number
+}
+
+const timers = ref<StepTimer[]>([])
+let timerId = 0
+let tick: ReturnType<typeof setInterval> | null = null
+let touchX = 0
+
 const total = computed(() => props.instructions.length)
 const current = computed(() => props.instructions[currentIndex.value])
 const progress = computed(() =>
@@ -28,6 +39,20 @@ const progress = computed(() =>
 )
 const isFirst = computed(() => currentIndex.value === 0)
 const isLast = computed(() => currentIndex.value >= total.value - 1)
+
+// "simmer 10-15 minutes" → 15 min, "1 hour" → 60 min. Takes upper bound of a range.
+const stepDurations = computed(() => {
+  const text = current.value?.text ?? ''
+  const re = /(\d+(?:\.\d+)?)(?:\s*(?:-|–|to)\s*(\d+(?:\.\d+)?))?\s*(hours?|hrs?|minutes?|mins?|seconds?|secs?)\b/gi
+  const out: { label: string; seconds: number }[] = []
+  for (const m of text.matchAll(re)) {
+    const n = parseFloat(m[2] ?? m[1])
+    const unit = m[3].toLowerCase()
+    const mult = unit.startsWith('h') ? 3600 : unit.startsWith('s') ? 1 : 60
+    if (n > 0) out.push({ label: m[0], seconds: Math.round(n * mult) })
+  }
+  return out
+})
 
 function next() {
   if (!isLast.value) currentIndex.value++
@@ -37,6 +62,57 @@ function prev() {
 }
 function close() {
   emit('close')
+}
+
+function formatClock(sec: number) {
+  const h = Math.floor(sec / 3600)
+  const m = Math.floor((sec % 3600) / 60)
+  const s = sec % 60
+  const mm = String(m).padStart(h ? 2 : 1, '0')
+  return `${h ? h + ':' : ''}${mm}:${String(s).padStart(2, '0')}`
+}
+
+function startTimer(label: string, seconds: number) {
+  timers.value.push({ id: ++timerId, label, remaining: seconds })
+  tick ??= setInterval(onTick, 1000)
+}
+
+function removeTimer(id: number) {
+  timers.value = timers.value.filter(t => t.id !== id)
+  if (!timers.value.length && tick) {
+    clearInterval(tick)
+    tick = null
+  }
+}
+
+function onTick() {
+  for (const t of timers.value) {
+    if (t.remaining <= 0) continue
+    t.remaining--
+    if (t.remaining === 0) {
+      navigator.vibrate?.([300, 150, 300])
+      try {
+        const ctx = new AudioContext()
+        const osc = ctx.createOscillator()
+        osc.connect(ctx.destination)
+        osc.start()
+        osc.stop(ctx.currentTime + 0.6)
+      } catch {
+        // audio blocked
+      }
+    }
+  }
+}
+
+function onTouchStart(e: TouchEvent) {
+  touchX = e.touches[0].clientX
+}
+
+function onTouchEnd(e: TouchEvent) {
+  const dx = e.changedTouches[0].clientX - touchX
+  if (Math.abs(dx) < 60) return
+  if (dx < 0) next()
+  else prev()
 }
 
 async function requestWakeLock() {
@@ -92,6 +168,7 @@ watch(
       currentIndex.value = 0
       await requestWakeLock()
     } else {
+      timers.value.forEach(t => removeTimer(t.id))
       await releaseWakeLock()
     }
   },
@@ -106,6 +183,7 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKey)
   document.removeEventListener('visibilitychange', handleVisibility)
+  if (tick) clearInterval(tick)
   releaseWakeLock()
 })
 </script>
@@ -134,15 +212,41 @@ onUnmounted(() => {
       </div>
 
       <!-- Step body -->
-      <main class="flex-1 flex flex-col items-center justify-center p-8 md:p-16 text-center overflow-y-auto">
+      <main
+        class="flex-1 flex flex-col items-center justify-center p-6 sm:p-8 md:p-16 text-center overflow-y-auto"
+        @touchstart.passive="onTouchStart"
+        @touchend.passive="onTouchEnd"
+      >
         <p class="font-montserrat font-extrabold text-orange text-[11px] uppercase tracking-[0.3em] mb-6">
           Step {{ current?.step ?? currentIndex + 1 }} of {{ total }}
         </p>
-        <p class="font-montserrat font-extrabold text-3xl md:text-5xl leading-snug max-w-3xl">{{ current?.text }}</p>
+        <p class="font-montserrat font-extrabold text-2xl sm:text-3xl md:text-5xl leading-snug max-w-3xl">{{ current?.text }}</p>
+        <div v-if="stepDurations.length" class="mt-8 flex flex-wrap justify-center gap-2">
+          <button
+            v-for="d in stepDurations"
+            :key="d.label"
+            @click="startTimer(d.label, d.seconds)"
+            class="h-11 px-5 rounded-full bg-orange/10 text-orange border border-orange/30 text-sm font-bold hover:bg-orange/20 active:scale-95 transition-all dark:bg-orange/15"
+          >⏱ Start {{ d.label }} timer</button>
+        </div>
       </main>
 
+      <!-- Running timers -->
+      <div v-if="timers.length" class="px-4 sm:px-6 py-3 flex gap-2 overflow-x-auto border-t border-border bg-surface/80" aria-live="polite">
+        <div
+          v-for="t in timers"
+          :key="t.id"
+          :class="t.remaining === 0 ? 'bg-green-500 text-white border-green-500 animate-pulse' : 'bg-background-secondary text-text border-border'"
+          class="shrink-0 h-11 pl-4 pr-1 rounded-full border flex items-center gap-3 tabular-nums"
+        >
+          <span class="text-xs font-semibold opacity-70 max-w-32 truncate">{{ t.label }}</span>
+          <span class="font-montserrat font-extrabold">{{ t.remaining === 0 ? 'Done!' : formatClock(t.remaining) }}</span>
+          <button @click="removeTimer(t.id)" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10" :aria-label="`Dismiss ${t.label} timer`">✕</button>
+        </div>
+      </div>
+
       <!-- Footer controls -->
-      <footer class="p-6 md:p-8 border-t border-border bg-surface/80">
+      <footer class="p-4 sm:p-6 md:p-8 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-border bg-surface/80">
         <div class="max-w-3xl mx-auto flex items-center gap-4">
           <button
             @click="prev"
@@ -161,6 +265,7 @@ onUnmounted(() => {
           >✓ Done</button>
         </div>
         <p class="text-text-dim text-[10px] text-center mt-3 hidden md:block">Use ← → arrows or Space · Esc to exit</p>
+        <p class="text-text-dim text-[10px] text-center mt-3 md:hidden">Swipe to change step</p>
       </footer>
     </div>
   </Teleport>

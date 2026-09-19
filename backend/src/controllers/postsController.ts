@@ -197,9 +197,17 @@ export async function searchPostsHandler(req: AuthRequest, res: Response, next: 
   try {
     const query = req.query.q as string
     const category = req.query.category as string | undefined
+    const difficulty = ['easy', 'medium', 'hard'].includes(String(req.query.difficulty).toLowerCase())
+      ? String(req.query.difficulty)
+      : undefined
+    const ingredients = String(req.query.ingredients ?? '')
+      .split(',')
+      .map((s) => s.trim().slice(0, 40))
+      .filter((s) => s.length >= 2)
+      .slice(0, 8)
     const { page, limit } = parsePagination(req)
 
-    if (!query && !category) {
+    if (!query && !category && !ingredients.length) {
       return res.json({
         success: true,
         data: [],
@@ -207,7 +215,10 @@ export async function searchPostsHandler(req: AuthRequest, res: Response, next: 
       })
     }
 
-    const result = await postService.searchPosts(query || '', req.userId, category, page, limit)
+    const result = await postService.searchPosts(query || '', req.userId, category, page, limit, {
+      ingredients,
+      difficulty,
+    })
     res.json({
       success: true,
       data: result.posts,

@@ -19,6 +19,7 @@ const authStore = useAuthStore()
 const {
   searchQuery,
   searchType,
+  difficulty,
   postResults,
   userResults,
   isSearching,
@@ -27,6 +28,7 @@ const {
   runSearch,
   clearResults,
   setFilter,
+  setDifficulty,
   searchTag,
 } = useExploreSearch()
 
@@ -74,10 +76,12 @@ onMounted(() => {
     <ExploreHero
       v-model:query="searchQuery"
       :active-type="searchType"
+      :difficulty="difficulty"
       :posts="trendingPosts"
       @search="runSearch"
       @clear="clearResults"
       @select-filter="setFilter"
+      @select-difficulty="setDifficulty"
     />
 
     <div class="px-5 sm:px-8 md:pb-20 max-w-7xl mx-auto">

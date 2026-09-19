@@ -670,23 +670,35 @@ export async function searchPosts(
   userId?: string,
   category?: string,
   page: number = 1,
-  limit: number = 20
+  limit: number = 20,
+  filters: { ingredients?: string[]; difficulty?: string } = {}
 ) {
   const skip = (page - 1) * limit
 
   const where: any = {
     isPublic: true,
     user: { isBanned: false },
-    OR: [
+  }
+
+  if (query) {
+    where.OR = [
       { title: { contains: query, mode: 'insensitive' } },
       { description: { contains: query, mode: 'insensitive' } },
       { tags: { contains: query, mode: 'insensitive' } },
-    ],
+    ]
   }
 
   if (category) {
     where.category = category
   }
+
+  // "Cook with what I have": recipe must contain every listed ingredient.
+  // ponytail: substring match on the JSON text column; move to a normalized ingredient table if ranking by partial match is needed.
+  const recipeAnd: any[] = (filters.ingredients ?? []).map((term) => ({
+    ingredients: { contains: term, mode: 'insensitive' },
+  }))
+  if (filters.difficulty) recipeAnd.push({ difficulty: { equals: filters.difficulty, mode: 'insensitive' } })
+  if (recipeAnd.length) where.recipe = { is: { AND: recipeAnd } }
 
   const [posts, total] = await Promise.all([
     prisma.post.findMany({

@@ -20,6 +20,8 @@ import { variationsApi } from '@/http/endpoints/variations'
 import { ratingsApi } from '@/http/endpoints/ratings'
 import { resolveImage } from '@/utils/imageUrl'
 import { scaleQuantity } from '@/utils/scaleQuantity'
+import { detectAllergens } from '@/utils/allergens'
+import { preferencesApi } from '@/http/endpoints/preferences'
 import { usePostActions } from '@/composables/usePostActions'
 import type { Post } from '@/typescript/interface/Post'
 
@@ -43,6 +45,10 @@ const hasInstructions = computed(
   () => (post.value?.recipe?.instructions?.length ?? 0) > 0,
 )
 const targetServings = ref<number | null>(null)
+const userAllergies = ref<string[]>([])
+const allergenHits = computed(() =>
+  detectAllergens((post.value?.recipe?.ingredients ?? []).map((i: any) => i.name ?? ''), userAllergies.value),
+)
 
 const baseServings = computed(() => post.value?.recipe?.servings ?? null)
 const scaleFactor = computed(() => {
@@ -202,7 +208,19 @@ async function handleDelete() {
   }
 }
 
+async function loadAllergies(isAuthed: boolean) {
+  if (!isAuthed) return
+  try {
+    const { data } = await preferencesApi.get()
+    userAllergies.value = data.data?.allergies ?? []
+  } catch {
+    // non-critical: no warning shown
+  }
+}
+
 onMounted(loadPost)
+// watch, not onMounted: user may still be loading from /auth/me at mount
+watch(() => authStore.isAuthenticated, loadAllergies, { immediate: true })
 watch(postId, loadPost)
 
 const recipeImage = computed(() =>
@@ -317,6 +335,16 @@ const recipeImage = computed(() =>
                 <div class="pt-8">
                    <!-- Ingredients -->
                    <section v-show="activeTab === 'ingredients'" class="tab-fade space-y-5">
+                      <div v-if="allergenHits.length" role="alert" class="flex gap-3 p-4 rounded-2xl border border-red-300 bg-red-50 text-red-800 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-200">
+                         <span aria-hidden="true" class="text-lg leading-none">⚠</span>
+                         <div class="text-sm">
+                            <p class="font-bold">May contain your allergens</p>
+                            <p v-for="h in allergenHits" :key="h.allergen" class="mt-0.5">
+                               <span class="font-semibold">{{ h.allergen }}:</span> {{ h.ingredients.join(', ') }}
+                            </p>
+                            <RouterLink to="/settings" class="mt-1 inline-block text-xs underline opacity-80 hover:opacity-100">Edit allergies</RouterLink>
+                         </div>
+                      </div>
                       <div v-if="baseServings" class="flex items-center justify-between gap-3 p-2 pl-5 bg-background-secondary border border-border rounded-full">
                          <span class="text-[11px] font-montserrat font-bold uppercase tracking-widest text-text-dim">Servings</span>
                          <div class="flex items-center gap-1.5">
