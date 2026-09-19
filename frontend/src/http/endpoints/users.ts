@@ -1,7 +1,7 @@
 import { httpClient } from '../client'
-import type { User, UserBasic } from '@/typescript/interface/User'
-import type { Activity } from '@/typescript/interface/Activity'
-import type { ApiResponse, PaginatedResponse } from '@/typescript/interface/ApiResponse'
+import type { User, UserBasic } from '@/types/User'
+import type { Activity } from '@/types/Activity'
+import type { ApiResponse, PaginatedResponse } from '@/types/ApiResponse'
 
 export const usersApi = {
   search: (query: string, page = 1, limit = 20) =>

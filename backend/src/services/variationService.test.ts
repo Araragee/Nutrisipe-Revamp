@@ -1,5 +1,5 @@
 import { forkRecipe } from './variationService'
-import prisma from '../lib/prisma'
+import { prisma } from '../lib/prisma'
 
 jest.mock('../lib/prisma', () => {
   const client: any = {
@@ -162,12 +162,11 @@ describe('variationService - forkRecipe', () => {
 
     const data = {
       title: 'Forked Recipe',
-      recipeData: {}, // Empty recipeData, should fall back
+      recipeData: {},
     }
 
     await forkRecipe('user-id', 'original-post-id', data)
 
-    // Check what was passed to prisma.recipe.create
     const createRecipeCall = (prisma.recipe.create as jest.Mock).mock.calls[0][0]
     expect(createRecipeCall.data.servings).toBe(4)
     expect(createRecipeCall.data.ingredients).toBe('[{"name":"salt","quantity":"1 tsp"}]')

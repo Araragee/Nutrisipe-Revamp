@@ -9,7 +9,7 @@ import BaseIcons from "@/components/base/BaseIcons.vue";
 import MacroPills from "@/components/recipe/MacroPills.vue";
 import { formatNumber } from "@/utils/format";
 import { resolveImage } from "@/utils/imageUrl";
-import type { Post } from "@/typescript/interface/Post";
+import type { Post } from "@/types/Post";
 
 interface Props {
   post: Post;
@@ -49,7 +49,6 @@ const recipeImage = computed(() =>
   resolveImage(props.post.imageUrl, props.post.id),
 );
 
-// Nutri-Score uses regulatory traffic-light colors — never re-themed.
 const nutriScoreClass = computed(() => {
   const score = props.post.recipe?.nutriScore?.toLowerCase();
   return (
@@ -124,7 +123,6 @@ async function toggleSave(event: Event) {
     @keydown.enter.prevent="emit('click', post.id)"
     @keydown.space.prevent="emit('click', post.id)"
   >
-    <!-- Image stage -->
     <div :class="['relative overflow-hidden', aspectVariant.class]">
       <img
         :src="recipeImage"
@@ -144,13 +142,11 @@ async function toggleSave(event: Event) {
         aria-hidden="true"
       ></div>
 
-      <!-- Legibility gradient: food stays vivid, chrome stays readable -->
       <div
         class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-90"
         aria-hidden="true"
       ></div>
 
-      <!-- Nutri-Score (top-left, regulatory color) -->
       <div
         v-if="post.recipe?.nutriScore"
         class="absolute top-3 left-3 z-10 px-2 py-0.5 rounded-md font-montserrat font-bold text-[11px] tracking-wide text-white shadow-sm backdrop-blur-[2px]"
@@ -159,7 +155,6 @@ async function toggleSave(event: Event) {
         {{ post.recipe.nutriScore }}
       </div>
 
-      <!-- Quick actions (top-right): save + like -->
       <div class="absolute top-2.5 right-2.5 z-10 flex flex-col gap-1.5">
         <button
           @click="toggleSave"
@@ -191,7 +186,6 @@ async function toggleSave(event: Event) {
         </button>
       </div>
 
-      <!-- Overlay content: title, author, meta sit on the gradient -->
       <div class="absolute inset-x-0 bottom-0 z-10 p-3.5 flex flex-col gap-2">
         <MacroPills :nutrition="post.recipe?.nutrition" size="sm" />
 

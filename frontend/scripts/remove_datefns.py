@@ -2,10 +2,8 @@ import re
 with open('/Users/dex/Documents/Nutrisipe-Revamp/frontend/src/views/MessagesView.vue', 'r') as f:
     content = f.read()
 
-# Remove import
 content = re.sub(r"import \{ formatDistanceToNow \} from 'date-fns'\n", "", content)
 
-# Replace formatTime
 new_format = """function formatTime(timestamp: string) {
   const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
   const diffInSeconds = (new Date(timestamp).getTime() - Date.now()) / 1000

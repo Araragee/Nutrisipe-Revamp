@@ -1,8 +1,5 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 
-/**
- * Composable for handling modal accessibility (focus trap, escape key)
- */
 export function useModalAccessibility(isOpen: () => boolean, onClose: () => void) {
   const modalRef = ref<HTMLElement | null>(null)
   let previouslyFocusedElement: HTMLElement | null = null
@@ -41,10 +38,8 @@ export function useModalAccessibility(isOpen: () => boolean, onClose: () => void
     document.addEventListener('keydown', trapFocus)
     document.addEventListener('keydown', handleEscape)
 
-    // Store currently focused element
     previouslyFocusedElement = document.activeElement as HTMLElement
 
-    // Focus first focusable element in modal
     if (isOpen() && modalRef.value) {
       const firstFocusable = modalRef.value.querySelector<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -57,16 +52,12 @@ export function useModalAccessibility(isOpen: () => boolean, onClose: () => void
     document.removeEventListener('keydown', trapFocus)
     document.removeEventListener('keydown', handleEscape)
 
-    // Restore focus to previously focused element
     previouslyFocusedElement?.focus()
   })
 
   return { modalRef }
 }
 
-/**
- * Announce message to screen readers
- */
 export function announceToScreenReader(message: string, priority: 'polite' | 'assertive' = 'polite') {
   const announcement = document.createElement('div')
   announcement.setAttribute('role', 'status')

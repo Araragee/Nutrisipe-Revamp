@@ -86,7 +86,6 @@ watch(() => route.params.id, load)
     </div>
 
     <template v-else-if="collection">
-      <!-- Cover banner -->
       <div class="relative h-44 overflow-hidden bg-background-secondary sm:h-56">
         <img
           v-if="coverImage"
@@ -108,7 +107,6 @@ watch(() => route.params.id, load)
       </div>
 
       <div class="mx-auto max-w-6xl px-5 sm:px-8">
-        <!-- Header -->
         <header class="-mt-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div class="min-w-0">
             <h1 class="text-balance font-montserrat text-3xl font-extrabold tracking-tight text-text sm:text-4xl">
@@ -161,7 +159,6 @@ watch(() => route.params.id, load)
           </div>
         </header>
 
-        <!-- Grid -->
         <div class="py-8">
           <template v-if="postCount > 0">
             <PinGrid :posts="collection.posts" @post-click="handlePostClick" />

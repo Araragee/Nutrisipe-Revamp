@@ -89,7 +89,6 @@ const toneStyle = (tone: string) =>
       </div>
 
       <div v-else-if="stats">
-        <!-- Stats Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
           <div
             v-for="card in summaryCards"
@@ -120,7 +119,6 @@ const toneStyle = (tone: string) =>
            </RouterLink>
         </div>
 
-        <!-- Activity Overview -->
         <div class="bg-surface border border-border rounded-card p-8 md:p-12 shadow-card">
            <div class="flex items-center justify-between mb-10">
               <h2 class="font-montserrat font-extrabold text-2xl tracking-tight">Platform Health</h2>

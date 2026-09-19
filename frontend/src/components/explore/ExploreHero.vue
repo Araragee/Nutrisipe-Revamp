@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import RecipeMosaicBackground from '@/components/common/RecipeMosaicBackground.vue'
-import type { Post } from '@/typescript/interface/Post'
+import type { Post } from '@/types/Post'
 import type { SearchType } from '@/composables/useExploreSearch'
 import { computed } from 'vue'
 
@@ -64,7 +64,6 @@ function onInput(event: Event) {
         Search recipes, follow chefs, find collections shaped for your taste.
       </p>
 
-      <!-- Search Bar -->
       <div class="relative group">
         <div
           class="absolute inset-y-0 left-5 flex items-center pointer-events-none text-xl text-text-dim group-focus-within:text-orange transition-colors"
@@ -85,7 +84,6 @@ function onInput(event: Event) {
         >Search</button>
       </div>
 
-      <!-- Type chips -->
       <div class="flex flex-wrap gap-2 justify-center mt-5">
         <button
           v-for="chip in filterChips"
@@ -100,7 +98,6 @@ function onInput(event: Event) {
         >{{ chip.label }}</button>
       </div>
 
-      <!-- Difficulty (recipe searches only) -->
       <div v-if="activeType === 'recipes' || activeType === 'pantry'" class="flex flex-wrap gap-1.5 justify-center mt-3" role="group" aria-label="Difficulty">
         <button
           v-for="d in difficulties"

@@ -1,6 +1,6 @@
 import { httpClient } from '../client'
-import type { Notification } from '@/typescript/interface/Notification'
-import type { ApiResponse } from '@/typescript/interface/ApiResponse'
+import type { Notification } from '@/types/Notification'
+import type { ApiResponse } from '@/types/ApiResponse'
 
 export const notificationsApi = {
   getNotifications: (limit = 20) =>

@@ -44,7 +44,6 @@ export interface SearchUsersResponse {
 }
 
 export const mentionsApi = {
-  // Get all mentions for authenticated user
   async getMentions(limit = 50, offset = 0): Promise<MentionsResponse> {
     const response = await httpClient.get('/mentions', {
       params: { limit, offset }
@@ -52,7 +51,6 @@ export const mentionsApi = {
     return response.data
   },
 
-  // Search users for @mention autocomplete
   async searchUsers(query: string): Promise<SearchUsersResponse> {
     const response = await httpClient.get('/mentions/search', {
       params: { q: query }
@@ -60,13 +58,11 @@ export const mentionsApi = {
     return response.data
   },
 
-  // Get mentions for a specific post
   async getPostMentions(postId: string): Promise<{ mentions: Mention[] }> {
     const response = await httpClient.get(`/mentions/post/${postId}`)
     return response.data
   },
 
-  // Get mentions for a specific comment
   async getCommentMentions(commentId: string): Promise<{ mentions: Mention[] }> {
     const response = await httpClient.get(`/mentions/comment/${commentId}`)
     return response.data

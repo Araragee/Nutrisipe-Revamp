@@ -15,7 +15,6 @@ export function useMentions() {
   const showSuggestions = ref(false)
   const selectedIndex = ref(0)
 
-  // Search for users to mention
   async function searchUsers(query: string) {
     if (!query || query.length < 2) {
       searchResults.value = []
@@ -38,7 +37,6 @@ export function useMentions() {
     }
   }
 
-  // Extract @mentions from text
   function extractMentions(text: string): string[] {
     const mentionRegex = /@(\w+)/g
     const mentions: string[] = []
@@ -51,7 +49,6 @@ export function useMentions() {
     return [...new Set(mentions)]
   }
 
-  // Check if cursor is at a mention
   function getMentionQuery(text: string, cursorPosition: number): string | null {
     const textBeforeCursor = text.substring(0, cursorPosition)
     const lastAtIndex = textBeforeCursor.lastIndexOf('@')
@@ -62,7 +59,6 @@ export function useMentions() {
 
     const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1)
 
-    // Check if there's a space after @ (which would end the mention)
     if (textAfterAt.includes(' ')) {
       return null
     }
@@ -70,7 +66,6 @@ export function useMentions() {
     return textAfterAt
   }
 
-  // Navigate suggestions with arrow keys
   function navigateUp() {
     if (selectedIndex.value > 0) {
       selectedIndex.value--
@@ -83,19 +78,16 @@ export function useMentions() {
     }
   }
 
-  // Get selected user
   const selectedUser = computed(() => {
     return searchResults.value[selectedIndex.value] || null
   })
 
-  // Close suggestions
   function closeSuggestions() {
     showSuggestions.value = false
     searchResults.value = []
     selectedIndex.value = 0
   }
 
-  // Insert mention into text
   function insertMention(
     text: string,
     cursorPosition: number,
@@ -129,8 +121,6 @@ export function useMentions() {
       .replace(/'/g, '&#39;')
   }
 
-  // Convert @mentions to clickable links (for display).
-  // Input is escaped first so only the mention spans survive as markup.
   function renderMentions(text: string): string {
     return escapeHtml(text).replace(
       /@(\w+)/g,

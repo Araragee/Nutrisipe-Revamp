@@ -13,7 +13,7 @@ import RatingInput from '@/components/ratings/RatingInput.vue'
 import RatingList from '@/components/ratings/RatingList.vue'
 import RatingHistogram from '@/components/ratings/RatingHistogram.vue'
 import CommentSection from '@/components/post/CommentSection.vue'
-import VariationList from '@/components/recipe/VariationList.vue'
+import VariationList from '@/components/variations/VariationList.vue'
 import CookMode from '@/components/recipe/CookMode.vue'
 import CollectionModal from '@/components/profile/CollectionModal.vue'
 import { variationsApi } from '@/http/endpoints/variations'
@@ -23,7 +23,7 @@ import { scaleQuantity } from '@/utils/scaleQuantity'
 import { detectAllergens } from '@/utils/allergens'
 import { preferencesApi } from '@/http/endpoints/preferences'
 import { usePostActions } from '@/composables/usePostActions'
-import type { Post } from '@/typescript/interface/Post'
+import type { Post } from '@/types/Post'
 
 const route = useRoute()
 const router = useRouter()
@@ -100,7 +100,6 @@ function formatMinutes(mins: number): string {
   return m ? `${h}h ${m}m` : `${h}h`
 }
 
-// Quick-glance meta strip — only renders entries with real data
 const metaStats = computed(() => {
   const r = post.value?.recipe
   return [
@@ -111,7 +110,6 @@ const metaStats = computed(() => {
   ].filter((s) => s.show)
 })
 
-// Explicit class map so Tailwind JIT keeps these (no dynamic interpolation)
 const metaGridClass = computed(() => ({
   1: 'grid-cols-1',
   2: 'grid-cols-2',
@@ -119,7 +117,6 @@ const metaGridClass = computed(() => ({
   4: 'grid-cols-4',
 }[metaStats.value.length] ?? 'grid-cols-4'))
 
-// Ingredient check-off — index-based, resets when the recipe changes
 const checkedIngredients = ref<Set<number>>(new Set())
 function toggleIngredient(idx: number) {
   const next = new Set(checkedIngredients.value)
@@ -164,7 +161,6 @@ async function loadPost() {
     post.value = response.data.data
     targetServings.value = post.value?.recipe?.servings ?? null
 
-    // Fetch real related posts
     const relatedRes = await postsApi.getRelated(postId.value)
     relatedPosts.value = relatedRes.data.data
   } catch (error) {
@@ -182,7 +178,6 @@ async function handleRatingSubmit(data: { rating: number; review?: string }) {
     await ratingsApi.createOrUpdateRating(post.value.id, data.rating, data.review)
     uiStore.showToast('Rating submitted!', 'success')
     
-    // Refresh post + rating list + histogram
     const response = await postsApi.getById(postId.value)
     post.value = response.data.data
     ratingListRef.value?.refresh()
@@ -214,12 +209,10 @@ async function loadAllergies(isAuthed: boolean) {
     const { data } = await preferencesApi.get()
     userAllergies.value = data.data?.allergies ?? []
   } catch {
-    // non-critical: no warning shown
   }
 }
 
 onMounted(loadPost)
-// watch, not onMounted: user may still be loading from /auth/me at mount
 watch(() => authStore.isAuthenticated, loadAllergies, { immediate: true })
 watch(postId, loadPost)
 
@@ -235,7 +228,6 @@ const recipeImage = computed(() =>
     </div>
 
     <article v-else-if="post">
-       <!-- Cinematic hero — food fills the frame, chrome decorates the edges -->
        <header class="recipe-hero relative w-full overflow-hidden">
           <img
             :src="recipeImage"
@@ -243,11 +235,9 @@ const recipeImage = computed(() =>
             :alt="post.title"
             class="absolute inset-0 w-full h-full object-cover"
           />
-          <!-- Warm reading gradient — carries title without a hard panel -->
           <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/15"></div>
           <div class="absolute inset-0 hidden lg:block bg-gradient-to-r from-black/45 via-transparent to-transparent"></div>
 
-          <!-- Top utility bar -->
           <div class="relative z-10 max-w-7xl mx-auto w-full px-5 sm:px-8 pt-5 flex items-center justify-between">
              <button
                @click="router.back()"
@@ -279,7 +269,6 @@ const recipeImage = computed(() =>
              </div>
           </div>
 
-          <!-- Hero title block -->
           <div class="relative z-10 max-w-7xl mx-auto w-full px-5 sm:px-8 pb-8 sm:pb-12">
              <div class="flex flex-wrap items-center gap-2.5 mb-4 hero-fade" style="animation-delay: 40ms">
                 <span class="px-3.5 py-1.5 rounded-full bg-orange text-white text-[11px] font-montserrat font-bold tracking-widest uppercase shadow-[0_6px_20px_rgba(255,107,53,0.4)]">{{ post.category }}</span>
@@ -297,9 +286,7 @@ const recipeImage = computed(() =>
           </div>
        </header>
 
-       <!-- Content -->
        <div class="max-w-7xl mx-auto px-5 sm:px-8 pb-20">
-          <!-- Quick-glance meta strip -->
           <div v-if="metaStats.length" class="meta-strip relative -mt-7 sm:-mt-9 z-20 grid gap-px rounded-card overflow-hidden border-1.5 border-border bg-border shadow-card" :class="metaGridClass">
              <div v-for="m in metaStats" :key="m.key" class="bg-surface px-3 py-4 sm:py-5 flex flex-col items-center text-center gap-1">
                 <BaseIcons :name="m.icon" size="sm" class="text-orange mb-0.5" />
@@ -309,9 +296,7 @@ const recipeImage = computed(() =>
           </div>
 
           <div class="flex flex-col lg:flex-row gap-8 lg:gap-14 mt-10 lg:mt-12">
-             <!-- Main column -->
              <div class="flex-1 min-w-0 order-2 lg:order-1">
-                <!-- Tabs -->
                 <div class="sticky top-0 z-20 -mx-5 sm:-mx-8 px-5 sm:px-8 bg-background/85 backdrop-blur-md">
                    <div role="tablist" class="flex gap-7 sm:gap-10 border-b border-border overflow-x-auto scrollbar-hide">
                       <button
@@ -333,7 +318,6 @@ const recipeImage = computed(() =>
                 </div>
 
                 <div class="pt-8">
-                   <!-- Ingredients -->
                    <section v-show="activeTab === 'ingredients'" class="tab-fade space-y-5">
                       <div v-if="allergenHits.length" role="alert" class="flex gap-3 p-4 rounded-2xl border border-red-300 bg-red-50 text-red-800 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-200">
                          <span aria-hidden="true" class="text-lg leading-none">⚠</span>
@@ -377,7 +361,6 @@ const recipeImage = computed(() =>
                       </ul>
                    </section>
 
-                   <!-- Instructions -->
                    <section v-show="activeTab === 'instructions'" class="tab-fade">
                       <ol v-if="hasInstructions" class="relative space-y-7 before:absolute before:left-[19px] before:top-3 before:bottom-3 before:w-px before:bg-border">
                          <li v-for="step in post.recipe?.instructions" :key="step.step" class="relative flex gap-5">
@@ -388,7 +371,6 @@ const recipeImage = computed(() =>
                       <div v-else class="text-center py-12 text-text-dim italic">No instructions listed.</div>
                    </section>
 
-                   <!-- Reviews -->
                    <section v-show="activeTab === 'reviews'" class="tab-fade space-y-8">
                       <RatingHistogram ref="histogramRef" :post-id="post.id" />
                       <div v-if="authStore.isAuthenticated && !isOwner">
@@ -400,9 +382,7 @@ const recipeImage = computed(() =>
                 </div>
              </div>
 
-             <!-- Sidebar -->
              <aside class="w-full lg:w-[340px] shrink-0 order-1 lg:order-2 space-y-5">
-                <!-- Author card -->
                 <div class="bg-surface rounded-card border border-border p-5 shadow-card">
                    <div class="flex items-center gap-3.5">
                       <UserAvatar :user="post.user" size="md" class="ring-2 ring-orange ring-offset-2 ring-offset-surface" />
@@ -419,7 +399,6 @@ const recipeImage = computed(() =>
                    </div>
                 </div>
 
-                <!-- Primary actions -->
                 <div class="bg-surface rounded-card border border-border p-5 shadow-card space-y-2.5">
                    <button v-if="hasInstructions" @click="showCookMode = true" class="w-full h-12 rounded-btn bg-orange text-white font-montserrat font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(255,107,53,0.35)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(255,107,53,0.4)] active:scale-[0.98]">
                       <BaseIcons name="play" :solid="true" size="sm" /> Start Cook Mode
@@ -437,7 +416,6 @@ const recipeImage = computed(() =>
                    </button>
                 </div>
 
-                <!-- Nutrition -->
                 <div class="bg-surface rounded-card border border-border p-5 shadow-card">
                    <h2 class="text-[11px] font-montserrat font-bold uppercase tracking-widest text-text-dim mb-4">Per Serving</h2>
                    <div class="grid grid-cols-2 gap-2.5">
@@ -451,12 +429,10 @@ const recipeImage = computed(() =>
              </aside>
           </div>
 
-          <!-- Variations -->
           <div class="mt-14 border-t border-border pt-12">
              <VariationList :post-id="post.id" />
           </div>
 
-          <!-- Related Posts -->
           <div class="mt-16 md:mt-20">
              <h2 class="font-montserrat font-extrabold text-2xl sm:text-3xl tracking-tight mb-8 text-balance">You might also like</h2>
              <PinGrid :posts="relatedPosts" @post-click="(id) => router.push(`/recipes/${id}`)" />
@@ -539,7 +515,6 @@ const recipeImage = computed(() =>
   transform: scale(0.97);
 }
 
-/* Staggered hero entrance */
 .hero-fade {
   opacity: 0;
   animation: heroFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -549,7 +524,6 @@ const recipeImage = computed(() =>
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Tab content cross-fade */
 .tab-fade {
   animation: tabFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

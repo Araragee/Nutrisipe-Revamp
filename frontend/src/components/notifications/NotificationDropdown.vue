@@ -68,7 +68,6 @@ const getActionBg = (type: string) => {
 
 <template>
   <div class="notification-dropdown w-[380px] max-w-[calc(100vw-1.5rem)] bg-white/95 dark:bg-background-secondary/95 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-border z-50 overflow-hidden animate-revamp">
-    <!-- Header -->
     <div class="p-6 pb-4 flex items-center justify-between">
       <h3 class="font-montserrat font-extrabold text-2xl text-text">Notifications</h3>
       <button 
@@ -79,7 +78,6 @@ const getActionBg = (type: string) => {
       </button>
     </div>
 
-    <!-- Tabs -->
     <div class="px-6 flex gap-6 border-b border-border">
       <button 
         @click="activeTab = 'all'"
@@ -100,7 +98,6 @@ const getActionBg = (type: string) => {
       </button>
     </div>
 
-    <!-- Content -->
     <div class="max-h-[500px] overflow-y-auto scrollbar-hide py-2">
       <div v-if="notificationsStore.isLoading && notificationsStore.notifications.length === 0" class="p-10 text-center">
         <div class="w-8 h-8 border-4 border-orange border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -120,10 +117,8 @@ const getActionBg = (type: string) => {
           @click="handleNotificationClick(n)"
           class="group flex items-start gap-4 p-5 hover:bg-orange/5 cursor-pointer transition-all border-b border-border/50 last:border-0 relative"
         >
-          <!-- Unread Dot -->
           <div v-if="!n.isRead" class="absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-orange rounded-full"></div>
 
-          <!-- Avatar + Icon -->
           <div class="relative shrink-0">
             <UserAvatar :user="n.actor" size="md" class="border-2 border-border shadow-sm" />
             <div :class="['absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] shadow-md border-2 border-white dark:border-background-secondary', getActionBg(n.type)]">
@@ -131,7 +126,6 @@ const getActionBg = (type: string) => {
             </div>
           </div>
 
-          <!-- Text -->
           <div class="flex-1 min-w-0">
             <p class="text-[13px] leading-snug text-text">
               <span class="font-extrabold">{{ n.actor.displayName }}</span>
@@ -143,7 +137,6 @@ const getActionBg = (type: string) => {
             <p class="text-[11px] text-text-dim mt-1 font-medium">{{ formatTimeAgo(n.createdAt) }}</p>
           </div>
 
-          <!-- Post Thumbnail -->
           <div v-if="n.post" class="shrink-0 w-12 h-12 rounded-xl overflow-hidden border border-border">
             <img :src="resolveImage(n.post.imageUrl, n.post.id)" class="w-full h-full object-cover" />
           </div>
@@ -151,7 +144,6 @@ const getActionBg = (type: string) => {
       </div>
     </div>
 
-    <!-- Footer -->
     <div class="p-4 bg-background-secondary/50 text-center border-t border-border">
       <button @click="emit('close')" class="text-xs font-bold text-text-dim hover:text-orange transition-all">Close</button>
     </div>

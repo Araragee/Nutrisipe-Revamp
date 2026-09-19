@@ -5,7 +5,6 @@ import * as uploadController from '../controllers/uploadController'
 
 const router = Router()
 
-// Upload video only
 router.post(
   '/video',
   authenticate,
@@ -13,7 +12,6 @@ router.post(
   uploadController.uploadVideoHandler
 )
 
-// Upload image only
 router.post(
   '/image',
   authenticate,
@@ -21,7 +19,6 @@ router.post(
   uploadController.uploadImageHandler
 )
 
-// Upload video with optional thumbnail
 router.post(
   '/video-with-thumbnail',
   authenticate,

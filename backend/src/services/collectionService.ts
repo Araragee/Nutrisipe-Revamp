@@ -100,7 +100,7 @@ export async function addPostToCollection(collectionId: string, postId: string, 
       collectionId_postId: { collectionId, postId },
     },
     create: { collectionId, postId },
-    update: {}, // Already exists
+    update: {},
   })
 
   return collectionPost

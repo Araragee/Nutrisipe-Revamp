@@ -1,13 +1,8 @@
 import { ref } from 'vue'
 import { searchApi, type TrendingTag } from '@/http/endpoints/search'
 import { logger } from '@/utils/logger'
-import type { Post } from '@/typescript/interface/Post'
+import type { Post } from '@/types/Post'
 
-/**
- * Loads the explore page's trending data: a set of trending posts and a list
- * of trending tags. Each loader owns its own loading flag and swallows errors
- * into the logger so the view can render empty states without crashing.
- */
 export function useTrending() {
   const trendingPosts = ref<Post[]>([])
   const loadingTrending = ref(false)

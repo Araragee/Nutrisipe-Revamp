@@ -2,8 +2,8 @@ import { logger } from '@/utils/logger'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authApi } from '@/http/endpoints/auth'
-import { socketService } from '@/services/socket'
-import type { User } from '@/typescript/interface/User'
+import { socketService } from '@/lib/socket'
+import type { User } from '@/types/User'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
@@ -22,7 +22,6 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authApi.login({ email, password })
       user.value = response.data.data.user
 
-      // Initialize socket connection
       socketService.connect()
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Login failed'
@@ -47,7 +46,6 @@ export const useAuthStore = defineStore('auth', () => {
 
       user.value = userData
 
-      // Initialize socket connection
       socketService.connect()
       return true
     } catch (err: any) {
@@ -68,7 +66,6 @@ export const useAuthStore = defineStore('auth', () => {
 
       user.value = userData
 
-      // Initialize socket connection
       socketService.connect()
       return true
     } catch (err: any) {
@@ -92,7 +89,6 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authApi.register({ username, email, password, displayName })
       user.value = response.data.data.user
 
-      // Initialize socket connection
       socketService.connect()
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Registration failed'
@@ -136,7 +132,6 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authApi.me()
       user.value = response.data.data
 
-      // Initialize socket connection if user is authenticated
       if (user.value) {
         socketService.connect()
       }
@@ -152,7 +147,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Alias for compatibility
   const fetchCurrentUser = fetchUser
 
   function setUser(updatedUser: User) {

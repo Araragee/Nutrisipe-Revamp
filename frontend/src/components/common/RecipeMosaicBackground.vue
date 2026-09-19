@@ -4,7 +4,7 @@ import { searchApi } from '@/http/endpoints/search'
 import { resolveImage } from '@/utils/imageUrl'
 import { useTheme } from '@/composables/useTheme'
 import BrandMeshBackground from './BrandMeshBackground.vue'
-import type { Post } from '@/typescript/interface/Post'
+import type { Post } from '@/types/Post'
 
 type FallbackVariant = 'warm' | 'cool' | 'sunset' | 'morning'
 
@@ -12,7 +12,6 @@ const props = withDefaults(
   defineProps<{
     posts?: Post[]
     count?: number
-    /** Scrim strength: higher = more wash behind the hero text, lower = more food visible. */
     intensity?: number
     fallbackVariant?: FallbackVariant
     blur?: number
@@ -37,10 +36,6 @@ const tiles = computed(() => {
 
 const showFallback = computed(() => failed.value || tiles.value.length === 0)
 
-// Food stays vivid; the wash comes only from the scrim below — never from
-// dimming the imagery toward a flat white/black base. In dark mode we keep the
-// photography close to full strength so the hero reads as a lit kitchen, not a
-// blacked-out panel.
 const gridStyle = computed(() => ({
   gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
   gap: '0px',
@@ -48,20 +43,13 @@ const gridStyle = computed(() => ({
   opacity: isDark.value ? 0.78 : 1,
 }))
 
-// The veil exists for one reason: keep centered hero text legible over busy
-// food photography. When we fall back to the brand mesh (no photos), there is
-// nothing to obscure, so the heavy scrim only darkens the page — drop it to a
-// whisper-thin base fade instead.
 const veilStyle = computed(() => {
   if (showFallback.value) {
-    // Just fade the very bottom into the page background; no central dimming.
     return {
       background: 'linear-gradient(to bottom, transparent 72%, var(--bg) 100%)',
     }
   }
   if (isDark.value) {
-    // Gentle top-down warmth-preserving scrim — enough for AA text contrast,
-    // light enough that the food still glows behind the hero.
     return {
       background:
         'linear-gradient(to bottom, rgba(8,6,4,0.30) 0%, rgba(8,6,4,0.48) 64%, var(--bg) 100%)',

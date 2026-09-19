@@ -5,7 +5,7 @@ import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
-import { socketService } from '@/services/socket'
+import { socketService } from '@/lib/socket'
 import { usersApi } from '@/http/endpoints/users'
 import { socialApi } from '@/http/endpoints/social'
 import { searchApi } from '@/http/endpoints/search'
@@ -95,7 +95,6 @@ const suggestedCreators = ref<SuggestedCreator[]>([])
 const trendingTags = ref<TrendingTag[]>([])
 const followedSet = ref<Set<string>>(new Set())
 
-// Mobile search state
 const showMobileSearch = ref(false)
 const mobileSearchInput = ref<HTMLInputElement | null>(null)
 
@@ -125,14 +124,12 @@ const secondaryNav = computed<NavItem[]>(() => {
 
 const allNav = computed(() => [...mainNav.value, ...secondaryNav.value])
 
-// Mobile primary items for bottom nav (Discover, Explore, Saved)
 const mobilePrimary = computed(() =>
   ['home', 'explore', 'saved'].map((id) => allNav.value.find((n) => n.id === id)).filter(
     (x): x is NavItem => !!x,
   ),
 )
 
-// Mobile secondary items for 'More' drawer
 const mobileSecondary = computed(() =>
   allNav.value.filter((n) => !['home', 'explore', 'saved'].includes(n.id)),
 )
@@ -140,9 +137,6 @@ const mobileSecondary = computed(() =>
 const showRightRail = computed(() => route.path === '/')
 const isExploreRoute = computed(() => route.path === '/explore')
 
-// Mobile: fixed top bar (h-16) + floating bottom nav overlay content.
-// Reserve space here so every scrolling view clears them. Full-height views
-// (messages/admin/ingredients) manage their own scroll, so opt out.
 const isImmersiveRoute = computed(() =>
   ['/messages', '/admin', '/ingredients'].some((p) => route.path.startsWith(p)),
 )
@@ -188,7 +182,6 @@ watch(
 )
 
 function isActive(item: NavItem) {
-  // If we are on a recipe detail or edit page, keep the last active tab highlighted
   if (route.path.startsWith('/recipes')) {
     return item.id === lastActiveTab.value
   }
@@ -288,9 +281,7 @@ onUnmounted(() => {
 
 <template>
   <div v-if="showShell" class="app-shell flex h-screen overflow-hidden bg-background dark:bg-background">
-    <!-- ── Left sidebar (desktop) ── -->
     <aside class="hidden md:flex w-[248px] shrink-0 flex-col bg-surface dark:bg-surface border-r border-border">
-      <!-- Logo -->
       <RouterLink to="/" class="flex items-center gap-2.5 px-5 h-16 shrink-0" aria-label="Home">
         <span class="logo-mark w-9 h-9 rounded-xl flex items-center justify-center shrink-0">
           <svg viewBox="0 0 22 28" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-[22px] h-[26px]">
@@ -303,7 +294,6 @@ onUnmounted(() => {
         </span>
       </RouterLink>
 
-      <!-- Main nav -->
       <nav class="flex-1 px-3 pt-2 pb-4 overflow-y-auto scrollbar-hide">
         <p class="px-3 pt-2 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-dim dark:text-text-dim">Menu</p>
         <div class="flex flex-col gap-0.5">
@@ -320,7 +310,6 @@ onUnmounted(() => {
       </nav>
     </aside>
 
-    <!-- ── Main column: top bar + content + right rail ── -->
     <div class="flex-1 flex flex-col min-w-0 relative">
       <div class="hidden md:block shrink-0 transition-all duration-[250ms] ease-out" :class="navState === 'shrunk' ? 'h-0' : 'h-16'"></div>
 
@@ -394,18 +383,15 @@ onUnmounted(() => {
         </div>
       </header>
 
-      <!-- Content row -->
       <div class="flex flex-1 overflow-hidden">
         <main :class="['flex-1 overflow-y-auto scrollbar-hide', isImmersiveRoute ? '' : 'pt-20 pb-32 md:pt-0 md:pb-0']">
           <slot />
         </main>
 
-        <!-- Right rail (feed pages, wide screens) -->
         <aside
           v-if="showRightRail && (suggestedCreators.length > 0 || trendingTags.length > 0)"
           class="hidden xl:flex w-[300px] shrink-0 flex-col gap-4 p-4 overflow-y-auto scrollbar-hide border-l border-border bg-surface dark:bg-surface"
         >
-          <!-- Suggested chefs -->
           <section v-if="suggestedCreators.length > 0">
             <h3 class="font-montserrat font-bold text-sm text-text dark:text-text px-1 mb-2">Chefs to follow</h3>
             <div class="flex flex-col">
@@ -433,7 +419,6 @@ onUnmounted(() => {
             </div>
           </section>
 
-          <!-- Trending tags -->
           <section v-if="trendingTags.length > 0">
             <h3 class="font-montserrat font-bold text-sm text-text dark:text-text px-1 mb-2.5">Trending now</h3>
             <div class="flex flex-wrap gap-1.5 px-1">
@@ -451,9 +436,7 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- ── Mobile top app bar ── -->
     <div class="md:hidden fixed top-0 left-0 right-0 h-16 bg-surface dark:bg-surface border-b border-border flex items-center px-5 z-40">
-      <!-- Search Mode -->
       <div v-if="showMobileSearch" class="flex-1 flex items-center gap-3">
         <button
           @click="showMobileSearch = false"
@@ -476,7 +459,6 @@ onUnmounted(() => {
         </form>
       </div>
 
-      <!-- Normal Mode -->
       <div v-else class="flex-1 flex items-center justify-between">
         <RouterLink to="/" class="flex items-center gap-2">
           <span class="logo-mark w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0">
@@ -497,7 +479,6 @@ onUnmounted(() => {
             <BaseIcons name="magnifying-glass" size="sm" />
           </button>
 
-          <!-- More Trigger -->
           <button
             @click="showMoreDrawer = true"
             class="w-9 h-9 rounded-full text-text-muted hover:bg-background-secondary hover:text-text flex items-center justify-center transition-colors focus:outline-none"
@@ -509,13 +490,9 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- ── Mobile bottom nav ── -->
-    <!-- Active tab morphs into a labelled pill within the left group; create stays anchored right so the pill never shifts it. -->
     <div class="md:hidden fixed bottom-0 left-0 right-0 p-4 pb-6 z-40 pointer-events-none">
       <div class="bg-surface dark:bg-surface border border-border rounded-card flex items-center gap-1.5 px-2 py-2 shadow-modal pointer-events-auto">
-        <!-- Nav group (reflows internally as the pill expands) -->
         <div class="flex-1 flex items-center justify-between gap-1 min-w-0">
-          <!-- Discover, Explore, Saved -->
           <RouterLink
             v-for="item in mobilePrimary" :key="item.id"
             :to="item.path"
@@ -528,7 +505,6 @@ onUnmounted(() => {
             <span :class="['text-[11px] font-bold whitespace-nowrap transition-all duration-300 ease-out', isActive(item) ? 'max-w-[80px] opacity-100 ml-2' : 'max-w-0 opacity-0 ml-0']">{{ item.label }}</span>
           </RouterLink>
 
-          <!-- Notifications -->
           <button
             @click="showNotificationsDrawer = true"
             :class="[
@@ -546,7 +522,6 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <!-- Divider + create, anchored right -->
         <div class="w-px h-7 bg-border shrink-0"></div>
         <button
           @click="uiStore.openCreateModal()"
@@ -558,7 +533,6 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Mobile More Sidebar drawer -->
     <Transition name="sidebar-drawer">
       <div
         v-if="showMoreDrawer"
@@ -566,7 +540,6 @@ onUnmounted(() => {
       >
         <div class="absolute inset-0 bg-black/55" @click="showMoreDrawer = false"></div>
         <div class="relative w-[280px] max-w-[80vw] h-full bg-surface dark:bg-surface border-l border-border p-6 shadow-modal flex flex-col animate-slide-in">
-          <!-- Header -->
           <div class="flex items-center justify-between mb-6 shrink-0">
             <h3 class="font-montserrat font-bold text-lg text-text dark:text-text">More</h3>
             <button
@@ -578,7 +551,6 @@ onUnmounted(() => {
             </button>
           </div>
 
-          <!-- List -->
           <div class="flex flex-col gap-1.5 flex-1 overflow-y-auto">
             <RouterLink
               v-for="item in mobileSecondary"
@@ -600,7 +572,6 @@ onUnmounted(() => {
       </div>
     </Transition>
 
-    <!-- Mobile Notifications drawer -->
     <Transition name="more-drawer">
       <div
         v-if="showNotificationsDrawer"
@@ -609,10 +580,8 @@ onUnmounted(() => {
       >
         <div class="absolute inset-0 bg-black/55" @click="showNotificationsDrawer = false"></div>
         <div class="relative w-full max-h-[85vh] bg-surface dark:bg-surface border-t border-border rounded-t-3xl p-6 pb-10 shadow-modal flex flex-col">
-          <!-- Drag bar -->
           <div class="w-10 h-1 rounded-full bg-border mx-auto mb-6 shrink-0"></div>
 
-          <!-- Header -->
           <div class="flex items-center justify-between mb-4 shrink-0">
             <h3 class="font-montserrat font-bold text-lg text-text dark:text-text">Notifications</h3>
             <button
@@ -624,7 +593,6 @@ onUnmounted(() => {
             </button>
           </div>
 
-          <!-- Tabs -->
           <div class="flex gap-6 border-b border-border mb-4 shrink-0">
             <button 
               @click="activeNotificationsTab = 'all'"
@@ -645,7 +613,6 @@ onUnmounted(() => {
             </button>
           </div>
 
-          <!-- List -->
           <div class="overflow-y-auto flex-1 scrollbar-hide min-h-0">
             <div v-if="notificationsStore.isLoading && notificationsStore.notifications.length === 0" class="p-10 text-center">
               <div class="w-8 h-8 border-4 border-orange border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -665,10 +632,8 @@ onUnmounted(() => {
                 @click="handleMobileNotificationClick(n)"
                 class="group flex items-start gap-4 py-4 hover:bg-orange/5 cursor-pointer transition-all border-b border-border/50 last:border-0 relative"
               >
-                <!-- Unread Dot -->
                 <div v-if="!n.isRead" class="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-orange rounded-full"></div>
 
-                <!-- Avatar + Icon -->
                 <div class="relative shrink-0 ml-3">
                   <UserAvatar :user="n.actor" size="md" class="border-2 border-border shadow-sm" />
                   <div :class="['absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] shadow-md border-2 border-white dark:border-background-secondary', getNotificationIconBg(n.type)]">
@@ -676,7 +641,6 @@ onUnmounted(() => {
                   </div>
                 </div>
 
-                <!-- Text -->
                 <div class="flex-1 min-w-0">
                   <p class="text-[13px] leading-snug text-text dark:text-text">
                     <span class="font-extrabold">{{ n.actor.displayName }}</span>
@@ -688,7 +652,6 @@ onUnmounted(() => {
                   <p class="text-[11px] text-text-dim dark:text-text-dim/60 mt-1 font-medium">{{ formatTimeAgo(n.createdAt) }}</p>
                 </div>
 
-                <!-- Post Thumbnail -->
                 <div v-if="n.post" class="shrink-0 w-12 h-12 rounded-xl overflow-hidden border border-border">
                   <img :src="resolveImage(n.post.imageUrl, n.post.id)" class="w-full h-full object-cover" />
                 </div>
@@ -706,7 +669,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* Animated N logo mark */
 .logo-mark {
   background: var(--orange);
   animation: markPop 0.5s var(--transition) forwards;

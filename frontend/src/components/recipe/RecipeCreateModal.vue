@@ -3,14 +3,14 @@ import BaseIcons from '@/components/base/BaseIcons.vue'
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { postsApi } from '@/http/endpoints/posts'
-import { PostCategory } from '@/typescript/types/enums'
+import { PostCategory } from '@/types/enums'
 import { useUiStore } from '@/stores/ui'
 import { useFeedStore } from '@/stores/feed'
-import ImageUpload from '@/components/ui/ImageUpload.vue'
+import ImageUpload from '@/components/common/ImageUpload.vue'
 import IngredientAutocomplete from '@/components/recipe/IngredientAutocomplete.vue'
 import NutritionFactsLabel from '@/components/recipe/NutritionFactsLabel.vue'
 import { useNutritionCalc, type NutritionRow } from '@/composables/useNutritionCalc'
-import type { Ingredient } from '@/typescript/interface/Ingredient'
+import type { Ingredient } from '@/types/Ingredient'
 
 interface IngredientRow {
   name: string
@@ -106,7 +106,7 @@ async function handleSubmit() {
     if (response.data?.data) {
       feedStore.addPost(response.data.data)
     }
-    step.value = 4 // Success step
+    step.value = 4
   } catch (error) {
     uiStore.showToast('Failed to create recipe', 'error')
   } finally {
@@ -124,7 +124,6 @@ function handleClose() {
     <div class="create-modal relative bg-background w-full max-w-2xl max-h-[95vh] rounded-[28px] border-1.5 border-border shadow-modal flex flex-col overflow-hidden animate-modalIn">
       <button @click="handleClose" class="absolute top-5 right-5 z-50 w-9 h-9 rounded-full bg-background-secondary border-1.5 border-border flex items-center justify-center text-text-muted hover:border-orange hover:text-orange transition-all">✕</button>
 
-      <!-- Header -->
       <header class="p-5 pr-16 md:pr-20 border-b border-border flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 shrink-0">
         <div class="flex gap-1.5 flex-1 w-full">
           <div
@@ -141,10 +140,8 @@ function handleClose() {
         <span class="text-[11px] sm:text-[12px] font-bold text-text-dim shrink-0">Step {{ Math.min(step + 1, 4) }} of 4 — <span class="hidden sm:inline">{{ STEPS[Math.min(step, 3)] }}</span></span>
       </header>
 
-      <!-- Body -->
       <div class="flex-1 overflow-y-auto p-8 flex flex-col">
 
-        <!-- Success Step -->
         <div v-if="step === 4" class="flex-1 flex flex-col items-center justify-center py-12 text-center animate-revamp">
           <div class="w-20 h-20 rounded-full bg-orange flex items-center justify-center text-white mb-6 animate-popIn"><BaseIcons name="check" size="xl" /></div>
           <h2 class="font-montserrat font-extrabold text-3xl mb-2">Recipe shared!</h2>
@@ -163,7 +160,6 @@ function handleClose() {
                'Enter macros per serving for the community.' }}
           </p>
 
-          <!-- Step 0: Photo & Info -->
           <div v-if="step === 0" class="space-y-6">
             <ImageUpload v-model="form.photo" :max-size="10" />
 
@@ -189,7 +185,6 @@ function handleClose() {
             </div>
           </div>
 
-          <!-- Step 1: Ingredients -->
           <div v-if="step === 1" class="animate-revamp">
             <div class="space-y-4 mb-8">
                <div v-for="(ing, i) in form.ingredients" :key="i" class="flex gap-3">
@@ -207,7 +202,6 @@ function handleClose() {
             <button @click="addIngredient" class="w-full py-3.5 border-1.5 border-dashed border-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add ingredient</button>
           </div>
 
-          <!-- Step 2: Method -->
           <div v-if="step === 2" class="space-y-4">
             <div v-for="(s, i) in form.steps" :key="i" class="flex gap-4">
               <div class="w-9 h-9 rounded-full bg-orange text-white font-montserrat font-extrabold text-sm flex items-center justify-center shrink-0 mt-1">{{ i + 1 }}</div>
@@ -217,7 +211,6 @@ function handleClose() {
             <button @click="addStep" class="w-full py-3.5 border-1.5 border-dashed border-border rounded-xl text-text-dim font-bold text-xs hover:border-orange hover:text-orange">+ Add step</button>
           </div>
 
-          <!-- Step 3: Nutrition (auto-calculated from ingredients) -->
           <div v-if="step === 3" class="space-y-6">
             <div v-if="!hasData" class="p-6 bg-background-secondary border-1.5 border-dashed border-border rounded-2xl text-center">
               <p class="text-sm text-text-dim">
@@ -277,7 +270,6 @@ function handleClose() {
         </div>
       </div>
 
-      <!-- Footer -->
       <footer v-if="step < 4" class="p-6 px-8 border-t border-border flex gap-4">
         <button v-if="step > 0" @click="step--" class="px-8 py-3.5 rounded-xl border-1.5 border-border font-bold text-sm text-text-muted hover:bg-background-secondary">Back</button>
         <button

@@ -1,6 +1,6 @@
 import { httpClient } from '../client'
-import type { ApiResponse, AuthResponse } from '@/typescript/interface/ApiResponse'
-import type { User } from '@/typescript/interface/User'
+import type { ApiResponse, AuthResponse } from '@/types/ApiResponse'
+import type { User } from '@/types/User'
 
 export const authApi = {
   register: (data: { username: string; email: string; password: string; displayName: string }) =>

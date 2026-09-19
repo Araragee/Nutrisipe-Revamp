@@ -11,14 +11,14 @@ import FollowButton from "@/components/user/FollowButton.vue";
 import CommentSection from "@/components/post/CommentSection.vue";
 import RatingInput from "@/components/ratings/RatingInput.vue";
 import RatingList from "@/components/ratings/RatingList.vue";
-import VariationList from "@/components/recipe/VariationList.vue";
+import VariationList from "@/components/variations/VariationList.vue";
 import CollectionModal from "@/components/profile/CollectionModal.vue";
 import ExperimentRecipeModal from "@/components/recipe/ExperimentRecipeModal.vue";
 import { variationsApi } from "@/http/endpoints/variations";
 import { ratingsApi } from "@/http/endpoints/ratings";
 import { resolveImage, ogShareUrl } from "@/utils/imageUrl";
 import { useRouter } from "vue-router";
-import type { Post } from "@/typescript/interface/Post";
+import type { Post } from "@/types/Post";
 
 const props = defineProps<{
   postId: string | null;
@@ -109,7 +109,6 @@ async function handleRatingSubmit(data: { rating: number; review?: string }) {
     await ratingsApi.createOrUpdateRating(post.value.id, data.rating, data.review);
     uiStore.showToast("Rating submitted!", "success");
 
-    // Refresh post and rating list
     const response = await postsApi.getById(post.value.id);
     post.value = response.data.data;
     ratingListRef.value?.refresh();
@@ -130,7 +129,6 @@ watch(
     if (newShow && newPostId) {
       fetchPost();
     } else if (!newShow) {
-      // Clear post data when modal closes to prevent flash of old data
       setTimeout(() => {
         post.value = null;
       }, 300);
@@ -160,7 +158,6 @@ const recipeImage = computed(() =>
       </div>
 
       <template v-else-if="post">
-        <!-- Close button -->
         <button
           @click="emit('close')"
           class="absolute top-4 right-4 z-30 w-9 h-9 rounded-full bg-surface/95 dark:bg-surface/95 border border-border hover:bg-background-secondary flex items-center justify-center text-text-muted hover:text-text transition-colors"
@@ -169,7 +166,6 @@ const recipeImage = computed(() =>
           <BaseIcons name="x-mark" size="sm" />
         </button>
 
-        <!-- Toast: link copied -->
         <div
           v-if="showCopyToast"
           class="fixed left-1/2 -translate-x-1/2 bottom-10 z-[150] flex items-center gap-2 px-4 py-2.5 rounded-full bg-text text-background text-sm font-semibold shadow-modal animate-toastIn"
@@ -180,11 +176,9 @@ const recipeImage = computed(() =>
           Link copied
         </div>
 
-        <!-- Left: Image side -->
         <div class="hidden md:block w-[45%] h-full relative overflow-hidden bg-background-secondary">
           <img :src="recipeImage" sizes="(min-width:1024px) 50vw, 100vw" class="w-full h-full object-cover" />
 
-          <!-- Quick actions: flat white pills -->
           <div class="absolute top-4 left-4 z-20 flex items-center gap-2">
             <button
               @click="toggleLike"
@@ -210,24 +204,18 @@ const recipeImage = computed(() =>
           </div>
         </div>
 
-        <!-- Right: Content side -->
         <div class="flex-1 flex flex-col h-full bg-surface dark:bg-surface overflow-hidden relative">
-           <!-- Header -->
           <div class="p-7 pb-5 pt-12 md:pt-7">
             <div class="flex items-start gap-4">
-              <!-- Avatar -->
               <div class="relative shrink-0">
                 <UserAvatar :user="post.user" size="lg" class="border-2 border-orange" />
               </div>
 
-              <!-- Details in one container -->
               <div class="flex-1 min-w-0">
-                <!-- Recipe Title -->
                 <h2 class="font-montserrat font-extrabold text-xl sm:text-2xl tracking-tight leading-tight text-text dark:text-text mb-1.5">
                   {{ post.title }}
                 </h2>
 
-                <!-- Category tag & Stars -->
                 <div class="flex items-center gap-2 mb-2.5 flex-wrap">
                   <span class="px-2.5 py-0.5 rounded-full bg-orange-soft text-orange-deep dark:text-orange-light text-[10px] font-bold capitalize">
                     {{ post.category }}
@@ -239,7 +227,6 @@ const recipeImage = computed(() =>
                   </div>
                 </div>
 
-                <!-- Display Name & Handle (broken into separate lines) & Follow button beside them justified between -->
                 <div class="flex items-center justify-between gap-4 mt-2">
                   <div class="text-xs min-w-0">
                     <p class="font-bold text-text dark:text-text mb-0.5 truncate">{{ post.user.displayName }}</p>
@@ -253,9 +240,7 @@ const recipeImage = computed(() =>
             </div>
           </div>
 
-          <!-- Body -->
           <div class="flex-1 overflow-y-auto lg:px-7 lg:pb-7 pb-3 px-3">
-            <!-- Nutrition stats -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-7">
               <div
                 v-for="n in nutritionFacts"
@@ -272,7 +257,6 @@ const recipeImage = computed(() =>
               </div>
             </div>
 
-            <!-- Tabs -->
             <div class="flex gap-6 border-b border-border mb-6">
               <button
                 v-for="t in ['ingredients', 'instructions', 'reviews']"
@@ -357,13 +341,11 @@ const recipeImage = computed(() =>
                <CommentSection :post-id="post.id" />
             </div>
 
-            <!-- Variations -->
             <div class="mt-8 pt-7 border-t border-border">
                <VariationList :post-id="post.id" />
             </div>
           </div>
 
-          <!-- Footer -->
           <div class="p-5 px-7 border-t border-border bg-surface dark:bg-surface flex items-center gap-2.5">
             <button
               @click="showCollectionModal = true"

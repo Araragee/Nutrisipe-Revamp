@@ -51,7 +51,7 @@ export async function getPostRatingsHandler(
   try {
     const { postId } = req.params
     const { page, limit } = parsePagination(req)
-    const sortBy = (req.query.sortBy as string) || 'newest' // newest, oldest, highest, lowest
+    const sortBy = (req.query.sortBy as string) || 'newest'
 
     const result = await ratingService.getPostRatings(postId, page, limit, sortBy)
 

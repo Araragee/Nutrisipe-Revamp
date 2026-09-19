@@ -207,7 +207,6 @@ async function handleSubmit() {
   }
 }
 
-// ── TEST QUICK-LOGIN (remove before production) ──
 const TEST_ACCOUNTS = [
   { label: 'Admin', email: 'admin@nutrisipe.com', isAdmin: true },
   { label: 'Cook', email: 'cook@nutrisipe.com', isAdmin: false },
@@ -252,7 +251,6 @@ onMounted(() => {
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  // Reduced motion: skip all scroll/scrub work, show stats + bowl complete.
   if (reduceMotion) {
     statDisplays.value = STATS.map((s) => formatStat(s.target, s))
     return
@@ -260,7 +258,6 @@ onMounted(() => {
 
   pageRef.value?.classList.add('anim-ready')
 
-  // Use IntersectionObserver instead of GSAP
   statDisplays.value = STATS.map(s => formatStat(s.target, s))
 
   const BOWL_STAGES = [
@@ -300,15 +297,12 @@ onMounted(() => {
   <div ref="pageRef" class="landing-page relative min-h-screen bg-[#0c0907] text-white">
     <SplashScreen :show="showSplash" />
 
-    <!-- ════ HERO × LOGIN ════ -->
     <section class="relative z-10 min-h-[100dvh] flex flex-col overflow-hidden">
 
-      <!-- Food photo background: dishes weighted left, slate dead space right -->
       <img :src="loginBg" class="absolute inset-0 w-full h-full object-cover object-left" alt="" aria-hidden="true" />
       <div class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-black/55 pointer-events-none"></div>
       <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[#0c0907] pointer-events-none"></div>
 
-      <!-- Nav -->
       <nav class="relative z-10 w-full max-w-7xl mx-auto flex items-center justify-between px-6 py-6">
         <div class="flex items-center gap-2.5">
           <span class="logo-mark w-9 h-9 rounded-[11px] flex items-center justify-center shrink-0 shadow-lg shadow-orange/30">
@@ -334,10 +328,8 @@ onMounted(() => {
         </button>
       </nav>
 
-      <!-- Hero content -->
       <div class="relative z-10 flex-1 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1.15fr_minmax(0,420px)] items-center gap-12 lg:gap-16 px-6 py-12 lg:py-8">
 
-        <!-- Left: headline over the food -->
         <div class="max-w-xl">
           <p class="text-[11px] font-bold uppercase tracking-[0.32em] text-orange-light/90 mb-5">From pantry to plate</p>
           <h1 class="font-montserrat font-black text-5xl sm:text-6xl xl:text-7xl tracking-tight leading-[0.98] mb-6">
@@ -358,7 +350,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Right: portrait liquid-glass login card, sits over the slate dead space -->
         <div
           ref="cardRef"
           id="login-card"
@@ -369,7 +360,6 @@ onMounted(() => {
           <h2 class="font-montserrat font-bold text-[26px] tracking-tight mb-1.5">{{ mode === 'signin' ? 'Welcome back' : 'Join the kitchen' }}</h2>
           <p class="text-sm text-orange-light/80 mb-7">{{ mode === 'signin' ? 'Pick up your spatula right where you left, and start sharing!' : 'Your next favorite recipe starts here.' }}</p>
 
-          <!-- ⚠️ TEST QUICK-LOGIN — remove before production -->
           <div class="quick-login mb-6 rounded-xl p-3">
             <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-orange-light/70 mb-2.5">Test accounts · one-click</p>
             <div class="grid grid-cols-2 gap-2">
@@ -386,7 +376,6 @@ onMounted(() => {
               </button>
             </div>
           </div>
-          <!-- ⚠️ END TEST QUICK-LOGIN -->
 
           <Transition name="slide-down">
             <div v-if="error" class="mb-5 p-3.5 rounded-xl bg-red-500/15 border border-red-400/30 text-red-200 text-xs font-semibold flex items-center gap-2">
@@ -397,7 +386,6 @@ onMounted(() => {
             </div>
           </Transition>
 
-          <!-- Social buttons -->
           <div class="grid grid-cols-2 gap-3 mb-6">
             <button
               @click="handleGoogleLogin"
@@ -529,7 +517,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Scroll cue -->
       <button
         class="relative z-10 mx-auto mb-6 flex flex-col items-center gap-1.5 text-white/45 hover:text-white/80 transition-colors"
         aria-label="Scroll to explore"
@@ -542,7 +529,6 @@ onMounted(() => {
       </button>
     </section>
 
-    <!-- ════ SECTION 1: FEATURES (recipe-card tiles) ════ -->
     <section id="features" class="section-features relative z-10 py-24 sm:py-28 overflow-hidden">
       <div class="max-w-6xl mx-auto px-6">
         <div class="reveal max-w-2xl mb-14">
@@ -562,7 +548,6 @@ onMounted(() => {
             class="reveal recipe-card group rounded-3xl overflow-hidden flex flex-col"
             :class="{ 'delay-100': i === 1, 'delay-200': i === 2 }"
           >
-            <!-- "cover photo" band -->
             <div class="relative h-32 flex items-center justify-center bg-gradient-to-br overflow-hidden" :class="f.band">
               <span class="text-5xl drop-shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">{{ f.emoji }}</span>
               <span class="absolute inset-0 bg-gradient-to-t from-[#15100c]/80 to-transparent"></span>
@@ -584,7 +569,6 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- ════ SECTION 2: HOW IT WORKS (sticky bowl fills as you scroll) ════ -->
     <section id="how-it-works" class="section-how relative z-10 py-24 sm:py-28">
       <div class="max-w-6xl mx-auto px-6">
         <div class="reveal max-w-2xl mb-14">
@@ -595,7 +579,6 @@ onMounted(() => {
         </div>
 
         <div class="grid md:grid-cols-2 gap-12 md:gap-16 items-start">
-          <!-- Sticky bowl — stays put while the steps scroll past, filling layer by layer -->
           <div class="plate-stage md:sticky md:top-24">
             <div class="relative mx-auto w-full max-w-[380px] md:max-w-[520px] aspect-square">
               <div class="plate-glow"></div>
@@ -603,7 +586,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Scroll steps -->
           <ol class="how-steps">
             <li
               v-for="(step, i) in STEPS"
@@ -625,7 +607,6 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- ════ SECTION 3: COMMUNITY + CTA ════ -->
     <section id="community" class="section-community relative z-10 py-24 sm:py-28 overflow-hidden">
       <div class="max-w-6xl mx-auto px-6">
         <div class="reveal max-w-2xl mb-16">
@@ -635,7 +616,6 @@ onMounted(() => {
           </h2>
         </div>
 
-        <!-- Testimonials as polaroids pinned to a board -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 mb-24 pt-4">
           <div v-for="(t, i) in TESTIMONIALS" :key="t.name" class="reveal">
             <figure class="polaroid relative flex flex-col h-full" :class="`tilt-${i}`">
@@ -653,7 +633,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- CTA banner -->
         <div class="reveal cta-banner relative rounded-[34px] px-8 py-16 sm:py-20 text-center overflow-hidden">
           <div class="cta-float" aria-hidden="true">
             <span>🍅</span><span>🥑</span><span>🌿</span><span>🧄</span><span>🥕</span><span>🍋</span>
@@ -676,7 +655,6 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- Footer -->
     <footer class="relative z-10 border-t border-white/10 bg-[#0c0907]/80">
       <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/40">
         <p>© 2026 Nutrisipe Culinary Labs</p>
@@ -696,7 +674,6 @@ onMounted(() => {
   --gy: -999px;
 }
 
-/* iOS-26-style liquid-glass border: a bright specular spot rides the edge toward the cursor. */
 .auth-card::before {
   content: '';
   position: absolute;
@@ -716,7 +693,6 @@ onMounted(() => {
   pointer-events: none;
 }
 
-/* Soft interior sheen that follows the same cursor point for depth. */
 .auth-card::after {
   content: '';
   position: absolute;
@@ -746,7 +722,6 @@ onMounted(() => {
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.18);
 }
 
-/* ⚠️ TEST QUICK-LOGIN — remove before production */
 .quick-login {
   border: 1px dashed rgba(255, 150, 80, 0.35);
   background: rgba(255, 107, 53, 0.06);
@@ -798,7 +773,6 @@ onMounted(() => {
   opacity: 0.6;
 }
 
-/* ── Landing sections — transparent base so the 3D ingredient field drifts behind ── */
 .section-features {
   background: radial-gradient(90% 70% at 85% 0%, rgba(255, 107, 53, 0.10), transparent 60%);
 }
@@ -809,7 +783,6 @@ onMounted(() => {
   background: radial-gradient(90% 70% at 50% 100%, rgba(255, 107, 53, 0.10), transparent 60%);
 }
 
-/* ── Features: recipe-card tiles ── */
 .recipe-card {
   background: rgba(20, 15, 11, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.09);
@@ -833,7 +806,6 @@ onMounted(() => {
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-/* ── How it works: sticky bowl ── */
 .plate-glow {
   position: absolute;
   inset: 6%;
@@ -876,7 +848,6 @@ onMounted(() => {
 .how-step.is-active .how-num {
   -webkit-text-stroke-color: var(--orange);
 }
-/* Small screens: steps slide up as they enter view */
 @media (max-width: 767px) {
   .how-step {
     opacity: 0;
@@ -891,7 +862,6 @@ onMounted(() => {
   .how-step:nth-child(3) { transition-delay: 0.2s; }
 }
 
-/* ── Community: pinned polaroids ── */
 .polaroid {
   background: #fdfbf6;
   padding: 14px 14px 18px;
@@ -939,7 +909,6 @@ onMounted(() => {
   z-index: 3;
 }
 
-/* ── CTA floating ingredients ── */
 .cta-banner {
   isolation: isolate;
   background:
@@ -970,7 +939,6 @@ onMounted(() => {
   50% { transform: translateY(-16px) rotate(8deg); }
 }
 
-/* ── Scroll-reveal (GSAP-driven via .anim-ready) ── */
 .reveal { opacity: 1; }
 .anim-ready .reveal {
   opacity: 0;

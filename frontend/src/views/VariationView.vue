@@ -5,7 +5,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { variationsApi } from '@/http/endpoints/variations'
 import { postsApi } from '@/http/endpoints/posts'
-import type { Post } from '@/typescript/interface/Post'
+import type { Post } from '@/types/Post'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,7 +32,6 @@ async function loadData() {
 
 onMounted(loadData)
 
-// ── Diff helpers ──────────────────────────────────────────────
 const origIngredientNames = computed(
   () => new Set((originalPost.value?.recipe?.ingredients ?? []).map((i) => i.name.toLowerCase())),
 )
@@ -56,7 +55,6 @@ function stepChanged(text: string, side: 'orig' | 'var'): boolean {
   return side === 'var' ? !origStepTexts.value.has(t) : !varStepTexts.value.has(t)
 }
 
-// Summary counts for the legend
 const diffSummary = computed(() => {
   let added = 0
   let removed = 0
@@ -86,7 +84,6 @@ const diffSummary = computed(() => {
       </div>
 
       <template v-else-if="originalPost && variationPost">
-         <!-- Header + legend -->
          <header class="mb-8">
             <p class="text-[11px] font-montserrat font-bold uppercase tracking-widest text-orange mb-1.5">Recipe Comparison</p>
             <h1 class="font-montserrat font-black text-3xl sm:text-4xl tracking-tight text-balance mb-5">What changed in this fork</h1>
@@ -107,7 +104,6 @@ const diffSummary = computed(() => {
          </header>
 
          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6">
-            <!-- Original -->
             <section class="rounded-card border border-border bg-surface shadow-card overflow-hidden">
                <div class="p-5 sm:p-6 border-b border-border">
                   <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-background-secondary border border-border rounded-full text-[10px] font-montserrat font-bold uppercase tracking-widest text-text-dim mb-3">Original</span>
@@ -144,7 +140,6 @@ const diffSummary = computed(() => {
                </div>
             </section>
 
-            <!-- Variation -->
             <section class="rounded-card border-1.5 border-orange/40 bg-surface shadow-[0_8px_30px_rgba(255,107,53,0.12)] overflow-hidden">
                <div class="p-5 sm:p-6 border-b border-orange/15 bg-orange-soft/60">
                   <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-orange text-white rounded-full text-[10px] font-montserrat font-bold uppercase tracking-widest mb-3 shadow-[0_4px_14px_rgba(255,107,53,0.35)]">
@@ -184,7 +179,6 @@ const diffSummary = computed(() => {
             </section>
          </div>
 
-         <!-- Open buttons -->
          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
             <button @click="router.push(`/recipes/${originalPost.id}`)" class="h-12 rounded-btn border border-border bg-surface text-text font-montserrat font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-colors duration-200 ease-out hover:border-orange hover:text-orange active:scale-[0.98]">
                View original

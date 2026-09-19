@@ -2,7 +2,7 @@ import { logger } from '@/utils/logger'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { messagesApi, type Message, type Conversation } from '@/http/endpoints/messages'
-import { socketService } from '@/services/socket'
+import { socketService } from '@/lib/socket'
 
 export const useMessagesStore = defineStore('messages', () => {
   const conversations = ref<Conversation[]>([])
@@ -16,7 +16,6 @@ export const useMessagesStore = defineStore('messages', () => {
     return conversations.value.reduce((sum, conv) => sum + conv.unreadCount, 0)
   })
 
-  // Load all conversations
   async function loadConversations() {
     try {
       isLoading.value = true
@@ -32,7 +31,6 @@ export const useMessagesStore = defineStore('messages', () => {
     }
   }
 
-  // Load messages for a specific conversation
   async function loadMessages(userId: string, page = 1, limit = 50) {
     try {
       isLoading.value = true
@@ -42,7 +40,6 @@ export const useMessagesStore = defineStore('messages', () => {
       const response = await messagesApi.getMessages(userId, { page, limit })
       currentMessages.value = response.data.data
 
-      // Mark conversation as read
       await markConversationRead(userId)
     } catch (err: any) {
       error.value = err.response?.data?.error || 'Failed to load messages'
@@ -52,28 +49,23 @@ export const useMessagesStore = defineStore('messages', () => {
     }
   }
 
-  // Send a message (via Socket.IO preferred)
   function sendMessage(recipientId: string, content: string) {
     if (socketService.isConnected) {
       socketService.sendMessage(recipientId, content)
     } else {
-      // Fallback to REST API
       sendMessageREST(recipientId, content)
     }
   }
 
-  // Send message via REST (fallback)
   async function sendMessageREST(recipientId: string, content: string) {
     try {
       const response = await messagesApi.sendMessage({ recipientId, content })
       const message = response.data.data
 
-      // Add to current messages if viewing this conversation
       if (currentConversationUserId.value === recipientId) {
         currentMessages.value.push(message)
       }
 
-      // Update conversation list
       await loadConversations()
     } catch (err: any) {
       error.value = err.response?.data?.error || 'Failed to send message'
@@ -81,12 +73,10 @@ export const useMessagesStore = defineStore('messages', () => {
     }
   }
 
-  // Mark conversation as read
   async function markConversationRead(userId: string) {
     try {
       await messagesApi.markConversationRead(userId)
 
-      // Update local state
       const conv = conversations.value.find((c) => c.otherUser.id === userId)
       if (conv) {
         conv.unreadCount = 0
@@ -96,12 +86,10 @@ export const useMessagesStore = defineStore('messages', () => {
     }
   }
 
-  // Delete a message
   async function deleteMessage(messageId: string) {
     try {
       await messagesApi.deleteMessage(messageId)
 
-      // Remove from current messages
       currentMessages.value = currentMessages.value.filter((m) => m.id !== messageId)
     } catch (err: any) {
       error.value = err.response?.data?.error || 'Failed to delete message'
@@ -109,9 +97,7 @@ export const useMessagesStore = defineStore('messages', () => {
     }
   }
 
-  // Handle new message received (from Socket.IO)
   function handleMessageReceived(message: Message) {
-    // Add to current messages if viewing this conversation
     if (
       currentConversationUserId.value === message.senderId ||
       currentConversationUserId.value === message.recipientId
@@ -119,30 +105,24 @@ export const useMessagesStore = defineStore('messages', () => {
       currentMessages.value.push(message)
     }
 
-    // Refresh conversation list; surface error in store state so UI can show it.
     loadConversations().catch((err) => {
       error.value = err?.message || 'Failed to refresh conversations'
     })
   }
 
-  // Handle message sent (from Socket.IO)
   function handleMessageSent(message: Message) {
-    // Add to current messages if viewing this conversation
     if (currentConversationUserId.value === message.recipientId) {
-      // Check if message already exists (avoid duplicates)
       const exists = currentMessages.value.some((m) => m.id === message.id)
       if (!exists) {
         currentMessages.value.push(message)
       }
     }
 
-    // Refresh conversation list; surface error in store state so UI can show it.
     loadConversations().catch((err) => {
       error.value = err?.message || 'Failed to refresh conversations'
     })
   }
 
-  // Handle typing indicator
   function handleTyping(userId: string, isTyping: boolean) {
     if (isTyping) {
       typingUsers.value.add(userId)
@@ -151,26 +131,22 @@ export const useMessagesStore = defineStore('messages', () => {
     }
   }
 
-  // Send typing indicator
   function sendTypingIndicator(recipientId: string, isTyping: boolean) {
     if (socketService.isConnected) {
       socketService.sendTypingIndicator(recipientId, isTyping)
     }
   }
 
-  // Check if a user is typing
   function isUserTyping(userId: string): boolean {
     return typingUsers.value.has(userId)
   }
 
-  // Clear current conversation
   function clearCurrentConversation() {
     currentMessages.value = []
     currentConversationUserId.value = null
     typingUsers.value.clear()
   }
 
-  // Reset store
   function reset() {
     conversations.value = []
     currentMessages.value = []
@@ -181,7 +157,6 @@ export const useMessagesStore = defineStore('messages', () => {
   }
 
   return {
-    // State
     conversations,
     currentMessages,
     currentConversationUserId,
@@ -189,10 +164,8 @@ export const useMessagesStore = defineStore('messages', () => {
     error,
     typingUsers,
 
-    // Computed
     totalUnreadCount,
 
-    // Actions
     loadConversations,
     loadMessages,
     sendMessage,

@@ -3,10 +3,10 @@ import BaseIcons from '@/components/base/BaseIcons.vue'
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useMessagesStore } from '@/stores/messages'
-import { socketService } from '@/services/socket'
+import { socketService } from '@/lib/socket'
 import UserAvatar from '@/components/user/UserAvatar.vue'
-import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
-import EmptyState from '@/components/ui/EmptyState.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 import type { Conversation } from '@/http/endpoints/messages'
 
 interface PresenceRow {
@@ -171,7 +171,6 @@ watch(
 
 <template>
   <div class="messages-view flex h-screen overflow-hidden bg-background">
-    <!-- Sidebar: Conversations -->
     <div
       class="w-full md:w-80 lg:w-96 border-r border-border flex flex-col bg-surface/50"
       :class="{ 'hidden md:flex': selectedConversation }"
@@ -183,7 +182,6 @@ watch(
         </p>
       </div>
 
-      <!-- Search Box -->
       <div class="px-6 mb-4">
         <div class="bg-background-secondary rounded-xl px-4 py-2.5 flex items-center gap-3 border border-border">
           <BaseIcons name="magnifying-glass" size="sm" class="text-text-dim" />
@@ -250,13 +248,11 @@ watch(
       </div>
     </div>
 
-    <!-- Main: Chat Area -->
     <div
       class="flex-1 flex flex-col bg-background relative"
       :class="{ 'hidden md:flex': !selectedConversation }"
     >
       <template v-if="selectedConversation">
-        <!-- Chat Header -->
         <header class="h-16 lg:h-20 border-b border-border bg-surface/80 px-6 flex items-center justify-between sticky top-0 z-10">
           <div class="flex items-center gap-3">
             <button @click="selectedConversation = null" aria-label="Back to conversations" class="md:hidden w-10 h-10 rounded-full bg-background-secondary hover:text-orange flex items-center justify-center text-lg transition-[color,transform] duration-200 active:scale-[0.92]">‹</button>
@@ -279,7 +275,6 @@ watch(
           </div>
         </header>
 
-        <!-- Messages container -->
         <div ref="messagesContainer" class="flex-1 overflow-y-auto p-6 space-y-4 messages-bg">
           <div v-if="isLoadingMessages" class="flex justify-center py-10">
             <LoadingSpinner />
@@ -309,7 +304,6 @@ watch(
             </div>
           </div>
 
-          <!-- Typing -->
           <div
             v-if="messagesStore.isUserTyping(selectedConversation.otherUser.id)"
             class="flex justify-start animate-revamp"
@@ -322,7 +316,6 @@ watch(
           </div>
         </div>
 
-        <!-- Input Area -->
         <footer class="p-6 bg-surface/80 border-t border-border">
           <form @submit.prevent="sendMessage" class="flex items-center gap-3">
             <div class="flex-1 relative">

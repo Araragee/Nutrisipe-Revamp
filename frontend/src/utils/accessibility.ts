@@ -1,10 +1,3 @@
-/**
- * Accessibility utilities for keyboard navigation and ARIA support
- */
-
-/**
- * Trap focus within a container (useful for modals)
- */
 export function trapFocus(element: HTMLElement): () => void {
   const focusableElements = element.querySelectorAll<HTMLElement>(
     'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -31,18 +24,13 @@ export function trapFocus(element: HTMLElement): () => void {
 
   element.addEventListener('keydown', handleTab)
 
-  // Focus first element
   firstElement?.focus()
 
-  // Return cleanup function
   return () => {
     element.removeEventListener('keydown', handleTab)
   }
 }
 
-/**
- * Handle escape key to close modals/dropdowns
- */
 export function onEscape(callback: () => void): () => void {
   function handleEscape(e: KeyboardEvent) {
     if (e.key === 'Escape') {
@@ -57,9 +45,6 @@ export function onEscape(callback: () => void): () => void {
   }
 }
 
-/**
- * Announce message to screen readers
- */
 export function announceToScreenReader(message: string, priority: 'polite' | 'assertive' = 'polite') {
   const announcement = document.createElement('div')
   announcement.setAttribute('role', 'status')
@@ -75,9 +60,6 @@ export function announceToScreenReader(message: string, priority: 'polite' | 'as
   }, 1000)
 }
 
-/**
- * Check if element is visible (for skip navigation)
- */
 export function isElementVisible(element: HTMLElement): boolean {
   return !!(
     element.offsetWidth ||
@@ -86,17 +68,11 @@ export function isElementVisible(element: HTMLElement): boolean {
   )
 }
 
-/**
- * Generate unique ID for aria-labelledby/aria-describedby
- */
 let idCounter = 0
 export function generateId(prefix: string = 'a11y'): string {
   return `${prefix}-${++idCounter}`
 }
 
-/**
- * Keyboard navigation helper for arrow keys (useful for menus, lists)
- */
 export function handleArrowNavigation(
   event: KeyboardEvent,
   elements: HTMLElement[],
@@ -138,9 +114,6 @@ export function handleArrowNavigation(
   return newIndex
 }
 
-/**
- * Skip to main content link (for keyboard users)
- */
 export function createSkipLink(): HTMLAnchorElement {
   const skipLink = document.createElement('a')
   skipLink.href = '#main-content'

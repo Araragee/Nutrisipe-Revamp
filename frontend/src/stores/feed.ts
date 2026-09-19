@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { postsApi } from '@/http/endpoints/posts'
-import type { Post } from '@/typescript/interface/Post'
+import type { Post } from '@/types/Post'
 import { useCache } from '@/composables/useCache'
 
 export const useFeedStore = defineStore('feed', () => {
@@ -33,7 +33,7 @@ export const useFeedStore = defineStore('feed', () => {
           if (scope === 'recommendations') return postsApi.getRecommendations(currentPage.value, 20)
           return postsApi.getFeed(currentPage.value, 20)
         },
-        scope === 'all' ? 2 * 60 * 1000 : 0 // Don't cache personalized feeds for too long
+        scope === 'all' ? 2 * 60 * 1000 : 0
       )
 
       if (reset) {
@@ -65,7 +65,6 @@ export const useFeedStore = defineStore('feed', () => {
 
   function addPost(post: Post) {
     posts.value.unshift(post)
-    // Invalidate all feed cache when new post is added
     invalidateCache(/^feed_/)
   }
 

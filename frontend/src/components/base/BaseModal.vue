@@ -46,7 +46,6 @@ function handleBackdropClick() {
       class="relative w-full rounded-2xl shadow-xl bg-white dark:bg-zinc-800 max-h-[90vh] overflow-hidden flex flex-col"
       :class="sizeClasses"
     >
-      <!-- Close Button -->
       <button
         v-if="closeButton"
         @click="emit('close')"
@@ -59,19 +58,16 @@ function handleBackdropClick() {
         </svg>
       </button>
 
-      <!-- Header -->
       <div v-if="$slots.header || title" class="sticky top-0 z-10 px-6 py-4 border-b border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
         <slot name="header">
           <h2 class="text-xl font-bold text-gray-900 dark:text-white" v-if="title">{{ title }}</h2>
         </slot>
       </div>
 
-      <!-- Content -->
       <div class="flex-1 overflow-y-auto px-6 py-4">
         <slot />
       </div>
 
-      <!-- Footer -->
       <div v-if="$slots.footer" class="sticky bottom-0 z-10 px-6 py-4 border-t border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
         <slot name="footer" />
       </div>

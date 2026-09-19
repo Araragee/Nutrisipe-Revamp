@@ -48,7 +48,6 @@ watch(() => props.postId, load)
 <template>
   <div class="rating-histogram bg-background-secondary border border-border rounded-card p-6 shadow-card">
     <div class="flex items-center gap-6 sm:gap-8">
-      <!-- Average summary -->
       <div class="text-center shrink-0 pr-6 sm:pr-8 border-r border-border">
         <div class="font-montserrat font-black text-5xl sm:text-6xl text-orange leading-none tabular-nums">
           {{ averageRating ? averageRating.toFixed(1) : '—' }}
@@ -61,7 +60,6 @@ watch(() => props.postId, load)
         </p>
       </div>
 
-      <!-- Distribution bars -->
       <div class="flex-1 space-y-2">
         <div v-for="row in rows" :key="row.star" class="flex items-center gap-3">
           <span class="w-7 text-xs font-bold text-text-dim text-right tabular-nums">{{ row.star }}<span class="text-orange/70">★</span></span>

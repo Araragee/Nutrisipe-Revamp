@@ -9,7 +9,7 @@ import { usersApi } from '@/http/endpoints/users'
 import { preferencesApi } from '@/http/endpoints/preferences'
 import { useTheme } from '@/composables/useTheme'
 import UserAvatar from '@/components/user/UserAvatar.vue'
-import ImageUpload from '@/components/ui/ImageUpload.vue'
+import ImageUpload from '@/components/common/ImageUpload.vue'
 
 interface Prefs {
   dietary: string[]
@@ -218,7 +218,6 @@ const themeOptions = [
       </header>
 
       <div class="flex flex-col lg:flex-row gap-8">
-        <!-- Sidebar nav -->
         <aside class="lg:w-64 shrink-0">
           <nav class="ls-card rounded-3xl p-2 flex lg:flex-col overflow-x-auto lg:overflow-visible">
             <button
@@ -238,9 +237,7 @@ const themeOptions = [
           </nav>
         </aside>
 
-        <!-- Content -->
         <section class="flex-1 space-y-6">
-          <!-- PROFILE -->
           <div v-if="activeSection === 'profile'" class="settings-card animate-fadeIn">
             <h2 class="settings-h2">Profile</h2>
             <p class="settings-sub">How others see you on Nutrisipe.</p>
@@ -281,7 +278,6 @@ const themeOptions = [
             </div>
           </div>
 
-          <!-- PREFERENCES -->
           <div v-if="activeSection === 'preferences'" class="settings-card animate-fadeIn">
             <h2 class="settings-h2">Taste preferences</h2>
             <p class="settings-sub">These shape your feed — change anytime.</p>
@@ -347,7 +343,6 @@ const themeOptions = [
             </div>
           </div>
 
-          <!-- APPEARANCE -->
           <div v-if="activeSection === 'appearance'" class="settings-card animate-fadeIn">
             <h2 class="settings-h2">Appearance</h2>
             <p class="settings-sub">Pick what feels right today. Saved on this device.</p>
@@ -370,7 +365,6 @@ const themeOptions = [
             </div>
           </div>
 
-          <!-- NOTIFICATIONS -->
           <div v-if="activeSection === 'notifications'" class="settings-card animate-fadeIn">
             <h2 class="settings-h2">Notifications</h2>
             <p class="settings-sub">Choose what pings your bell. Stored on this device.</p>
@@ -396,7 +390,6 @@ const themeOptions = [
             <button @click="saveNotifPrefs" :disabled="isPersistingPrefs" class="btn-save mt-8">Save</button>
           </div>
 
-          <!-- PRIVACY -->
           <div v-if="activeSection === 'privacy'" class="settings-card animate-fadeIn">
             <h2 class="settings-h2">Privacy</h2>
             <p class="settings-sub">Control what others can see.</p>
@@ -428,7 +421,6 @@ const themeOptions = [
             <button @click="savePrivacyPrefs" :disabled="isPersistingPrefs" class="btn-save mt-8">Save</button>
           </div>
 
-          <!-- ACCOUNT -->
           <div v-if="activeSection === 'account'" class="settings-card animate-fadeIn">
             <h2 class="settings-h2">Account</h2>
             <p class="settings-sub">Manage sessions and account state.</p>

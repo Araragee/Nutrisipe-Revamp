@@ -86,7 +86,6 @@ export async function searchUsers(
     }),
   ])
 
-  // Add isFollowing field if currentUserId is provided
   if (currentUserId) {
     const followingIds = await prisma.follow.findMany({
       where: {
@@ -295,7 +294,6 @@ export async function purgeScheduledDeletions(now: Date = new Date()) {
   return { purged: users.length }
 }
 
-// Legacy alias kept for callers expecting hard cascade (admin-only paths).
 export async function deleteUserCascade(userId: string) {
   return prisma.user.delete({ where: { id: userId } })
 }
@@ -440,7 +438,7 @@ export async function getLikedPosts(userId: string, page: number = 1, limit: num
   const posts = likes.map(like => ({
     ...transformPost(like.post),
     isLiked: true,
-    isSaved: false, // We could also check if it's saved by the user
+    isSaved: false,
     likedAt: like.createdAt,
   }))
 

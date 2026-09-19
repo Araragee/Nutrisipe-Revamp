@@ -18,7 +18,6 @@ let observer: IntersectionObserver | null = null
 onMounted(() => {
   if (!imageRef.value) return
 
-  // Create Intersection Observer for lazy loading
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -29,7 +28,7 @@ onMounted(() => {
       })
     },
     {
-      rootMargin: '50px', // Start loading 50px before image enters viewport
+      rootMargin: '50px',
     }
   )
 
@@ -55,13 +54,11 @@ function handleError() {
     class="relative overflow-hidden bg-gray-200 dark:bg-gray-700"
     :style="aspectRatio ? { aspectRatio } : {}"
   >
-    <!-- Placeholder / Skeleton -->
     <div
       v-if="!isLoaded"
       class="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700"
     ></div>
 
-    <!-- Actual Image -->
     <img
       v-if="isInView"
       ref="imageRef"
@@ -74,7 +71,6 @@ function handleError() {
       loading="lazy"
     />
 
-    <!-- Error State -->
     <div
       v-if="hasError"
       class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800"

@@ -63,12 +63,10 @@ async function handleRegister() {
 <template>
   <div class="auth-root min-h-screen flex bg-background dark:bg-background overflow-hidden">
 
-    <!-- ── Left: brand panel ── -->
     <div class="auth-hero hidden lg:flex lg:w-[48%] xl:w-[52%] relative flex-col overflow-hidden">
       <BrandMeshBackground variant="morning" :intensity="0.7" class="!absolute inset-0" />
       <div class="relative z-10 flex flex-col h-full p-12 xl:p-16">
 
-        <!-- Logo -->
         <div class="flex items-center gap-3">
           <span class="logo-mark w-11 h-11 rounded-[14px] flex items-center justify-center shrink-0 shadow-lg">
             <svg viewBox="0 0 22 28" fill="none" class="w-[22px] h-[26px]">
@@ -81,7 +79,6 @@ async function handleRegister() {
           </span>
         </div>
 
-        <!-- Headline + perks -->
         <div class="mt-auto mb-auto pt-12">
           <h1 class="font-montserrat font-black text-4xl xl:text-5xl tracking-tight leading-[1.05] text-text dark:text-text mb-3 text-balance">
             Everything you need to<br /><span class="text-orange">eat better.</span>
@@ -107,13 +104,11 @@ async function handleRegister() {
       </div>
     </div>
 
-    <!-- ── Right: form panel ── -->
     <div class="form-panel flex-1 flex flex-col justify-center items-center px-6 py-12 relative overflow-y-auto">
       <BrandMeshBackground variant="morning" :intensity="0.25" class="!absolute inset-0 lg:hidden" />
 
       <div class="relative z-10 w-full max-w-[420px]">
 
-        <!-- Mobile logo -->
         <div class="flex items-center gap-2.5 mb-8 lg:hidden">
           <span class="logo-mark w-9 h-9 rounded-[11px] flex items-center justify-center shrink-0">
             <svg viewBox="0 0 22 28" fill="none" class="w-[20px] h-[24px]">
@@ -195,7 +190,6 @@ async function handleRegister() {
               </button>
             </div>
 
-            <!-- Password strength -->
             <Transition name="slide-down">
               <div v-if="password" class="mt-2.5">
                 <div class="flex gap-1.5">

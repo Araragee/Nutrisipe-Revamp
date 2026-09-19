@@ -4,7 +4,7 @@ import { socialApi } from '@/http/endpoints/social'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import { ogShareUrl } from '@/utils/imageUrl'
-import type { Post } from '@/typescript/interface/Post'
+import type { Post } from '@/types/Post'
 
 export function usePostActions(post: Ref<Post | null>) {
   const authStore = useAuthStore()
@@ -20,7 +20,6 @@ export function usePostActions(post: Ref<Post | null>) {
     const currentPost = post.value
     const wasLiked = currentPost.isLiked
     
-    // Optimistic update
     currentPost.isLiked = !wasLiked
     currentPost.likeCount += wasLiked ? -1 : 1
     
@@ -31,7 +30,6 @@ export function usePostActions(post: Ref<Post | null>) {
         await socialApi.likePost(currentPost.id)
       }
     } catch (error) {
-      // Revert on error
       currentPost.isLiked = wasLiked
       currentPost.likeCount += wasLiked ? 1 : -1
     }
@@ -46,7 +44,6 @@ export function usePostActions(post: Ref<Post | null>) {
     const currentPost = post.value
     const wasSaved = currentPost.isSaved
     
-    // Optimistic update
     currentPost.isSaved = !wasSaved
     currentPost.saveCount += wasSaved ? -1 : 1
     
@@ -57,7 +54,6 @@ export function usePostActions(post: Ref<Post | null>) {
         await socialApi.savePost(currentPost.id)
       }
     } catch (error) {
-      // Revert on error
       currentPost.isSaved = wasSaved
       currentPost.saveCount += wasSaved ? 1 : -1
     }
@@ -82,7 +78,6 @@ export function usePostActions(post: Ref<Post | null>) {
         }, 2200)
       }
     } catch (error) {
-      // ignore
     }
   }
 

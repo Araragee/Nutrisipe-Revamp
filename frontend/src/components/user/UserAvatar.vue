@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { UserBasic } from '@/typescript/interface/User'
+import type { UserBasic } from '@/types/User'
 
 interface Props {
   user: UserBasic

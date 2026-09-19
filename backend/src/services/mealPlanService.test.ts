@@ -1,4 +1,3 @@
-// Mock dependencies before importing the module under test
 jest.mock('../lib/prisma', () => ({
   prisma: { mealPlan: { findMany: jest.fn() } },
 }))

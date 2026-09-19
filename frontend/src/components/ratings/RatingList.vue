@@ -82,7 +82,6 @@ import { ratingsApi, type Rating } from '@/http/endpoints/ratings'
 
 interface Props {
   postId: string
-  // Optional initial data
   initialRatings?: Rating[]
   initialAverage?: number
   initialTotal?: number
@@ -121,7 +120,7 @@ async function handleDeleteRating(ratingId: string) {
   if (!confirm('Are you sure you want to delete your review?')) return
   try {
     await ratingsApi.deleteRating(ratingId)
-    await fetchRatings() // Refresh
+    await fetchRatings()
   } catch (error) {
     logger.error('Failed to delete rating:', error)
   }

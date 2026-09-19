@@ -5,7 +5,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { mealPlansApi, type GroceryList } from '@/http/endpoints/mealPlans'
 import { useAuthStore } from '@/stores/auth'
-import { toLocalIsoDate } from '@/utils/dateUtils'
+import { toLocalIsoDate } from '@/utils/date'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -28,7 +28,6 @@ function loadChecked() {
     const raw = localStorage.getItem(CHECKED_KEY)
     if (raw) checked.value = new Set(JSON.parse(raw))
   } catch {
-    // ignore
   }
 }
 
@@ -36,7 +35,6 @@ function persistChecked() {
   try {
     localStorage.setItem(CHECKED_KEY, JSON.stringify(Array.from(checked.value)))
   } catch {
-    // ignore
   }
 }
 

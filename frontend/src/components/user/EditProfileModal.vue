@@ -45,7 +45,6 @@ async function handleSubmit() {
     const response = await usersApi.updateProfile(data)
     const updatedUser = response.data.data
 
-    // Update auth store
     authStore.setUser(updatedUser)
 
     emit('updated')
@@ -67,12 +66,10 @@ function handleClose() {
 <template>
   <BaseModal :show="show" title="Edit Profile" @close="handleClose">
     <form @submit.prevent="handleSubmit" class="space-y-6">
-      <!-- Error Message -->
       <div v-if="error" class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm border border-red-200 dark:border-red-800">
         {{ error }}
       </div>
 
-      <!-- Display Name -->
       <div>
         <label for="displayName" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Display Name *
@@ -87,7 +84,6 @@ function handleClose() {
         />
       </div>
 
-      <!-- Avatar URL -->
       <div>
         <label for="avatarUrl" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Avatar URL
@@ -101,7 +97,6 @@ function handleClose() {
         />
       </div>
 
-      <!-- Avatar Preview -->
       <div v-if="avatarUrl" class="flex items-center justify-center">
         <img
           :src="avatarUrl"
@@ -111,7 +106,6 @@ function handleClose() {
         />
       </div>
 
-      <!-- Bio -->
       <div>
         <label for="bio" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Bio

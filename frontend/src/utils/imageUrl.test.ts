@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Mock the constants module before importing imageUrl
 vi.mock('./constants', () => ({
   API_URL: 'http://localhost:3001/api',
 }))
@@ -24,10 +23,8 @@ describe('placeholderImage', () => {
   })
 
   it('different seeds → different hues', () => {
-    // Hard to guarantee different output for all seeds, but visually distinct for common ones
     const a = placeholderImage('seed-1')
     const b = placeholderImage('seed-2')
-    // Both are data URIs
     expect(a).toMatch(/^data:/)
     expect(b).toMatch(/^data:/)
   })

@@ -13,8 +13,8 @@ import EditProfileModal from '@/components/user/EditProfileModal.vue'
 import RecipeModal from '@/components/feed/RecipeModal.vue'
 import RecipeMosaicBackground from '@/components/common/RecipeMosaicBackground.vue'
 import { formatNumber } from '@/utils/format'
-import type { Post } from '@/typescript/interface/Post'
-import type { User } from '@/typescript/interface/User'
+import type { Post } from '@/types/Post'
+import type { User } from '@/types/User'
 
 interface ActivityItem {
   id: string
@@ -120,7 +120,6 @@ async function loadProfile() {
       savedPosts.value = savedRes.data.data
       likedPosts.value = likedRes.data.data
     } else {
-      // For other users, we can only see their liked posts (saved are private)
       const likedRes = await usersApi.getLikedPosts(userId, 1, 50)
       likedPosts.value = likedRes.data.data
     }
@@ -184,12 +183,10 @@ function activityIcon(type: ActivityItem['type']) {
 
 <template>
   <div class="profile-view min-h-screen bg-background md:pb-20">
-    <!-- Loading -->
     <div v-if="isLoading" class="flex items-center justify-center py-32">
       <div class="h-12 w-12 animate-spin rounded-full border-4 border-orange border-t-transparent"></div>
     </div>
 
-    <!-- Error -->
     <div v-else-if="profileError" class="flex items-center justify-center py-32 px-6">
       <div class="max-w-md rounded-card border border-red-500/20 bg-red-500/10 p-8 text-center shadow-card">
         <p class="mb-4 font-semibold text-red-500">{{ profileError }}</p>
@@ -198,7 +195,6 @@ function activityIcon(type: ActivityItem['type']) {
     </div>
 
     <div v-else-if="user">
-      <!-- Banner + header -->
       <header class="relative">
         <div class="relative h-52 overflow-hidden bg-background-secondary sm:h-64 md:h-72">
           <RecipeMosaicBackground
@@ -215,7 +211,6 @@ function activityIcon(type: ActivityItem['type']) {
 
         <div class="mx-auto max-w-6xl px-5 sm:px-8">
           <div class="relative -mt-16 flex flex-col gap-6 sm:-mt-20 md:flex-row md:items-end md:justify-between">
-            <!-- Identity -->
             <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-end animate-rise">
               <div class="group relative">
                 <UserAvatar
@@ -251,7 +246,6 @@ function activityIcon(type: ActivityItem['type']) {
               </div>
             </div>
 
-            <!-- Actions -->
             <div class="flex shrink-0 items-center gap-3 pb-1 sm:pb-3 animate-rise" style="animation-delay: 80ms">
               <template v-if="!isCurrentUser">
                 <FollowButton :user-id="user.id" :is-following="user.isFollowing" size="md" />
@@ -274,7 +268,6 @@ function activityIcon(type: ActivityItem['type']) {
             </div>
           </div>
 
-          <!-- Bio -->
           <p
             v-if="user.bio"
             class="mt-5 max-w-2xl text-pretty leading-relaxed text-text-muted animate-rise"
@@ -290,7 +283,6 @@ function activityIcon(type: ActivityItem['type']) {
             No bio yet — this cook lets their recipes do the talking.
           </p>
 
-          <!-- Stats -->
           <div class="mt-6 flex flex-wrap items-center gap-2 animate-rise" style="animation-delay: 160ms">
             <div
               v-for="s in stats"
@@ -308,7 +300,6 @@ function activityIcon(type: ActivityItem['type']) {
         </div>
       </header>
 
-      <!-- Tabs -->
       <nav
         class="sticky top-0 z-20 mt-8 border-b border-border bg-background/80 backdrop-blur-xl"
       >
@@ -338,7 +329,6 @@ function activityIcon(type: ActivityItem['type']) {
       </nav>
 
       <div class="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-        <!-- Grid tabs -->
         <div v-if="activeTab !== 'activity'">
           <Transition name="fade" mode="out-in">
             <PinGrid
@@ -367,7 +357,6 @@ function activityIcon(type: ActivityItem['type']) {
           </Transition>
         </div>
 
-        <!-- Activity tab -->
         <div v-else class="mx-auto max-w-2xl">
           <ul v-if="activities.length > 0" class="space-y-3">
             <li
@@ -454,7 +443,6 @@ function activityIcon(type: ActivityItem['type']) {
       </button>
     </div>
 
-    <!-- Modals -->
     <EditProfileModal :show="showEditModal" @close="showEditModal = false" @updated="handleProfileUpdated" />
     <RecipeModal :post-id="selectedPostId" :show="showPostModal" @close="showPostModal = false" />
   </div>

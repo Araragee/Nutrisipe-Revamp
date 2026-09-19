@@ -2,16 +2,13 @@ import re
 with open('/Users/dex/Documents/Nutrisipe-Revamp/frontend/src/views/LoginView.vue', 'r') as f:
     content = f.read()
 
-# Remove gsap imports
 content = re.sub(r"import \{ gsap \}.*\n", "", content)
 content = re.sub(r"import \{ ScrollTrigger \}.*\n", "", content)
 content = re.sub(r"gsap\.registerPlugin\(ScrollTrigger\)\n", "", content)
 content = re.sub(r"let gsapCtx: gsap\.Context \| null = null\n", "", content)
 
-# Remove onBeforeUnmount gsaptCtx
 content = re.sub(r"onBeforeUnmount\(\(\) => gsapCtx\?\.revert\(\)\)\n", "", content)
 
-# Remove gsap logic in onMounted
 gsap_logic = """  gsapCtx = gsap.context(() => {
     // ── Hero stat counters ──
     STATS.forEach((stat, i) => {
@@ -185,7 +182,6 @@ intersection_observer_logic = """  // Use IntersectionObserver instead of GSAP
 
 content = content.replace(gsap_logic, intersection_observer_logic)
 
-# Replace IngredientField3D
 content = re.sub(r"import IngredientField3D from '@/components/common/IngredientField3D\.vue'\n", "", content)
 content = re.sub(r"<IngredientField3D :density=\"11\" />", "", content)
 

@@ -1,6 +1,6 @@
 import { httpClient } from '../client'
-import type { Ingredient } from '@/typescript/interface/Ingredient'
-import type { PaginatedResponse, ApiResponse } from '@/typescript/interface/ApiResponse'
+import type { Ingredient } from '@/types/Ingredient'
+import type { PaginatedResponse, ApiResponse } from '@/types/ApiResponse'
 
 export const ingredientsApi = {
   getAll: (params?: any) =>

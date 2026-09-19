@@ -55,7 +55,6 @@ export async function followUserHandler(req: AuthRequest, res: Response, next: N
       }),
     ])
 
-    // Create notification for followed user
     await createNotification({
       userId: targetUserId,
       actorId: req.userId,
@@ -162,7 +161,6 @@ export async function likePostHandler(req: AuthRequest, res: Response, next: Nex
       }),
     ])
 
-    // Create notification for post owner
     await createNotification({
       userId: post.userId,
       actorId: req.userId,
@@ -175,7 +173,6 @@ export async function likePostHandler(req: AuthRequest, res: Response, next: Nex
       select: { likeCount: true },
     })
 
-    // Emit real-time update
     emitPostLiked(postId, req.userId, updatedPost?.likeCount || 0)
 
     res.json({
@@ -229,7 +226,6 @@ export async function unlikePostHandler(req: AuthRequest, res: Response, next: N
       select: { likeCount: true },
     })
 
-    // Emit real-time update
     emitPostUnliked(postId, req.userId, updatedPost?.likeCount || 0)
 
     res.json({
@@ -289,7 +285,6 @@ export async function savePostHandler(req: AuthRequest, res: Response, next: Nex
       select: { saveCount: true },
     })
 
-    // Emit real-time update
     emitPostSaved(postId, req.userId, updatedPost?.saveCount || 0)
 
     res.json({
@@ -343,7 +338,6 @@ export async function unsavePostHandler(req: AuthRequest, res: Response, next: N
       select: { saveCount: true },
     })
 
-    // Emit real-time update
     emitPostUnsaved(postId, req.userId, updatedPost?.saveCount || 0)
 
     res.json({

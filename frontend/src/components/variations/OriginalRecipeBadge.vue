@@ -60,7 +60,6 @@ onMounted(async () => {
     const result = await variationsStore.getOriginalRecipe(props.postId)
     originalRecipe.value = result
   } catch (err) {
-    // Not a variation, which is fine
   }
 })
 

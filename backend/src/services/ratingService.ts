@@ -1,4 +1,4 @@
-import prisma from '../lib/prisma'
+import { prisma } from '../lib/prisma'
 import { AppError } from '../middleware/errorHandler'
 import { transformPost } from '../utils/modelTransformer'
 import { createNotification } from './notificationService'
@@ -15,12 +15,10 @@ export async function createOrUpdateRating(
 ) {
   const { postId, rating, review } = data
 
-  // Validate rating
   if (rating < 1 || rating > 5) {
     throw new AppError(400, 'Rating must be between 1 and 5')
   }
 
-  // Verify post exists
   const post = await prisma.post.findUnique({
     where: { id: postId }
   })
@@ -29,12 +27,10 @@ export async function createOrUpdateRating(
     throw new AppError(404, 'Post not found')
   }
 
-  // Cannot rate your own post
   if (post.userId === userId) {
     throw new AppError(400, 'Cannot rate your own post')
   }
 
-  // Check if rating already exists
   const existingRating = await prisma.rating.findUnique({
     where: {
       userId_postId: { userId, postId }
@@ -45,7 +41,6 @@ export async function createOrUpdateRating(
   let isNew = false
 
   if (existingRating) {
-    // Update existing rating
     ratingResult = await prisma.rating.update({
       where: { id: existingRating.id },
       data: {
@@ -64,7 +59,6 @@ export async function createOrUpdateRating(
       }
     })
   } else {
-    // Create new rating
     isNew = true
     ratingResult = await prisma.rating.create({
       data: {
@@ -85,7 +79,6 @@ export async function createOrUpdateRating(
       }
     })
 
-    // Create notification for post owner (only for new ratings)
     await createNotification({
       userId: post.userId,
       actorId: userId,
@@ -94,7 +87,6 @@ export async function createOrUpdateRating(
     })
   }
 
-  // Recalculate average rating for the post
   await updatePostAverageRating(postId)
 
   return {
@@ -111,7 +103,6 @@ export async function getPostRatings(
 ) {
   const skip = (page - 1) * limit
 
-  // Determine sort order
   let orderBy: any = { createdAt: 'desc' }
 
   switch (sortBy) {
@@ -271,13 +262,11 @@ export async function deleteRating(ratingId: string, userId: string) {
     where: { id: ratingId }
   })
 
-  // Recalculate average rating for the post
   await updatePostAverageRating(rating.postId)
 
   return { success: true }
 }
 
-// Helper function to recalculate post average rating
 async function updatePostAverageRating(postId: string) {
   const ratings = await prisma.rating.findMany({
     where: { postId },
@@ -292,7 +281,7 @@ async function updatePostAverageRating(postId: string) {
   await prisma.post.update({
     where: { id: postId },
     data: {
-      averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
+      averageRating: Math.round(averageRating * 10) / 10,
       ratingCount: totalRatings
     }
   })

@@ -15,7 +15,6 @@ const viewerOpen = ref(false)
 const viewerStartIndex = ref(0)
 const composerOpen = ref(false)
 
-// Track which group user IDs the current user has opened this session
 const seenGroupIds = ref<Set<string>>(new Set())
 
 const TODAY_KEY = `story-seen-${new Date().toLocaleDateString('en-CA')}`
@@ -65,13 +64,11 @@ async function load() {
 function openViewer(index: number) {
   viewerStartIndex.value = index
   viewerOpen.value = true
-  // Mark this group as seen immediately on open
   const group = groups.value[index]
   if (group) markSeen(group.user.id)
 }
 
 function handleViewerClose(lastGroupIndex: number) {
-  // Mark all groups from start through the final group the viewer was on
   for (let i = viewerStartIndex.value; i <= lastGroupIndex; i++) {
     const g = groups.value[i]
     if (g) markSeen(g.user.id)
@@ -98,7 +95,6 @@ defineExpose({ refresh: load })
 <template>
   <div class="stories-rail relative">
     <div class="flex gap-3 overflow-x-auto pb-4 px-1 scrollbar-hide">
-      <!-- Add story tile -->
       <button
         v-if="authStore.user"
         @click="composerOpen = true"

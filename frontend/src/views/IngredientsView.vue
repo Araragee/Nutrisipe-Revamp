@@ -2,8 +2,8 @@
 import { ref, computed, watch, onMounted, reactive } from 'vue'
 import { ingredientsApi } from '@/http/endpoints/ingredients'
 import { useUiStore } from '@/stores/ui'
-import type { Ingredient } from '@/typescript/interface/Ingredient'
-import StatCardModal from '@/components/StatCardModal.vue'
+import type { Ingredient } from '@/types/Ingredient'
+import StatCardModal from '@/components/admin/StatCardModal.vue'
 
 type Status = 'verified' | 'pending' | 'draft'
 type Conv = { q: number; unit: string; g: number }
@@ -26,7 +26,6 @@ const loading = ref(true)
 const search = ref('')
 const cat = ref<'All' | string>('All')
 const selectedId = ref<string | null>(null)
-// Mobile shows list OR editor (master-detail collapses to a tab switch); desktop shows both.
 const mobileTab = ref<'browse' | 'details'>('browse')
 const draft = ref<Ingredient | null>(null)
 const dirty = ref(false)
@@ -403,7 +402,6 @@ onMounted(load)
 <template>
   <div class="h-screen bg-background pt-20 pb-24 px-5 md:py-8 md:px-8 flex flex-col">
     <div class="max-w-[1480px] mx-auto flex-1 flex flex-col min-h-0 w-full">
-      <!-- Header -->
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6 flex-wrap">
         <div>
           <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange/10 text-orange text-[11px] font-bold uppercase tracking-widest mb-2.5 font-montserrat">
@@ -428,7 +426,6 @@ onMounted(load)
         </div>
       </div>
 
-      <!-- Stats -->
       <div class="hidden md:grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         <div v-for="s in statCards" :key="s.lbl" @click="activeModal = s.id" class="p-4 rounded-2xl bg-surface dark:bg-zinc-800/40 border border-border relative overflow-hidden cursor-pointer hover:border-orange transition-all">
           <div class="flex items-center gap-2 mb-2 text-[11px] font-bold uppercase tracking-wider text-text-dim font-montserrat">
@@ -446,9 +443,7 @@ onMounted(load)
         <div class="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
       </div>
 
-      <!-- Master-detail -->
       <template v-else>
-        <!-- Mobile: tab switch between the list and the editor -->
         <div class="xl:hidden flex gap-2 mb-3 shrink-0">
           <button
             @click="mobileTab = 'browse'"
@@ -461,7 +456,6 @@ onMounted(load)
         </div>
 
         <div class="grid grid-cols-1 xl:grid-cols-[360px_1fr] gap-3.5 flex-1 min-h-0">
-        <!-- LEFT: list card -->
         <aside :class="['bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] overflow-hidden flex-col min-h-0', mobileTab === 'browse' ? 'flex' : 'hidden xl:flex']">
           <div class="p-3.5 border-b border-border">
             <div class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-background-secondary border-1.5 border-transparent focus-within:border-orange focus-within:bg-background transition-colors">
@@ -470,7 +464,6 @@ onMounted(load)
             </div>
           </div>
 
-          <!-- Category filter chips -->
           <div class="flex gap-1.5 px-3.5 py-2.5 border-b border-border overflow-x-auto scrollbar-hide">
             <button
               v-for="c in CATEGORIES" :key="c"
@@ -512,9 +505,7 @@ onMounted(load)
           </div>
         </aside>
 
-        <!-- RIGHT: editor card -->
         <section v-if="draft" :class="['bg-surface dark:bg-zinc-800/40 border border-border rounded-[22px] overflow-hidden flex-col relative min-h-0', mobileTab === 'details' ? 'flex' : 'hidden xl:flex']">
-          <!-- Editor head -->
           <div class="flex items-center gap-4 p-5 border-b border-border">
             <div class="w-16 h-16 rounded-2xl bg-background-secondary border border-border flex items-center justify-center text-3xl shrink-0">
               {{ draftExtras.emoji || draftThumbChar }}
@@ -551,9 +542,7 @@ onMounted(load)
             </div>
           </div>
 
-          <!-- Editor body -->
           <div class="flex-1 overflow-y-auto p-5 md:p-6 space-y-7 pb-32">
-            <!-- Identity -->
             <div>
               <div class="flex items-center justify-between font-montserrat font-extrabold text-[12px] uppercase tracking-wider text-text mb-3.5">Identity</div>
               <div class="grid grid-cols-2 gap-3 mb-3">
@@ -606,7 +595,6 @@ onMounted(load)
               </div>
             </div>
 
-            <!-- Nutrition per 100g -->
             <div>
               <div class="flex items-center justify-between font-montserrat font-extrabold text-[12px] uppercase tracking-wider text-text mb-3.5">
                 Nutrition per 100g
@@ -643,7 +631,6 @@ onMounted(load)
                 </div>
               </div>
 
-              <!-- Atwater cross-check -->
               <div class="flex items-center gap-3 p-3 px-3.5 rounded-[14px] border border-border" :style="{ background: 'linear-gradient(135deg, var(--orange-soft), transparent)' }">
                 <span class="w-8 h-8 rounded-[10px] bg-orange text-white flex items-center justify-center shrink-0">
                   <svg v-if="atwater.ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -659,7 +646,6 @@ onMounted(load)
               </div>
             </div>
 
-            <!-- Unit conversions -->
             <div>
               <div class="flex items-center justify-between font-montserrat font-extrabold text-[12px] uppercase tracking-wider text-text mb-3.5">
                 Unit conversions
@@ -698,7 +684,6 @@ onMounted(load)
               </div>
             </div>
 
-            <!-- Allergens -->
             <div>
               <div class="font-montserrat font-extrabold text-[12px] uppercase tracking-wider text-text mb-3.5">Allergens &amp; flags</div>
               <div class="flex flex-wrap gap-1.5">
@@ -712,7 +697,6 @@ onMounted(load)
               </div>
             </div>
 
-            <!-- Source & audit -->
             <div>
               <div class="font-montserrat font-extrabold text-[12px] uppercase tracking-wider text-text mb-3.5">Source &amp; audit trail</div>
               <div class="flex flex-col gap-1.5 mb-3">
@@ -746,7 +730,6 @@ onMounted(load)
               </div>
             </div>
 
-            <!-- Micronutrients -->
             <div>
               <div class="font-montserrat font-extrabold text-[12px] uppercase tracking-wider text-text mb-3.5">Micronutrients per 100g</div>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
@@ -763,7 +746,6 @@ onMounted(load)
             </div>
           </div>
 
-          <!-- Save bar -->
           <transition
             enter-active-class="transition-all duration-200 ease-out"
             enter-from-class="opacity-0 translate-y-2"

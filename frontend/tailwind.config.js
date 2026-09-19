@@ -1,11 +1,3 @@
-/** @type {import('tailwindcss').Config} */
-
-// Our theme tokens live in CSS custom properties that hold *hex* values
-// (e.g. --surface: #18181b). Tailwind's `/<opacity>` modifier would emit an
-// invalid `rgb(#18181b / .7)` for those, so opacity-modified utilities like
-// `bg-surface/70`, `bg-orange/20`, or `shadow-orange/30` silently render
-// transparent. Resolve the color through color-mix so the opacity modifier
-// works while a plain utility (no slash) still returns the raw var.
 const alphaVar = (varName) => ({ opacityValue }) =>
   opacityValue === undefined
     ? `var(${varName})`

@@ -1,7 +1,7 @@
 import { httpClient } from '../client'
-import type { ApiResponse } from '@/typescript/interface/ApiResponse'
-import type { Post } from '@/typescript/interface/Post'
-import type { UserBasic } from '@/typescript/interface/User'
+import type { ApiResponse } from '@/types/ApiResponse'
+import type { Post } from '@/types/Post'
+import type { UserBasic } from '@/types/User'
 
 export interface TrendingTag {
   name: string

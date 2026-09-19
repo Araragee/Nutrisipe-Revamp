@@ -90,7 +90,6 @@ const localRating = ref(props.rating)
 const localReview = ref(props.review)
 const isSubmitting = ref(false)
 
-// Watch for prop changes (when editing existing rating)
 watch(() => props.rating, (newVal) => {
   localRating.value = newVal
 })

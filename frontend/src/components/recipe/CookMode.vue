@@ -40,7 +40,6 @@ const progress = computed(() =>
 const isFirst = computed(() => currentIndex.value === 0)
 const isLast = computed(() => currentIndex.value >= total.value - 1)
 
-// "simmer 10-15 minutes" → 15 min, "1 hour" → 60 min. Takes upper bound of a range.
 const stepDurations = computed(() => {
   const text = current.value?.text ?? ''
   const re = /(\d+(?:\.\d+)?)(?:\s*(?:-|–|to)\s*(\d+(?:\.\d+)?))?\s*(hours?|hrs?|minutes?|mins?|seconds?|secs?)\b/gi
@@ -98,7 +97,6 @@ function onTick() {
         osc.start()
         osc.stop(ctx.currentTime + 0.6)
       } catch {
-        // audio blocked
       }
     }
   }
@@ -137,7 +135,6 @@ async function releaseWakeLock() {
       wakeLockActive.value = false
     }
   } catch {
-    // ignore
   }
 }
 
@@ -194,7 +191,6 @@ onUnmounted(() => {
       v-if="show"
       class="cook-mode fixed inset-0 z-[200] flex flex-col bg-background"
     >
-      <!-- Header -->
       <header class="px-6 py-5 flex items-center justify-between border-b border-border bg-surface/80">
         <div class="flex-1 min-w-0">
           <p class="text-text-dim text-[10px] font-bold uppercase tracking-widest mb-0.5">Cook Mode</p>
@@ -206,12 +202,10 @@ onUnmounted(() => {
         </div>
       </header>
 
-      <!-- Progress -->
       <div class="h-1.5 bg-background-secondary">
         <div class="h-full bg-orange transition-all duration-500" :style="{ width: `${progress}%` }"></div>
       </div>
 
-      <!-- Step body -->
       <main
         class="flex-1 flex flex-col items-center justify-center p-6 sm:p-8 md:p-16 text-center overflow-y-auto"
         @touchstart.passive="onTouchStart"
@@ -231,7 +225,6 @@ onUnmounted(() => {
         </div>
       </main>
 
-      <!-- Running timers -->
       <div v-if="timers.length" class="px-4 sm:px-6 py-3 flex gap-2 overflow-x-auto border-t border-border bg-surface/80" aria-live="polite">
         <div
           v-for="t in timers"
@@ -245,7 +238,6 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Footer controls -->
       <footer class="p-4 sm:p-6 md:p-8 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-border bg-surface/80">
         <div class="max-w-3xl mx-auto flex items-center gap-4">
           <button

@@ -8,25 +8,21 @@ import { env } from '../config/env'
 
 const TEMP_DIR = path.join(env.UPLOAD_DIR || 'uploads', 'temp')
 
-// Ensure directory exists to prevent multer errors
 if (!fs.existsSync(TEMP_DIR)) {
   fs.mkdirSync(TEMP_DIR, { recursive: true })
 }
 
-// Configure storage
 const storage = multer.diskStorage({
   destination: (_req: any, _file: any, cb: any) => {
     cb(null, TEMP_DIR)
   },
   filename: (_req: any, file: any, cb: any) => {
     const uniqueSuffix = Date.now() + '-' + crypto.randomBytes(8).toString('hex')
-    // Sanitize extension to prevent injection via malicious filenames
     const ext = path.extname(file.originalname).replace(/[^a-zA-Z0-9.]/g, '')
     cb(null, file.fieldname + '-' + uniqueSuffix + ext)
   }
 })
 
-// File filter for videos
 const videoFilter = (_req: any, file: any, cb: any) => {
   const allowedMimeTypes = [
     'video/mp4',
@@ -44,7 +40,6 @@ const videoFilter = (_req: any, file: any, cb: any) => {
   }
 }
 
-// File filter for images
 const imageFilter = (_req: any, file: any, cb: any) => {
   const allowedMimeTypes = [
     'image/jpeg',
@@ -61,25 +56,22 @@ const imageFilter = (_req: any, file: any, cb: any) => {
   }
 }
 
-// Video upload configuration
 export const uploadVideo = multer({
   storage,
   fileFilter: videoFilter,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB
+    fileSize: 100 * 1024 * 1024,
   }
 })
 
-// Image upload configuration
 export const uploadImage = multer({
   storage,
   fileFilter: imageFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
+    fileSize: 10 * 1024 * 1024,
   }
 })
 
-// Mixed upload (video + thumbnail)
 export const uploadVideoWithThumbnail = multer({
   storage,
   fileFilter: (req: any, file: any, cb: any) => {
@@ -92,7 +84,7 @@ export const uploadVideoWithThumbnail = multer({
     }
   },
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB max
-    files: 2 // video + thumbnail
+    fileSize: 100 * 1024 * 1024,
+    files: 2
   }
 })

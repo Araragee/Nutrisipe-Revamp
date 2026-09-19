@@ -1,5 +1,5 @@
 import { httpClient } from '../client'
-import type { ApiResponse } from '@/typescript/interface/ApiResponse'
+import type { ApiResponse } from '@/types/ApiResponse'
 
 export interface Collection {
   id: string

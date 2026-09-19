@@ -74,12 +74,10 @@ onMounted(loadCollections)
 <template>
   <BaseModal :show="show" title="Save to Collection" size="md" @close="emit('close')">
     <div class="space-y-4">
-      <!-- Loading -->
       <div v-if="loading" class="flex justify-center py-10">
         <div class="h-8 w-8 animate-spin rounded-full border-4 border-orange border-t-transparent"></div>
       </div>
 
-      <!-- List -->
       <div v-else-if="collections.length > 0" class="-mx-1 max-h-80 space-y-2 overflow-y-auto px-1">
         <button
           v-for="col in collections"
@@ -117,7 +115,6 @@ onMounted(loadCollections)
         </button>
       </div>
 
-      <!-- Empty -->
       <div v-else class="flex flex-col items-center gap-2 py-8 text-center">
         <div class="grid h-12 w-12 place-items-center rounded-full bg-orange-soft text-orange">
           <BaseIcons name="folder" size="md" />

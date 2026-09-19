@@ -1,4 +1,3 @@
-# Stage 1: Build
 FROM node:22-alpine AS build
 
 RUN apk add --no-cache openssl
@@ -16,7 +15,6 @@ COPY src ./src
 RUN npx prisma generate
 RUN npm run build
 
-# Stage 2: Runtime
 FROM node:22-alpine AS runtime
 
 RUN apk add --no-cache openssl

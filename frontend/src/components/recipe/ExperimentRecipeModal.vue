@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { Post } from '@/typescript/interface/Post'
+import type { Post } from '@/types/Post'
 
 const props = defineProps<{
   show: boolean
@@ -141,7 +141,6 @@ const close = () => emit('close')
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
 
-      <!-- LEFT: ingredients editor -->
       <div class="flex flex-col h-full overflow-hidden border-r border-border">
         <div class="p-6 pb-4 flex items-start gap-4">
           <div class="flex-1 min-w-0">
@@ -205,7 +204,6 @@ const close = () => emit('close')
         </div>
       </div>
 
-      <!-- RIGHT: live nutrition -->
       <div class="flex flex-col h-full overflow-hidden border-l border-border bg-background-secondary dark:from-zinc-900/60 dark:to-zinc-900/30">
         <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
           <div class="bg-background border border-border rounded-[20px] p-[18px] shadow-[0_2px_12px_rgba(20,10,0,0.05)] dark:bg-white/5">

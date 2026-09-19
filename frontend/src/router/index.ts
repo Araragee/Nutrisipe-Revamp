@@ -151,7 +151,6 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  // Wait for auth to be initialized if it hasn't been yet
   if (!authStore.isInitialized) {
     await authStore.fetchUser()
   }

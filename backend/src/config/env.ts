@@ -15,8 +15,6 @@ export const env = {
   JWT_SECRET: process.env.JWT_SECRET!,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  // Exact-match allowlist (comma-separated). Set to your deployed frontend origin(s),
-  // e.g. CORS_ORIGIN="https://nutrisipe.onrender.com". Use "*" only to allow all.
   CORS_ORIGINS: (process.env.CORS_ORIGIN || 'http://localhost:5173')
     .split(',')
     .map((s) => s.trim())
@@ -45,7 +43,6 @@ if (!env.JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is not set')
 }
 
-// Known example-file placeholders that must never reach production.
 const PLACEHOLDER_SECRETS = ['your-super-secret-jwt-key', 'dev-only-secret-do-not-use-in-production']
 const isWeakSecret = PLACEHOLDER_SECRETS.includes(env.JWT_SECRET) || env.JWT_SECRET.length < 32
 

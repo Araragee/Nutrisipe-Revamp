@@ -1,7 +1,7 @@
-import prisma from '../lib/prisma'
+import { prisma } from '../lib/prisma'
 import { AppError } from '../middleware/errorHandler'
 import { createNotification } from './notificationService'
-import { processMentions } from '../routes/mentions'
+import { processMentions } from './mentionService'
 import { emitPostCommented } from '../socket'
 
 interface CreateCommentData {
@@ -13,7 +13,6 @@ interface CreateCommentData {
 export async function createComment(userId: string, data: CreateCommentData) {
   const { postId, content, parentId } = data
 
-  // Verify post exists
   const post = await prisma.post.findUnique({
     where: { id: postId },
   })
@@ -22,7 +21,6 @@ export async function createComment(userId: string, data: CreateCommentData) {
     throw new AppError(404, 'Post not found')
   }
 
-  // Verify parent comment exists if provided
   if (parentId) {
     const parent = await prisma.comment.findUnique({
       where: { id: parentId },
@@ -32,7 +30,6 @@ export async function createComment(userId: string, data: CreateCommentData) {
     }
   }
 
-  // Create comment and increment post comment count
   const [comment] = await prisma.$transaction([
     prisma.comment.create({
       data: {
@@ -62,7 +59,6 @@ export async function createComment(userId: string, data: CreateCommentData) {
     }),
   ])
 
-  // Create notification for post owner
   if (post.userId !== userId) {
     await createNotification({
       userId: post.userId,
@@ -73,7 +69,6 @@ export async function createComment(userId: string, data: CreateCommentData) {
     })
   }
 
-  // Create notification for parent comment owner if it's a reply
   if (parentId) {
     const parentComment = await prisma.comment.findUnique({
       where: { id: parentId },
@@ -82,17 +77,15 @@ export async function createComment(userId: string, data: CreateCommentData) {
       await createNotification({
         userId: parentComment.userId,
         actorId: userId,
-        type: 'comment', // Could be 'reply' if we had that type
+        type: 'comment',
         postId: postId,
         commentId: comment.id,
       })
     }
   }
 
-  // Process @mentions in the comment
   await processMentions(content, userId, 'COMMENT', postId, comment.id)
 
-  // Emit real-time update
   const updatedPost = await prisma.post.findUnique({
     where: { id: postId },
     select: { commentCount: true }
@@ -169,7 +162,6 @@ export async function deleteComment(commentId: string, userId: string) {
     throw new AppError(403, 'You can only delete your own comments')
   }
 
-  // Delete comment and decrement post comment count
   await prisma.$transaction([
     prisma.comment.delete({
       where: { id: commentId },
@@ -219,12 +211,10 @@ export async function updateComment(
     },
   })
 
-  // Delete old mentions for this comment
   await prisma.mention.deleteMany({
     where: { commentId }
   })
 
-  // Process new @mentions in the updated comment
   await processMentions(content, userId, 'COMMENT', comment.postId, commentId)
 
   return updatedComment

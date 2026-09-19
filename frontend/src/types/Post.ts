@@ -1,4 +1,4 @@
-import type { PostCategory } from '../types/enums'
+import type { PostCategory } from './enums'
 import type { UserBasic } from './User'
 import type { Recipe } from './Recipe'
 

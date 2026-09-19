@@ -373,7 +373,6 @@ export async function getFeed(userId: string, page: number = 1, limit: number = 
     }
   })
 
-  // Count the actual pools that make up the feed so pagination metadata is accurate.
   const sevenDaysAgoForCount = new Date()
   sevenDaysAgoForCount.setDate(sevenDaysAgoForCount.getDate() - 7)
 
@@ -444,7 +443,6 @@ export async function getPostById(postId: string, userId?: string) {
           userId_postId: { userId, postId: post.id },
         },
       }),
-      // Whether the viewer already follows the post's author (skip for own posts).
       isOwnPost
         ? Promise.resolve(null)
         : prisma.follow.findUnique({
@@ -693,7 +691,7 @@ export async function searchPosts(
   }
 
   // "Cook with what I have": recipe must contain every listed ingredient.
-  // ponytail: substring match on the JSON text column; move to a normalized ingredient table if ranking by partial match is needed.
+  // TODO: substring match on the JSON text column; move to a normalized ingredient table if ranking by partial match is needed.
   const recipeAnd: any[] = (filters.ingredients ?? []).map((term) => ({
     ingredients: { contains: term, mode: 'insensitive' },
   }))
@@ -773,7 +771,6 @@ export async function getAllIngredients() {
         })
       }
     } catch (e) {
-      // Ignore invalid JSON
     }
   })
 
@@ -848,7 +845,6 @@ export async function getPostsByTag(tag: string, userId?: string, page: number =
 export async function getRecommendations(userId: string, page: number = 1, limit: number = 20) {
   const skip = (page - 1) * limit
 
-  // 1. Get user preferences
   const preferences = await prisma.userPreference.findUnique({
     where: { userId },
   })
@@ -857,12 +853,11 @@ export async function getRecommendations(userId: string, page: number = 1, limit
   const prefCuisines = preferences ? JSON.parse(preferences.cuisines || '[]') : []
   const dislikedIngredients = preferences ? JSON.parse(preferences.allergies || '[]') : []
 
-  // 2. Fetch candidate set selecting ONLY minimal fields needed for scoring
   const allPublicPosts = await prisma.post.findMany({
     where: {
       isPublic: true,
-      NOT: { userId }, // Don't recommend own posts
-      user: { isBanned: false }, // Exclude posts by banned users
+      NOT: { userId },
+      user: { isBanned: false },
     },
     select: {
       id: true,
@@ -878,33 +873,27 @@ export async function getRecommendations(userId: string, page: number = 1, limit
       },
     },
     orderBy: { createdAt: 'desc' },
-    take: 100, // Pull a candidate set
+    take: 100,
   })
 
-  // 3. Score and rank posts
   const scoredPosts = allPublicPosts.map((post) => {
     let score = 0
     const tags = post.tags ? (typeof post.tags === 'string' ? JSON.parse(post.tags) : post.tags) : []
     const ingredients = post.recipe ? (typeof post.recipe.ingredients === 'string' ? JSON.parse(post.recipe.ingredients) : post.recipe.ingredients) : []
     const ingredientNames = Array.isArray(ingredients) ? ingredients.map((i: any) => i.name.toLowerCase()) : []
 
-    // Tag match (Weight: 1.5)
     const tagMatch = Array.isArray(tags) ? tags.filter((t: string) => prefTags.includes(t)).length : 0
     score += tagMatch * 1.5
 
-    // Cuisine match (Weight: 1.0)
     if (prefCuisines.includes(post.category)) {
-      score += 2.0 // Category matches one of preferred cuisines
+      score += 2.0
     }
 
-    // Average rating (Weight: 1.0)
     score += (post.averageRating || 0) * 1.0
 
-    // Recent bonus (Weight: 0.5 per day up to 5 days)
     const daysOld = (Date.now() - new Date(post.createdAt).getTime()) / (1000 * 60 * 60 * 24)
     if (daysOld < 5) score += (5 - daysOld) * 0.5
 
-    // Disliked penalty
     if (ingredientNames.some((i: string) => dislikedIngredients.includes(i))) {
       score -= 50
     }
@@ -913,11 +902,10 @@ export async function getRecommendations(userId: string, page: number = 1, limit
   })
 
   const sortedPosts = scoredPosts
-    .filter((p) => p.score > -10) // Filter out hard dislikes
+    .filter((p) => p.score > -10)
     .sort((a, b) => b.score - a.score)
     .slice(skip, skip + limit)
 
-  // 4. Fetch full post details only for the top candidate IDs
   const topPostIds = sortedPosts.map((p) => p.id)
   const posts = await prisma.post.findMany({
     where: { id: { in: topPostIds } },
@@ -934,13 +922,11 @@ export async function getRecommendations(userId: string, page: number = 1, limit
     },
   })
 
-  // Re-sort the fetched posts to match the sorted score order
   const postsMap = new Map(posts.map((p) => [p.id, p]))
   const orderedPosts = sortedPosts
     .map((sp) => postsMap.get(sp.id))
     .filter((p): p is NonNullable<typeof p> => !!p)
 
-  // 5. Transform and check engagement
   const [likes, saves] = await Promise.all([
     prisma.like.findMany({
       where: { userId, postId: { in: topPostIds } },

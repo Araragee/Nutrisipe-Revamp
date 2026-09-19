@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useToast } from '@/composables/useToast'
-import Toast from '@/components/ui/Toast.vue'
+import Toast from '@/components/common/Toast.vue'
 
 const { toasts, removeToast } = useToast()
 
-// Respect prefers-reduced-motion: disables the auto-dismiss progress timer
-// inside each Toast and swaps TransitionGroup for instant fades.
 const reducedMotion = ref(false)
 let mql: MediaQueryList | null = null
 
@@ -45,9 +43,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* Enter: slide in from the right with a subtle spring + scale.
-   Leave: softer, smaller drift so exits feel quieter than enters.
-   Move: smoothly reflow remaining toasts when one is removed (stacking). */
 .toast-enter-active {
   transition:
     transform 0.42s cubic-bezier(0.34, 1.2, 0.64, 1),
@@ -58,7 +53,6 @@ onBeforeUnmount(() => {
   transition:
     transform 0.3s cubic-bezier(0.34, 1.2, 0.64, 1),
     opacity 0.3s ease-out;
-  /* take out of flow so siblings glide up via .toast-move */
   position: absolute;
   width: 100%;
 }
@@ -77,7 +71,6 @@ onBeforeUnmount(() => {
   transform: translate3d(0, -10px, 0) scale(0.97);
 }
 
-/* Reduced-motion variant: instant, opacity-only. */
 .toast-fade-enter-active,
 .toast-fade-leave-active {
   transition: opacity 0.12s linear;

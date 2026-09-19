@@ -4,13 +4,13 @@ import { useFileDrop } from '@/composables/useFileDrop'
 
 interface Props {
   modelValue?: string
-  maxSize?: number // in MB
+  maxSize?: number
   accept?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: '',
-  maxSize: 5, // 5MB default
+  maxSize: 5,
   accept: 'image/*',
 })
 
@@ -42,13 +42,11 @@ async function handleFileSelect(event: Event) {
 
 
 async function processFile(file: File) {
-  // Validate file type
   if (!file.type.startsWith('image/')) {
     emit('error', 'Please select an image file')
     return
   }
 
-  // Validate file size
   const fileSizeMB = file.size / (1024 * 1024)
   if (fileSizeMB > props.maxSize) {
     emit('error', `Image size must be less than ${props.maxSize}MB`)
@@ -58,8 +56,6 @@ async function processFile(file: File) {
   isUploading.value = true
 
   try {
-    // Convert to base64 or upload to cloud storage
-    // For now, we'll use base64 for simplicity
     const reader = new FileReader()
 
     reader.onload = (e) => {
@@ -94,7 +90,6 @@ function removeImage() {
 
 <template>
   <div class="space-y-4">
-    <!-- Upload Area -->
     <div
       v-if="!hasImage"
       @click="openFilePicker"
@@ -162,7 +157,6 @@ function removeImage() {
       </div>
     </div>
 
-    <!-- Image Preview -->
     <div v-if="hasImage" class="relative">
       <img
         :src="previewUrl"

@@ -98,7 +98,6 @@ export async function googleLogin(email: string, displayName: string, avatarUrl?
   })
 
   if (!user) {
-    // Create new user if doesn't exist
     const username = email.split('@')[0] + crypto.randomInt(1000, 9999)
     user = await prisma.user.create({
       data: {

@@ -2,18 +2,15 @@ import { logger } from '@/utils/logger'
 import { ref, onMounted } from 'vue'
 
 export interface PerformanceMetrics {
-  // Navigation timing
   dns: number
   tcp: number
-  ttfb: number // Time to First Byte
+  ttfb: number
   domContentLoaded: number
   windowLoad: number
 
-  // Resource timing
   totalResources: number
   totalTransferSize: number
 
-  // Custom metrics
   customMarks: Map<string, number>
   customMeasures: Map<string, number>
 }
@@ -31,7 +28,6 @@ export function usePerformance() {
     customMeasures: new Map(),
   })
 
-  // Measure navigation timing
   function measureNavigationTiming() {
     if (!performance.timing) return
 
@@ -47,7 +43,6 @@ export function usePerformance() {
     }
   }
 
-  // Measure resource timing
   function measureResourceTiming() {
     const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[]
 
@@ -58,7 +53,6 @@ export function usePerformance() {
     )
   }
 
-  // Mark a performance point
   function mark(name: string): void {
     try {
       performance.mark(name)
@@ -68,7 +62,6 @@ export function usePerformance() {
     }
   }
 
-  // Measure duration between two marks
   function measure(name: string, startMark: string, endMark: string): number {
     try {
       performance.measure(name, startMark, endMark)
@@ -82,7 +75,6 @@ export function usePerformance() {
     }
   }
 
-  // Get First Contentful Paint (FCP)
   function getFCP(): number {
     try {
       const fcpEntry = performance.getEntriesByName('first-contentful-paint')[0]
@@ -92,7 +84,6 @@ export function usePerformance() {
     }
   }
 
-  // Get Largest Contentful Paint (LCP)
   function getLCP(): Promise<number> {
     return new Promise((resolve) => {
       try {
@@ -105,7 +96,6 @@ export function usePerformance() {
 
         observer.observe({ entryTypes: ['largest-contentful-paint'] })
 
-        // Timeout after 10 seconds
         setTimeout(() => {
           observer.disconnect()
           resolve(0)
@@ -116,7 +106,6 @@ export function usePerformance() {
     })
   }
 
-  // Get First Input Delay (FID)
   function getFID(): Promise<number> {
     return new Promise((resolve) => {
       try {
@@ -129,7 +118,6 @@ export function usePerformance() {
 
         observer.observe({ entryTypes: ['first-input'] })
 
-        // Timeout after 30 seconds
         setTimeout(() => {
           observer.disconnect()
           resolve(0)
@@ -140,7 +128,6 @@ export function usePerformance() {
     })
   }
 
-  // Get Cumulative Layout Shift (CLS)
   function getCLS(): Promise<number> {
     return new Promise((resolve) => {
       try {
@@ -155,7 +142,6 @@ export function usePerformance() {
 
         observer.observe({ entryTypes: ['layout-shift'] })
 
-        // Calculate final score after 10 seconds
         setTimeout(() => {
           observer.disconnect()
           resolve(clsScore)
@@ -166,7 +152,6 @@ export function usePerformance() {
     })
   }
 
-  // Log all metrics
   function logMetrics(): void {
     if (!import.meta.env.DEV) return
     logger.log('🚀 Performance Metrics — Navigation Timing:')
@@ -192,7 +177,6 @@ export function usePerformance() {
     }
   }
 
-  // Clear all custom marks and measures
   function clear(): void {
     performance.clearMarks()
     performance.clearMeasures()
@@ -201,7 +185,6 @@ export function usePerformance() {
   }
 
   onMounted(() => {
-    // Wait for page load to measure
     if (document.readyState === 'complete') {
       measureNavigationTiming()
       measureResourceTiming()
