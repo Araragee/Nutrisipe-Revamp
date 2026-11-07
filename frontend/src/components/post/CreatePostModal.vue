@@ -195,18 +195,10 @@ function handleClose() {
 
     <template #footer>
       <div class="flex gap-3">
-        <BaseButton
-          buttonType="primaryOutlined"
-          rounded="full"
-          @click="handleClose"
-          :disabled="isSubmitting"
-          class="flex-1"
-        >
+        <BaseButton variant="secondary" :disabled="isSubmitting" class="flex-1" @click="handleClose">
           Cancel
         </BaseButton>
         <BaseButton
-          buttonType="primary"
-          rounded="full"
           :disabled="!canSubmit"
           :loading="isSubmitting"
           class="flex-1"

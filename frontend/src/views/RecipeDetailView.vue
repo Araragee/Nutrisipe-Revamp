@@ -24,11 +24,13 @@ import { detectAllergens } from '@/utils/allergens'
 import { preferencesApi } from '@/http/endpoints/preferences'
 import { usePostActions } from '@/composables/usePostActions'
 import type { Post } from '@/types/Post'
+import { useConfirm } from '@/composables/useConfirm'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const uiStore = useUiStore()
+const { confirm } = useConfirm()
 
 const post = ref<Post | null>(null)
 const { toggleLike, toggleSave, sharePost: shareRecipe } = usePostActions(post)
@@ -190,7 +192,7 @@ async function handleRatingSubmit(data: { rating: number; review?: string }) {
 
 async function handleDelete() {
   if (!post.value) return
-  if (!confirm('Are you sure you want to delete this recipe?')) return
+  if (!(await confirm({ title: 'Delete this recipe?', message: 'This can’t be undone.', confirmLabel: 'Delete recipe', danger: true }))) return
   isDeleting.value = true
   try {
     await postsApi.delete(post.value.id)

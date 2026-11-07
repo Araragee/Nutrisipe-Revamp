@@ -98,7 +98,6 @@ function handleSubmit() {
           Cancel
         </BaseButton>
         <BaseButton
-          type="submit"
           variant="primary"
           class="flex-1"
           :disabled="!isFormValid"

@@ -19,6 +19,7 @@ import { ratingsApi } from "@/http/endpoints/ratings";
 import { resolveImage, ogShareUrl } from "@/utils/imageUrl";
 import { useRouter } from "vue-router";
 import type { Post } from "@/types/Post";
+import BaseModal from "@/components/base/BaseModal.vue";
 
 const props = defineProps<{
   postId: string | null;
@@ -142,15 +143,8 @@ const recipeImage = computed(() =>
 </script>
 
 <template>
-  <div
-    v-if="show && (isLoading || post)"
-    class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 bg-black/60 animate-revamp"
-    @click.self="emit('close')"
-  >
-    <div
-      class="relative bg-surface dark:bg-surface w-full max-w-5xl h-full max-h-[90vh] rounded-[28px] overflow-hidden shadow-modal border border-border flex animate-modalIn"
-      @click.stop
-    >
+  <BaseModal :show="show && (isLoading || !!post)" size="2xl" bare @close="emit('close')">
+    <div class="relative flex h-[92dvh] w-full sm:h-[90vh]">
       <div v-if="isLoading" class="flex-1 flex items-center justify-center">
         <div
           class="w-12 h-12 border-4 border-orange border-t-transparent rounded-full animate-spin"
@@ -379,24 +373,10 @@ const recipeImage = computed(() =>
 
     <CollectionModal v-if="post && showCollectionModal" :show="showCollectionModal" :post-id="post.id" @close="showCollectionModal = false" />
     <ExperimentRecipeModal :show="showExperiment" :post="post" @close="showExperiment = false" />
-  </div>
+  </BaseModal>
 </template>
 
 <style scoped>
-@keyframes modalIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-.animate-modalIn {
-  animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
 @keyframes toastIn {
   from { opacity: 0; transform: translate(-50%, 20px); }
   to { opacity: 1; transform: translate(-50%, 0); }

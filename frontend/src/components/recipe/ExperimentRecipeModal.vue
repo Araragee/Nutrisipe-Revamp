@@ -121,21 +121,18 @@ const macros = computed(() => [
 
 const onShow = () => { if (props.show) reset() }
 import { watch } from 'vue'
+import BaseModal from '@/components/base/BaseModal.vue'
 watch(() => [props.show, props.post?.id], onShow, { immediate: true })
 
 const close = () => emit('close')
 </script>
 
 <template>
-  <div
-    v-if="show && post"
-    class="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/75"
-    @click.self="close"
-  >
-    <div class="relative bg-background w-full max-w-[960px] h-full max-h-[92vh] rounded-[28px] overflow-hidden border-1.5 border-border shadow-modal grid grid-cols-1 md:grid-cols-[1fr_360px] animate-modalIn">
+  <BaseModal :show="show && !!post" size="2xl" bare @close="close">
+    <div v-if="post" class="relative grid h-[92dvh] w-full grid-cols-1 overflow-y-auto bg-background md:grid-cols-[1fr_360px] md:overflow-hidden sm:h-[90vh]">
       <button
         @click="close"
-        class="absolute top-6 right-6 z-[130] w-9 h-9 rounded-full bg-background/80 border-1.5 border-border text-text-muted hover:border-orange hover:text-orange flex items-center justify-center transition-all shadow-lg"
+        class="absolute top-6 right-6 z-10 w-9 h-9 rounded-full bg-background/80 border-1.5 border-border text-text-muted hover:border-orange hover:text-orange flex items-center justify-center transition-all shadow-lg"
         aria-label="Close"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -252,15 +249,10 @@ const close = () => emit('close')
         </div>
       </div>
     </div>
-  </div>
+  </BaseModal>
 </template>
 
 <style scoped>
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.95) translateY(20px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-.animate-modalIn { animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 @keyframes pulseDot {
   0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
   50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }

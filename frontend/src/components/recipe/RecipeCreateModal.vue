@@ -11,6 +11,8 @@ import IngredientAutocomplete from '@/components/recipe/IngredientAutocomplete.v
 import NutritionFactsLabel from '@/components/recipe/NutritionFactsLabel.vue'
 import { useNutritionCalc, type NutritionRow } from '@/composables/useNutritionCalc'
 import type { Ingredient } from '@/types/Ingredient'
+import BaseModal from '@/components/base/BaseModal.vue'
+import { useConfirm } from '@/composables/useConfirm'
 
 interface IngredientRow {
   name: string
@@ -20,6 +22,7 @@ interface IngredientRow {
 
 const router = useRouter()
 const uiStore = useUiStore()
+const { confirm } = useConfirm()
 const step = ref(0)
 const isSubmitting = ref(false)
 
@@ -117,12 +120,22 @@ async function handleSubmit() {
 function handleClose() {
   uiStore.closeCreateModal()
 }
+
+// Esc / backdrop / ✕ all land here; don't silently drop a half-written recipe
+async function requestClose() {
+  const isDirty = step.value > 0 || !!form.value.title.trim() || !!form.value.photo
+  if (step.value < 4 && isDirty) {
+    const discard = await confirm({ title: 'Discard this recipe?', message: 'What you’ve entered so far will be lost.', confirmLabel: 'Discard', cancelLabel: 'Keep editing', danger: true })
+    if (!discard) return
+  }
+  handleClose()
+}
 </script>
 
 <template>
-  <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/75 animate-revamp">
-    <div class="create-modal relative bg-background w-full max-w-2xl max-h-[95vh] rounded-[28px] border-1.5 border-border shadow-modal flex flex-col overflow-hidden animate-modalIn">
-      <button @click="handleClose" class="absolute top-5 right-5 z-50 w-9 h-9 rounded-full bg-background-secondary border-1.5 border-border flex items-center justify-center text-text-muted hover:border-orange hover:text-orange transition-all">✕</button>
+  <BaseModal :show="true" size="lg" bare @close="requestClose">
+    <div class="create-modal relative flex max-h-[92dvh] w-full flex-col bg-background sm:max-h-[95vh]">
+      <button @click="requestClose" aria-label="Close" class="absolute top-5 right-5 z-10 w-9 h-9 rounded-full bg-background-secondary border-1.5 border-border flex items-center justify-center text-text-muted hover:border-orange hover:text-orange transition-all"><BaseIcons name="x-mark" size="sm" /></button>
 
       <header class="p-5 pr-16 md:pr-20 border-b border-border flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 shrink-0">
         <div class="flex gap-1.5 flex-1 w-full">
@@ -282,17 +295,10 @@ function handleClose() {
       </footer>
 
     </div>
-  </div>
+  </BaseModal>
 </template>
 
 <style scoped>
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.95) translateY(30px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-.animate-modalIn {
-  animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
 @keyframes popIn {
   from { opacity: 0; transform: scale(0); }
   to { opacity: 1; transform: scale(1); }

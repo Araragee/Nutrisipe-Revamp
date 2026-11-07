@@ -8,12 +8,14 @@ import UserAvatar from '@/components/user/UserAvatar.vue'
 import CommentItem from './CommentItem.vue'
 import MentionInput from '@/components/common/MentionInput.vue'
 import type { Comment } from '@/types/Comment'
+import { useConfirm } from '@/composables/useConfirm'
 
 const props = defineProps<{
   postId: string
 }>()
 
 const authStore = useAuthStore()
+const { confirm } = useConfirm()
 
 const comments = ref<Comment[]>([])
 const isLoading = ref(false)
@@ -54,7 +56,7 @@ async function handleSubmitComment() {
 }
 
 async function handleDeleteComment(commentId: string) {
-  if (!confirm('Delete this comment?')) return
+  if (!(await confirm({ title: 'Delete comment?', message: 'This can’t be undone.', confirmLabel: 'Delete', danger: true }))) return
 
   try {
     await commentsApi.delete(commentId)

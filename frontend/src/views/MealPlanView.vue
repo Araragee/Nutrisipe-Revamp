@@ -10,6 +10,8 @@ import { useUiStore } from '@/stores/ui'
 import { resolveImage } from '@/utils/imageUrl'
 import { toLocalIsoDate } from '@/utils/date'
 import { AMDR, macroDistribution } from '@/utils/nutritionTargets'
+import { DialogTitle } from '@headlessui/vue'
+import BaseModal from '@/components/base/BaseModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -613,31 +615,21 @@ const selectedDayCalories = computed(() => {
       <div v-if="isLoading" class="text-center text-text-dim mt-6 text-sm">Loading…</div>
     </div>
 
-    <Transition name="picker-fade">
-    <div
-      v-if="showPicker"
-      class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm"
-      @click.self="showPicker = false"
-    >
-      <div class="picker-panel bg-surface-solid border border-border rounded-card p-6 max-w-2xl w-full max-h-[80vh] flex flex-col shadow-modal">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h3 class="font-montserrat font-extrabold text-xl">Pick a recipe</h3>
-            <p class="text-xs text-text-dim mt-1" v-if="pickerCell">
-              {{ pickerCell.date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }) }} · {{ pickerCell.slot }}
-            </p>
-          </div>
-          <button @click="showPicker = false" aria-label="Close" class="w-10 h-10 -mr-2 rounded-full flex items-center justify-center text-text-dim hover:text-text text-xl transition-[color,transform] duration-200 active:scale-[0.92]">✕</button>
-        </div>
-
-        <input
-          v-model="pickerSearch"
-          type="text"
-          placeholder="Search saved recipes…"
-          class="settings-input mb-4"
-        />
-
-        <div class="flex-1 overflow-y-auto -mx-2 px-2">
+    <BaseModal :show="showPicker" size="lg" @close="showPicker = false">
+      <template #header>
+        <DialogTitle as="h2" class="font-montserrat text-lg font-bold text-text">Pick a recipe</DialogTitle>
+        <p v-if="pickerCell" class="mt-0.5 text-xs text-text-dim">
+          {{ pickerCell.date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }) }} · {{ pickerCell.slot }}
+        </p>
+      </template>
+      <input
+        v-model="pickerSearch"
+        type="text"
+        aria-label="Search saved recipes"
+        placeholder="Search saved recipes…"
+        class="settings-input mb-4"
+      />
+        <div>
           <div v-if="isPickerLoading" class="text-center py-12 text-text-dim text-sm">Loading saved recipes…</div>
           <div v-else-if="filteredPickerPosts.length === 0" class="text-center py-12 text-text-dim text-sm">
             No saved recipes yet. <RouterLink to="/" class="text-orange font-bold">Discover some →</RouterLink>
@@ -657,9 +649,7 @@ const selectedDayCalories = computed(() => {
             </button>
           </div>
         </div>
-      </div>
-    </div>
-    </Transition>
+    </BaseModal>
   </div>
 </template>
 
@@ -680,27 +670,4 @@ const selectedDayCalories = computed(() => {
   box-shadow: 0 0 0 3px var(--orange-soft);
 }
 
-.picker-fade-enter-active,
-.picker-fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-.picker-fade-enter-active .picker-panel {
-  transition: transform 0.25s cubic-bezier(0.34, 1.2, 0.64, 1), opacity 0.25s ease;
-}
-.picker-fade-enter-from,
-.picker-fade-leave-to {
-  opacity: 0;
-}
-.picker-fade-enter-from .picker-panel {
-  opacity: 0;
-  transform: translateY(12px) scale(0.97);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .picker-fade-enter-active .picker-panel,
-  .picker-fade-enter-active,
-  .picker-fade-leave-active {
-    transition: none;
-  }
-}
 </style>

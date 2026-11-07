@@ -8,6 +8,7 @@ import { useTheme } from '@/composables/useTheme'
 import LayoutBackground from '@/components/layout/LayoutBackground.vue'
 import AppShell from '@/components/layout/AppShell.vue'
 import ToastContainer from '@/components/common/ToastContainer.vue'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 
 const authStore = useAuthStore()
 const route = useRoute()
@@ -71,6 +72,7 @@ onMounted(async () => {
       </AppShell>
 
       <ToastContainer />
+      <ConfirmDialog />
     </LayoutBackground>
   </div>
 </template>

@@ -9,11 +9,13 @@ import { useAuthStore } from '@/stores/auth'
 import { resolveImage } from '@/utils/imageUrl'
 import PinGrid from '@/components/feed/PinGrid.vue'
 import RecipeModal from '@/components/feed/RecipeModal.vue'
+import { useConfirm } from '@/composables/useConfirm'
 
 const route = useRoute()
 const router = useRouter()
 const uiStore = useUiStore()
 const authStore = useAuthStore()
+const { confirm } = useConfirm()
 
 const collection = ref<any>(null)
 const isLoading = ref(true)
@@ -48,7 +50,7 @@ async function load() {
 }
 
 async function deleteCollection() {
-  if (!confirm('Delete this collection? Posts will remain saved individually.')) return
+  if (!(await confirm({ title: 'Delete this collection?', message: 'Recipes in it stay in your saved list.', confirmLabel: 'Delete collection', danger: true }))) return
   isDeleting.value = true
   try {
     await collectionsApi.delete(collectionId())
