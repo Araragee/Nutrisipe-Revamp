@@ -25,6 +25,7 @@ export const env = {
   SUPABASE_SERVICE_KEY: isPlaceholderKey ? 'placeholder-key' : rawSupabaseServiceKey,
   SUPABASE_BUCKET: process.env.SUPABASE_BUCKET || 'uploads',
   COOKIE_SECURE: process.env.COOKIE_SECURE === 'true' || (process.env.COOKIE_SECURE === undefined && process.env.NODE_ENV === 'production'),
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
   COOKIE_SAMESITE: (process.env.COOKIE_SAMESITE as 'lax' | 'none' | 'strict') || 'lax',
 }
 

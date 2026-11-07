@@ -100,10 +100,10 @@ export async function meHandler(req: AuthRequest, res: Response, next: NextFunct
 
 export async function googleLoginHandler(req: Request, res: Response, next: NextFunction) {
   try {
-    const { email, displayName, avatarUrl, googleId } = req.body
-    if (!email) throw new AppError(400, 'Email is required')
+    const credential = req.body?.credential
+    if (typeof credential !== 'string' || !credential) throw new AppError(401, 'Google credential is required')
 
-    const result = await authService.googleLogin(email, displayName, avatarUrl, googleId)
+    const result = await authService.googleLogin(credential)
     setAuthCookie(res, result.token)
 
     res.json({
