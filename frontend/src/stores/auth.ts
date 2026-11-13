@@ -31,17 +31,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function loginWithGoogle(googleData: {
-    google_id: string
-    name: string
-    email: string
-    image?: string
-  }) {
+  async function loginWithGoogle(credential: string) {
     isLoading.value = true
     error.value = null
 
     try {
-      const response = await authApi.googleLogin(googleData)
+      const response = await authApi.googleLogin(credential)
       const userData = response.data.data.user
 
       user.value = userData

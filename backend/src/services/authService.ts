@@ -3,6 +3,7 @@ import { hashPassword, comparePassword } from '../utils/hash'
 import { generateToken } from '../utils/jwt'
 import { AppError } from '../middleware/errorHandler'
 import crypto from 'crypto'
+import { env } from '../config/env'
 
 export async function register(username: string, email: string, password: string, displayName: string) {
   const existingUser = await prisma.user.findFirst({
@@ -92,22 +93,77 @@ export async function getCurrentUser(userId: string) {
   return user
 }
 
-export async function googleLogin(email: string, displayName: string, avatarUrl?: string, _googleId?: string) {
-  let user = await prisma.user.findUnique({
-    where: { email },
-  })
+const GOOGLE_ISSUERS = ['accounts.google.com', 'https://accounts.google.com']
+
+export interface GoogleProfile {
+  sub: string
+  email: string
+  name: string
+  picture?: string
+}
+
+// ponytail: Google's tokeninfo endpoint checks signature + expiry for us; swap to google-auth-library (local JWKS) if latency/rate limits matter
+export async function verifyGoogleIdToken(credential: string): Promise<GoogleProfile> {
+  const invalid = new AppError(401, 'Invalid Google credential')
+  if (!env.GOOGLE_CLIENT_ID) throw new AppError(401, 'Google sign-in is not configured')
+
+  let claims: Record<string, unknown>
+  try {
+    const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`)
+    if (!res.ok) throw invalid
+    claims = (await res.json()) as Record<string, unknown>
+  } catch {
+    throw invalid
+  }
+
+  const emailVerified = claims.email_verified === true || claims.email_verified === 'true'
+  const exp = Number(claims.exp)
+  if (
+    claims.aud !== env.GOOGLE_CLIENT_ID ||
+    !GOOGLE_ISSUERS.includes(String(claims.iss)) ||
+    !emailVerified ||
+    !Number.isFinite(exp) ||
+    exp * 1000 <= Date.now() ||
+    typeof claims.sub !== 'string' ||
+    !claims.sub ||
+    typeof claims.email !== 'string' ||
+    !claims.email
+  ) {
+    throw invalid
+  }
+
+  const email = claims.email.toLowerCase()
+  return {
+    sub: claims.sub,
+    email,
+    name: typeof claims.name === 'string' && claims.name ? claims.name : email.split('@')[0],
+    picture: typeof claims.picture === 'string' ? claims.picture : undefined,
+  }
+}
+
+export async function googleLogin(credential: string) {
+  const profile = await verifyGoogleIdToken(credential)
+
+  let user = await prisma.user.findUnique({ where: { googleId: profile.sub } })
 
   if (!user) {
-    const username = email.split('@')[0] + crypto.randomInt(1000, 9999)
-    user = await prisma.user.create({
-      data: {
-        username,
-        email,
-        displayName,
-        avatarUrl: avatarUrl || `https://i.pravatar.cc/150?u=${username}`,
-        passwordHash: 'GOOGLE_AUTH_NO_PASSWORD',
-      },
-    })
+    const byEmail = await prisma.user.findUnique({ where: { email: profile.email } })
+    if (byEmail) {
+      if (byEmail.googleId) throw new AppError(401, 'Email is linked to a different Google account')
+      user = await prisma.user.update({ where: { id: byEmail.id }, data: { googleId: profile.sub } })
+    } else {
+      const username = profile.email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').slice(0, 40) + crypto.randomInt(1000, 9999)
+      user = await prisma.user.create({
+        data: {
+          username,
+          email: profile.email,
+          googleId: profile.sub,
+          displayName: profile.name.slice(0, 100),
+          avatarUrl: profile.picture || `https://i.pravatar.cc/150?u=${username}`,
+          passwordHash: 'GOOGLE_AUTH_NO_PASSWORD',
+        },
+      })
+    }
   }
 
   const token = generateToken(user.id)

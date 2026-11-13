@@ -9,8 +9,8 @@ export const authApi = {
   login: (data: { email: string; password: string }) =>
     httpClient.post<ApiResponse<AuthResponse>>('/auth/login', data, { skipErrorToast: true }),
 
-  googleLogin: (data: { google_id: string; name: string; email: string; image?: string }) =>
-    httpClient.post<ApiResponse<AuthResponse>>('/auth/google-login', data),
+  googleLogin: (credential: string) =>
+    httpClient.post<ApiResponse<AuthResponse>>('/auth/google-login', { credential }),
 
   me: () => httpClient.get<ApiResponse<User>>('/auth/me', { skipErrorToast: true }),
 
