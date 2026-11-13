@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useFileDrop } from '@/composables/useFileDrop'
+import { httpClient } from '@/http/client'
 
 interface Props {
   modelValue?: string
@@ -56,25 +57,38 @@ async function processFile(file: File) {
   isUploading.value = true
 
   try {
-    const reader = new FileReader()
-
-    reader.onload = (e) => {
-      const result = e.target?.result as string
-      previewUrl.value = result
-      emit('update:modelValue', result)
-      isUploading.value = false
-    }
-
-    reader.onerror = () => {
-      emit('error', 'Failed to read image file')
-      isUploading.value = false
-    }
-
-    reader.readAsDataURL(file)
+    const formData = new FormData()
+    formData.append('image', file)
+    const response = await httpClient.post('/upload/image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+      skipErrorToast: true,
+    })
+    setImage(response.data.data.imageUrl)
   } catch (error) {
-    emit('error', 'Failed to upload image')
+    // ponytail: local dev usually has no storage bucket configured; keep the old inline data URL there only
+    if (import.meta.env.DEV) {
+      setImage(await readAsDataUrl(file))
+    } else {
+      emit('error', 'Failed to upload image')
+    }
+  } finally {
     isUploading.value = false
   }
+}
+
+function setImage(url: string) {
+  previewUrl.value = url
+  emit('update:modelValue', url)
+}
+
+function readAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
 }
 
 function removeImage() {
@@ -164,6 +178,8 @@ function removeImage() {
         class="w-full h-64 object-cover rounded-lg"
       />
       <button
+        type="button"
+        aria-label="Remove image"
         @click="removeImage"
         class="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors shadow-lg"
       >

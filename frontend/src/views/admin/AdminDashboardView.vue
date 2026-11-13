@@ -61,7 +61,7 @@ const quickActions = [
 const summaryCards = computed(() => {
   if (!stats.value) return []
   return [
-    { icon: 'users', val: stats.value.users.total, label: 'Total Citizens', tone: 'orange' },
+    { icon: 'users', val: stats.value.users.total, label: 'Total Users', tone: 'orange' },
     { icon: 'document-text', val: stats.value.content.posts, label: 'Recipes Shared', tone: 'orange' },
     { icon: 'fire', val: `+${stats.value.users.newToday}`, label: 'New Today', tone: 'green' },
     { icon: 'exclamation-triangle', val: stats.value.moderation.pendingReports, label: 'Pending Reports', tone: 'amber' },
@@ -81,7 +81,7 @@ const toneStyle = (tone: string) =>
     <div class="max-w-7xl mx-auto">
       <header class="mb-12">
          <p class="text-orange text-[11px] font-bold uppercase tracking-[0.3em] mb-2 font-montserrat">Nutrisipe Platform Management</p>
-         <h1 class="font-montserrat font-extrabold text-4xl md:text-5xl tracking-tight text-balance">Admin Command Center</h1>
+         <h1 class="font-montserrat font-extrabold text-4xl md:text-5xl tracking-tight text-balance">Admin</h1>
       </header>
 
       <div v-if="isLoading" class="flex justify-center py-20">

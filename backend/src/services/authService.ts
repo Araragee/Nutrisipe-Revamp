@@ -60,9 +60,9 @@ export async function login(email: string, password: string) {
     throw new AppError(401, 'Invalid email or password')
   }
 
-  const token = generateToken(user.id)
+  const token = generateToken(user.id, user.tokenVersion)
 
-  const { passwordHash, ...userWithoutPassword } = user
+  const { passwordHash, tokenVersion, ...userWithoutPassword } = user
 
   return { user: userWithoutPassword, token }
 }
@@ -92,6 +92,8 @@ export async function getCurrentUser(userId: string) {
 
   return user
 }
+
+const NO_PASSWORD = 'GOOGLE_AUTH_NO_PASSWORD'
 
 const GOOGLE_ISSUERS = ['accounts.google.com', 'https://accounts.google.com']
 
@@ -150,7 +152,12 @@ export async function googleLogin(credential: string) {
     const byEmail = await prisma.user.findUnique({ where: { email: profile.email } })
     if (byEmail) {
       if (byEmail.googleId) throw new AppError(401, 'Email is linked to a different Google account')
-      user = await prisma.user.update({ where: { id: byEmail.id }, data: { googleId: profile.sub } })
+      // Registration never verified this email, so the existing password may belong to someone else.
+      // Google has verified ownership: drop the password and revoke every existing session.
+      user = await prisma.user.update({
+        where: { id: byEmail.id },
+        data: { googleId: profile.sub, passwordHash: NO_PASSWORD, tokenVersion: { increment: 1 } },
+      })
     } else {
       const username = profile.email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').slice(0, 40) + crypto.randomInt(1000, 9999)
       user = await prisma.user.create({
@@ -160,14 +167,14 @@ export async function googleLogin(credential: string) {
           googleId: profile.sub,
           displayName: profile.name.slice(0, 100),
           avatarUrl: profile.picture || `https://i.pravatar.cc/150?u=${username}`,
-          passwordHash: 'GOOGLE_AUTH_NO_PASSWORD',
+          passwordHash: NO_PASSWORD,
         },
       })
     }
   }
 
-  const token = generateToken(user.id)
-  const { passwordHash, ...userWithoutPassword } = user
+  const token = generateToken(user.id, user.tokenVersion)
+  const { passwordHash, tokenVersion, ...userWithoutPassword } = user
 
   return { user: userWithoutPassword, token }
 }
@@ -181,8 +188,12 @@ export async function devLogin(email: string) {
     throw new AppError(404, `Dev user with email ${email} not found. Please seed the database first.`)
   }
 
-  const token = generateToken(user.id)
-  const { passwordHash, ...userWithoutPassword } = user
+  const token = generateToken(user.id, user.tokenVersion)
+  const { passwordHash, tokenVersion, ...userWithoutPassword } = user
 
   return { user: userWithoutPassword, token }
+}
+
+export async function revokeAllSessions(userId: string) {
+  await prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } })
 }

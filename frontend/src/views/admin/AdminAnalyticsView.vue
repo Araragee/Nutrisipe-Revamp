@@ -93,7 +93,7 @@ async function loadStats() {
               <div class="bg-surface border border-border rounded-card p-7 md:p-8 shadow-card hover:shadow-card-hover transition-shadow duration-200">
                  <p class="text-text-dim font-bold text-[10px] uppercase tracking-widest mb-4">Safety Index</p>
                  <div class="text-4xl font-montserrat font-extrabold mb-2 text-red-500 tabular-nums">{{ stats.users.banned }}</div>
-                 <div class="text-text-muted font-bold text-xs">Citizens restricted</div>
+                 <div class="text-text-muted font-bold text-xs">Users banned</div>
               </div>
            </div>
         </section>

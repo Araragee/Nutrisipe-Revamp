@@ -22,7 +22,7 @@ try {
   console.error(`FATAL: Upload directory "${UPLOAD_DIR}" is not writable:`, err)
   process.exit(1)
 }
-import { errorHandler } from './middleware/errorHandler'
+import { errorHandler, AppError } from './middleware/errorHandler'
 import { initializeSocketServer } from './socket'
 import authRoutes from './routes/auth'
 import postsRoutes from './routes/posts'
@@ -59,7 +59,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new AppError(403, 'Not allowed by CORS'));
     }
   },
   credentials: true,

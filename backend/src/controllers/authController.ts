@@ -7,13 +7,13 @@ import { env } from '../config/env'
 
 const registerSchema = z.object({
   username: z.string().min(3).max(50),
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   password: z.string().min(8).max(128),
   displayName: z.string().min(1).max(100),
 })
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   password: z.string().min(1).max(128),
 })
 
@@ -123,12 +123,18 @@ export async function logoutHandler(_req: Request, res: Response, _next: NextFun
   })
 }
 
-export async function logoutAllHandler(_req: Request, res: Response, _next: NextFunction) {
-  clearAuthCookie(res)
-  res.json({
-    success: true,
-    message: 'Logged out from all devices successfully',
-  })
+export async function logoutAllHandler(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.userId) throw new AppError(401, 'Unauthorized')
+    await authService.revokeAllSessions(req.userId)
+    clearAuthCookie(res)
+    res.json({
+      success: true,
+      message: 'Logged out from all devices successfully',
+    })
+  } catch (error) {
+    next(error)
+  }
 }
 
 export async function devLoginHandler(req: Request, res: Response, next: NextFunction) {

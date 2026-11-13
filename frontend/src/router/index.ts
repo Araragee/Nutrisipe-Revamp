@@ -119,13 +119,13 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: () => import('@/views/admin/AdminDashboardView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin Command Center' },
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin' },
     },
     {
       path: '/admin/users',
       name: 'admin-users',
       component: () => import('@/views/admin/AdminUsersView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: 'Citizen Management' },
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Users' },
     },
     {
       path: '/admin/reports',

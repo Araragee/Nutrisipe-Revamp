@@ -1,7 +1,7 @@
 import { logger } from '../utils/logger'
 import { Server as HTTPServer } from 'http'
 import { Server as SocketIOServer, Socket } from 'socket.io'
-import { verifyToken } from '../utils/jwt'
+import { verifyToken, isTokenCurrent } from '../utils/jwt'
 import { prisma } from '../lib/prisma'
 import { env } from '../config/env'
 // cookie@1 is an ES module build with no default export; a default import is undefined at runtime
@@ -17,6 +17,11 @@ function safe<T extends unknown[]>(name: string, fn: (...args: T) => unknown) {
       logger.error(`Socket handler ${name} failed:`, error)
     }
   }
+}
+
+export function tokenFromHandshake(cookieHeader: string | undefined, auth?: { token?: unknown }) {
+  const token = (cookieHeader && parseCookie(cookieHeader).auth_token) || auth?.token
+  return typeof token === 'string' && token ? token : undefined
 }
 
 const isId = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length <= 64
@@ -37,19 +42,18 @@ export function initializeSocketServer(httpServer: HTTPServer) {
 
   io.use(async (socket: AuthenticatedSocket, next) => {
     try {
-      const raw = socket.handshake.headers.cookie
-      const token = raw ? parseCookie(raw).auth_token : socket.handshake.auth?.token
+      const token = tokenFromHandshake(socket.handshake.headers.cookie, socket.handshake.auth)
 
       if (!token) {
         return next(new Error('Authentication token required'))
       }
 
-      const payload = verifyToken(token as string)
+      const payload = verifyToken(token)
       const user = await prisma.user.findUnique({
         where: { id: payload.userId },
-        select: { isBanned: true },
+        select: { isBanned: true, tokenVersion: true },
       })
-      if (!user || user.isBanned) {
+      if (!user || user.isBanned || !isTokenCurrent(payload, user.tokenVersion)) {
         return next(new Error('Invalid authentication token'))
       }
       socket.userId = payload.userId

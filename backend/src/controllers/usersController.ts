@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+import { Response, NextFunction } from 'express'
 import { z } from 'zod'
 import * as userService from '../services/userService'
 import * as recommendationService from '../services/recommendationService'
@@ -21,11 +21,12 @@ export async function getUserByIdHandler(req: AuthRequest, res: Response, next: 
   }
 }
 
-export async function getUserFollowersHandler(req: Request, res: Response, next: NextFunction) {
+export async function getUserFollowersHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const { id } = req.params
     const { page, limit } = parsePagination(req)
 
+    await userService.assertPrivacyAllowed(id, req.userId, 'publicProfile')
     const result = await userService.getUserFollowers(id, page, limit)
 
     res.json({
@@ -38,11 +39,12 @@ export async function getUserFollowersHandler(req: Request, res: Response, next:
   }
 }
 
-export async function getUserFollowingHandler(req: Request, res: Response, next: NextFunction) {
+export async function getUserFollowingHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const { id } = req.params
     const { page, limit } = parsePagination(req)
 
+    await userService.assertPrivacyAllowed(id, req.userId, 'publicProfile')
     const result = await userService.getUserFollowing(id, page, limit)
 
     res.json({
@@ -55,11 +57,12 @@ export async function getUserFollowingHandler(req: Request, res: Response, next:
   }
 }
 
-export async function getUserActivityHandler(req: Request, res: Response, next: NextFunction) {
+export async function getUserActivityHandler(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const { id } = req.params
     const { limit } = parsePagination(req)
 
+    await userService.assertPrivacyAllowed(id, req.userId, 'publicProfile')
     const activities = await userService.getUserActivity(id, limit)
 
     res.json({

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { verifyToken } from '../utils/jwt'
+import { verifyToken, isTokenCurrent } from '../utils/jwt'
 import { AppError } from './errorHandler'
 import { prisma } from '../lib/prisma'
 
@@ -38,11 +38,16 @@ export async function authenticate(
         username: true,
         role: true,
         isBanned: true,
+        tokenVersion: true,
       },
     })
 
     if (!user) {
       throw new AppError(401, 'User not found')
+    }
+
+    if (!isTokenCurrent(payload, user.tokenVersion)) {
+      throw new AppError(401, 'Unauthorized - Session expired')
     }
 
     if (user.isBanned) {
@@ -74,10 +79,10 @@ export async function optionalAuthenticate(
 
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
-      select: { id: true, email: true, username: true, role: true, isBanned: true },
+      select: { id: true, email: true, username: true, role: true, isBanned: true, tokenVersion: true },
     })
 
-    if (user && !user.isBanned) {
+    if (user && !user.isBanned && isTokenCurrent(payload, user.tokenVersion)) {
       req.user = user
       req.userId = payload.userId
     }

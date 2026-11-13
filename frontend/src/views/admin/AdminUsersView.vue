@@ -117,7 +117,7 @@ async function unbanUser(userId: string) {
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
         <div>
            <RouterLink to="/admin" class="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-orange hover:underline mb-2.5">← Dashboard</RouterLink>
-           <h1 class="font-montserrat font-extrabold text-4xl md:text-5xl tracking-tight text-balance">Citizen Management</h1>
+           <h1 class="font-montserrat font-extrabold text-4xl md:text-5xl tracking-tight text-balance">Users</h1>
         </div>
       </div>
 
@@ -148,11 +148,11 @@ async function unbanUser(userId: string) {
          <div class="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin"></div>
       </div>
 
-      <div v-else class="bg-surface rounded-card border border-border overflow-hidden shadow-card">
-        <table class="w-full border-collapse">
+      <div v-else class="bg-surface rounded-card border border-border overflow-x-auto shadow-card">
+        <table class="w-full min-w-[720px] border-collapse">
            <thead>
               <tr class="bg-background-secondary text-text-dim text-[10px] font-bold uppercase tracking-[0.2em]">
-                 <th class="px-8 py-5 text-left">Citizen</th>
+                 <th class="px-8 py-5 text-left">User</th>
                  <th class="px-6 py-5 text-left">Role</th>
                  <th class="px-6 py-5 text-left">Status</th>
                  <th class="px-6 py-5 text-left">Engagement</th>
@@ -187,7 +187,7 @@ async function unbanUser(userId: string) {
                     <div class="text-xs font-bold text-text-muted tabular-nums">{{ user._count?.posts || 0 }} Recipes • {{ user.followerCount || 0 }} Followers</div>
                  </td>
                  <td class="px-8 py-5 text-right">
-                    <div class="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                    <div class="flex justify-end gap-3 transition-opacity duration-150 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100">
                        <button v-if="!user.isBanned" @click="openBanModal(user)" class="text-xs font-bold text-red-500 hover:underline">Ban</button>
                        <button v-else @click="unbanUser(user.id)" class="text-xs font-bold text-green-600 dark:text-green-400 hover:underline">Unban</button>
                        <button @click="router.push(`/profile/${user.id}`)" class="text-xs font-bold text-orange hover:underline">View</button>
