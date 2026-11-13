@@ -7,6 +7,9 @@ import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { resolveImage } from '@/utils/imageUrl'
 import ImageUpload from '@/components/common/ImageUpload.vue'
+import BaseModal from '@/components/base/BaseModal.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseIcons from '@/components/base/BaseIcons.vue'
 
 const emit = defineEmits<{
   close: []
@@ -67,26 +70,16 @@ onMounted(loadSaved)
 </script>
 
 <template>
-  <Teleport to="body">
-    <div
-      class="fixed inset-0 z-[180] flex items-center justify-center p-6 bg-black/60"
-      @click.self="emit('close')"
-    >
-      <div class="bg-surface border-1.5 border-border rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-modal">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h3 class="font-montserrat font-extrabold text-xl">Share a story</h3>
-            <p class="text-xs text-text-dim">Visible to followers for 24 hours.</p>
-          </div>
-          <button @click="emit('close')" class="text-text-dim text-xl">✕</button>
-        </div>
+  <BaseModal :show="true" title="Share a story" @close="emit('close')">
+        <p class="-mt-2 mb-5 text-xs text-text-dim">Visible to followers for 24 hours.</p>
 
         <div v-if="imageUrl" class="mb-4 relative">
           <img :src="resolveImage(imageUrl)" class="w-full aspect-[3/4] object-cover rounded-2xl" />
           <button
             @click="imageUrl = ''"
-            class="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/55 text-white text-sm"
-          >✕</button>
+            aria-label="Remove photo"
+            class="absolute top-2 right-2 grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white"
+          ><BaseIcons name="x-mark" size="sm" /></button>
         </div>
 
         <ImageUpload
@@ -123,16 +116,12 @@ onMounted(loadSaved)
           </div>
         </div>
 
-        <button
-          @click="submit"
-          :disabled="!imageUrl || isSubmitting"
-          class="btn-primary w-full py-3 mt-6 text-sm disabled:opacity-50"
-        >
-          {{ isSubmitting ? 'Posting…' : 'Post story' }}
-        </button>
-      </div>
-    </div>
-  </Teleport>
+    <template #footer>
+      <BaseButton block :disabled="!imageUrl" :loading="isSubmitting" @click="submit">
+        {{ isSubmitting ? 'Posting…' : 'Post story' }}
+      </BaseButton>
+    </template>
+  </BaseModal>
 </template>
 
 <style scoped>

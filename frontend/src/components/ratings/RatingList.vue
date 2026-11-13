@@ -79,6 +79,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import StarRating from '@/components/common/StarRating.vue'
 import { useAuthStore } from '@/stores/auth'
 import { ratingsApi, type Rating } from '@/http/endpoints/ratings'
+import { useConfirm } from '@/composables/useConfirm'
 
 interface Props {
   postId: string
@@ -90,6 +91,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const authStore = useAuthStore()
+const { confirm } = useConfirm()
 
 const ratings = ref<Rating[]>(props.initialRatings || [])
 const averageRating = ref(props.initialAverage || 0)
@@ -117,7 +119,7 @@ function canDelete(rating: Rating): boolean {
 }
 
 async function handleDeleteRating(ratingId: string) {
-  if (!confirm('Are you sure you want to delete your review?')) return
+  if (!(await confirm({ title: 'Delete your review?', message: 'Your rating and review will be removed from this recipe.', confirmLabel: 'Delete review', danger: true }))) return
   try {
     await ratingsApi.deleteRating(ratingId)
     await fetchRatings()

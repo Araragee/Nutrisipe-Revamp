@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { resolveImage } from '@/utils/imageUrl'
 import UserAvatar from '@/components/user/UserAvatar.vue'
+import { useConfirm } from '@/composables/useConfirm'
 
 const props = defineProps<{
   groups: StoryGroup[]
@@ -22,11 +23,13 @@ const emit = defineEmits<{
 const router = useRouter()
 const authStore = useAuthStore()
 const uiStore = useUiStore()
+const { confirm } = useConfirm()
 
 const groupIndex = ref(props.startIndex)
 const storyIndex = ref(0)
 const progress = ref(0)
 const isPaused = ref(false)
+const isConfirming = ref(false)
 
 const STORY_DURATION = 5000
 
@@ -46,7 +49,7 @@ function tick(timestamp: number) {
   const delta = timestamp - lastTimestamp
   lastTimestamp = timestamp
 
-  if (!isPaused.value && currentStory.value) {
+  if (!isPaused.value && !isConfirming.value && currentStory.value) {
     progress.value += (delta / STORY_DURATION) * 100
     if (progress.value >= 100) {
       progress.value = 100
@@ -161,6 +164,7 @@ function onTap(side: 'left' | 'right') {
 }
 
 function handleKey(e: KeyboardEvent) {
+  if (isConfirming.value) return
   if (e.key === 'ArrowLeft') prevStory()
   else if (e.key === 'ArrowRight' || e.key === ' ') {
     e.preventDefault()
@@ -169,11 +173,15 @@ function handleKey(e: KeyboardEvent) {
 }
 
 async function deleteCurrent() {
-  if (!currentStory.value) return
-  if (!confirm('Delete this story?')) return
+  const storyId = currentStory.value?.id
+  if (!storyId) return
+  isConfirming.value = true
+  const ok = await confirm({ title: 'Delete this story?', message: 'It disappears for everyone right away.', confirmLabel: 'Delete', danger: true })
+  isConfirming.value = false
+  if (!ok) return
   try {
-    await storiesApi.delete(currentStory.value.id)
-    emit('delete', currentStory.value.id)
+    await storiesApi.delete(storyId)
+    emit('delete', storyId)
     nextStory()
   } catch {
     uiStore.showToast('Failed to delete story', 'error')

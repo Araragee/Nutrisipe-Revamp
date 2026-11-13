@@ -132,7 +132,6 @@ function handleClose() {
           Cancel
         </BaseButton>
         <BaseButton
-          type="submit"
           variant="primary"
           :disabled="isSubmitting"
           :loading="isSubmitting"

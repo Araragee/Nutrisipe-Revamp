@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import { adminApi } from '@/http/endpoints/admin'
+import BaseModal from '@/components/base/BaseModal.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -150,36 +152,15 @@ function formatDate(date: string) {
       </div>
     </div>
 
-    <Transition name="modal-fade">
-    <div v-if="showResolutionModal" class="fixed inset-0 z-[100] flex items-center justify-center p-6">
-       <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showResolutionModal = false"></div>
-       <div class="modal-panel relative w-full max-w-md bg-surface-solid border border-border rounded-card p-8 md:p-10 shadow-modal">
-          <h2 class="font-montserrat font-extrabold text-2xl mb-4 capitalize text-balance">{{ resolutionAction.toLowerCase() }} report</h2>
-          <textarea v-model="moderatorNote" rows="3" class="w-full bg-background-secondary border-1.5 border-border rounded-2xl p-4 mb-7 outline-none focus:border-orange transition-colors duration-200 resize-none" placeholder="Add moderator notes..."></textarea>
-          <div class="flex gap-3">
-             <button @click="confirmResolution" class="flex-1 btn-primary py-3.5 active:scale-[0.96] transition-transform">Confirm</button>
-             <button @click="showResolutionModal = false" class="flex-1 btn-secondary active:scale-[0.96] transition-transform">Cancel</button>
-          </div>
-       </div>
-    </div>
-    </Transition>
+    <BaseModal :show="showResolutionModal" :title="`${resolutionAction === 'RESOLVED' ? 'Resolve' : 'Dismiss'} report`" @close="showResolutionModal = false">
+      <label for="moderator-note" class="mb-2 block text-sm font-semibold text-text">Moderator note</label>
+      <textarea id="moderator-note" v-model="moderatorNote" rows="3" class="w-full resize-none rounded-2xl border-1.5 border-border bg-background-secondary p-4 text-text outline-none transition-colors duration-200 focus:border-orange" placeholder="What did you find, and what action did you take?"></textarea>
+      <template #footer>
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <BaseButton variant="secondary" @click="showResolutionModal = false">Cancel</BaseButton>
+          <BaseButton @click="confirmResolution">Confirm</BaseButton>
+        </div>
+      </template>
+    </BaseModal>
   </div>
 </template>
-
-<style scoped>
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-.modal-fade-enter-active .modal-panel {
-  transition: transform 0.25s cubic-bezier(0.34, 1.2, 0.64, 1), opacity 0.25s ease;
-}
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-.modal-fade-enter-from .modal-panel {
-  opacity: 0;
-  transform: translateY(12px) scale(0.97);
-}
-</style>

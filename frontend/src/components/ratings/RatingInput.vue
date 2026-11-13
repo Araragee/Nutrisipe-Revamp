@@ -33,26 +33,14 @@
     </div>
 
     <div class="flex gap-3 justify-end">
-      <BaseButton
-        @click="handleCancel"
-        buttonType="plainOutlined"
-        :disabled="isSubmitting"
-        size="sm"
-        rounded="lg"
-        widthClass="w-auto"
-        textStyle="normal-case"
-      >
+      <BaseButton variant="secondary" size="sm" :disabled="isSubmitting" @click="handleCancel">
         Cancel
       </BaseButton>
       <BaseButton
-        @click="handleSubmit"
-        buttonType="primary"
+        size="sm"
         :disabled="localRating === 0"
         :loading="isSubmitting"
-        size="sm"
-        rounded="lg"
-        widthClass="w-auto"
-        textStyle="normal-case"
+        @click="handleSubmit"
       >
         {{ isEditing ? 'Update Rating' : 'Submit Rating' }}
       </BaseButton>

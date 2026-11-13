@@ -13,6 +13,8 @@ import PinGrid from '@/components/feed/PinGrid.vue'
 import PinSkeleton from '@/components/feed/PinSkeleton.vue'
 import RecipeModal from '@/components/feed/RecipeModal.vue'
 import type { Post } from '@/types/Post'
+import BaseModal from '@/components/base/BaseModal.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -286,86 +288,36 @@ watch(isNearBottom, (near) => {
       </div>
     </div>
 
-    <Transition name="modal">
-      <div
-        v-if="showNewModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-5 backdrop-blur-sm"
-        @click.self="showNewModal = false"
-      >
-        <div
-          class="w-full max-w-md overflow-hidden rounded-[28px] border border-border bg-surface shadow-modal"
-        >
-          <div class="p-7">
-            <div class="mb-6 flex items-start justify-between">
-              <div>
-                <h3 class="font-montserrat text-2xl font-extrabold tracking-tight text-text">
-                  New Collection
-                </h3>
-                <p class="mt-1 text-sm text-text-dim">Give your board a name and you’re set.</p>
-              </div>
-              <button
-                @click="showNewModal = false"
-                aria-label="Close"
-                class="grid h-9 w-9 place-items-center rounded-full bg-background-secondary text-text-dim transition-[transform,color] duration-200 ease-revamp hover:text-text active:scale-90"
-              >
-                <BaseIcons name="x-mark" size="sm" />
-              </button>
-            </div>
-
-            <label class="mb-2 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-text-dim"
-              >Name</label
-            >
-            <input
-              v-model="newName"
-              type="text"
-              placeholder="Sunday Brunch"
-              class="mb-4 w-full rounded-xl border-1.5 border-border bg-background-secondary px-4 py-3 text-sm text-text outline-none transition-colors duration-200 focus:border-orange"
-              @keyup.enter="createCollection"
-            />
-
-            <label class="mb-2 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-text-dim"
-              >Description <span class="text-text-dim/60">(optional)</span></label
-            >
-            <textarea
-              v-model="newDescription"
-              rows="3"
-              placeholder="Easy weekend recipes for slow mornings"
-              class="mb-4 w-full resize-none rounded-xl border-1.5 border-border bg-background-secondary px-4 py-3 text-sm text-text outline-none transition-colors duration-200 focus:border-orange"
-            ></textarea>
-
-            <label
-              class="mb-6 flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-background-secondary/60 p-3"
-            >
-              <input v-model="newPublic" type="checkbox" class="h-4 w-4 accent-orange" />
-              <span class="text-sm text-text">
-                <span class="font-semibold">Make public</span>
-                <span class="text-text-dim"> — others can browse this board</span>
-              </span>
-            </label>
-
-            <div class="flex justify-end gap-3">
-              <button
-                @click="showNewModal = false"
-                class="rounded-full border border-border bg-surface px-5 py-2.5 font-montserrat text-xs font-bold uppercase tracking-widest text-text transition-[transform,color,border-color] duration-200 ease-revamp hover:border-orange/40 hover:text-orange active:scale-[0.96]"
-              >
-                Cancel
-              </button>
-              <button
-                @click="createCollection"
-                :disabled="!canCreate"
-                class="inline-flex items-center gap-2 rounded-full bg-orange px-6 py-2.5 font-montserrat text-xs font-bold uppercase tracking-widest text-white shadow-[0_6px_24px_rgba(255,107,53,0.35)] transition-[transform,background-color,opacity] duration-200 ease-revamp hover:bg-orange-light active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
-              >
-                <span
-                  v-if="isCreating"
-                  class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
-                ></span>
-                {{ isCreating ? 'Creating' : 'Create' }}
-              </button>
-            </div>
-          </div>
+    <BaseModal :show="showNewModal" title="New collection" @close="showNewModal = false">
+      <form id="new-collection-form" class="space-y-4" @submit.prevent="createCollection">
+        <p class="-mt-1 text-sm text-text-dim">Give your board a name and you’re set.</p>
+        <div>
+          <label for="collection-name" class="mb-2 block text-sm font-semibold text-text">Name</label>
+          <input id="collection-name" v-model="newName" type="text" placeholder="Sunday Brunch" class="w-full rounded-xl border-1.5 border-border bg-background-secondary px-4 py-3 text-sm text-text outline-none transition-colors duration-200 focus:border-orange" />
         </div>
-      </div>
-    </Transition>
+        <div>
+          <label for="collection-description" class="mb-2 block text-sm font-semibold text-text">
+            Description <span class="font-normal text-text-dim">(optional)</span>
+          </label>
+          <textarea id="collection-description" v-model="newDescription" rows="3" placeholder="Easy weekend recipes for slow mornings" class="w-full resize-none rounded-xl border-1.5 border-border bg-background-secondary px-4 py-3 text-sm text-text outline-none transition-colors duration-200 focus:border-orange"></textarea>
+        </div>
+        <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-background-secondary/60 p-3">
+          <input v-model="newPublic" type="checkbox" class="h-4 w-4 accent-orange" />
+          <span class="text-sm text-text">
+            <span class="font-semibold">Make public</span>
+            <span class="text-text-dim"> — others can browse this board</span>
+          </span>
+        </label>
+      </form>
+      <template #footer>
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <BaseButton variant="secondary" @click="showNewModal = false">Cancel</BaseButton>
+          <BaseButton type="submit" form="new-collection-form" :disabled="!canCreate" :loading="isCreating">
+            {{ isCreating ? 'Creating…' : 'Create collection' }}
+          </BaseButton>
+        </div>
+      </template>
+    </BaseModal>
 
     <RecipeModal :post-id="selectedPostId" :show="showPostModal" @close="showPostModal = false" />
   </div>
@@ -376,35 +328,4 @@ watch(isNearBottom, (near) => {
   -webkit-font-smoothing: antialiased;
 }
 
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-.modal-enter-active > div,
-.modal-leave-active > div {
-  transition:
-    opacity 0.25s cubic-bezier(0.34, 1.2, 0.64, 1),
-    transform 0.25s cubic-bezier(0.34, 1.2, 0.64, 1);
-}
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-.modal-enter-from > div {
-  opacity: 0;
-  transform: translateY(12px) scale(0.97);
-}
-.modal-leave-to > div {
-  opacity: 0;
-  transform: translateY(8px) scale(0.98);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .modal-enter-active,
-  .modal-leave-active,
-  .modal-enter-active > div,
-  .modal-leave-active > div {
-    transition: none;
-  }
-}
 </style>

@@ -4,6 +4,7 @@ import { ingredientsApi } from '@/http/endpoints/ingredients'
 import { useUiStore } from '@/stores/ui'
 import type { Ingredient } from '@/types/Ingredient'
 import StatCardModal from '@/components/admin/StatCardModal.vue'
+import { useConfirm } from '@/composables/useConfirm'
 
 type Status = 'verified' | 'pending' | 'draft'
 type Conv = { q: number; unit: string; g: number }
@@ -20,6 +21,7 @@ interface UiExtras {
 }
 
 const uiStore = useUiStore()
+const { confirm } = useConfirm()
 
 const items = ref<Ingredient[]>([])
 const loading = ref(true)
@@ -334,7 +336,7 @@ const discard = () => {
 
 const removeItem = async () => {
   if (!draft.value?.id || isCreating.value) return
-  if (!confirm(`Delete "${draft.value.food_item}"?`)) return
+  if (!(await confirm({ title: `Delete "${draft.value.food_item}"?`, message: 'It will be removed from the nutrition database.', confirmLabel: 'Delete', danger: true }))) return
   try {
     await ingredientsApi.delete(String(draft.value.id))
     extras.delete(String(draft.value.id))

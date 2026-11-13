@@ -1,134 +1,76 @@
-<script lang="ts" setup>
-import { computed } from "vue";
-import type { PropType } from "vue";
-import BaseLoaderSpin from "@/components/base/BaseLoader.vue";
+<script setup lang="ts">
+import { computed } from 'vue'
+import { RouterLink, type RouteLocationRaw } from 'vue-router'
 
-type ButtonType =
-    | "primary"
-    | "primaryOutlined"
-    | "secondary"
-    | "secondaryOutlined"
-    | "plainOutlined"
-    | "plain"
-    | "noPadding"
-    | "critical"
-    | "glass";
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
+type ButtonSize = 'sm' | 'md' | 'lg'
 
-type ButtonAlign =
-    | "center"
-    | "left"
-    | "right"
-    | "between"
-    | "evenly"
-    | "around";
-
-const props = defineProps({
-    buttonType: {
-        type: String as PropType<ButtonType>,
-        default: "primaryOutlined",
-    },
-    disabled: {
-        type: Boolean,
-        default: false,
-    },
-    align: {
-        type: String as PropType<ButtonAlign>,
-        default: "center",
-    },
-    loading: {
-        type: Boolean,
-        default: false,
-    },
-    withLoadingSpinner: {
-        type: Boolean,
-        default: true,
-    },
-    size: {
-        type: String as PropType<"lg" | "base" | "sm" | "xs" | "mobile">,
-        default: "base",
-    },
-    widthClass: {
-        type: String,
-        default: 'w-full'
-    },
-    textStyle: {
-        type: String,
-        default: 'uppercase'
-    },
-    rounded: {
-        type: String as PropType<"sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full">,
-        default: "3xl"
-    }
-});
-
-const btnSize = computed(() => {
-    return {
-        lg: "px-6 py-3.5",
-        base: "px-4 py-3",
-        sm: "px-3.5 py-2.5 text-sm",
-        xs: "px-2.5 py-2 text-xs",
-        mobile: "px-1.5 py-1.5"
-    }[props.size];
-});
-
-const roundedClasses = computed(() => {
-  switch (props.rounded) {
-    case 'sm': return 'rounded-sm'
-    case 'md': return 'rounded-md'
-    case 'lg': return 'rounded-lg'
-    case 'xl': return 'rounded-xl'
-    case '2xl': return 'rounded-[20px]'
-    case '3xl': return 'rounded-[32px]'
-    case 'full': return 'rounded-full'
-    default: return 'rounded-3xl'
-  }
+const props = withDefaults(defineProps<{
+  variant?: ButtonVariant
+  size?: ButtonSize
+  type?: 'button' | 'submit' | 'reset'
+  to?: RouteLocationRaw
+  icon?: boolean
+  block?: boolean
+  loading?: boolean
+  disabled?: boolean
+}>(), {
+  variant: 'primary',
+  size: 'md',
+  type: 'button',
+  to: undefined,
+  icon: false,
+  block: false,
+  loading: false,
+  disabled: false,
 })
 
-const isDisabled = computed(() => props.disabled || props.loading);
+const isDisabled = computed(() => props.disabled || props.loading)
 
-const btnAlign = computed(() => {
-    return {
-        center: "justify-center",
-        left: "justify-start",
-        right: "justify-end",
-        between: "justify-between",
-        evenly: "justify-evenly",
-        around: "justify-around",
-    }[props.align];
-});
+const variantClass = computed(() => ({
+  primary: 'bg-orange text-white shadow-[0_6px_24px_var(--orange-glow)] hover:bg-orange-deep',
+  secondary: 'bg-surface text-text border border-border hover:border-orange hover:text-orange',
+  ghost: 'bg-transparent text-text-muted hover:bg-background-secondary hover:text-text',
+  danger: 'bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600',
+}[props.variant]))
 
-const btnClass = computed(() => {
+const sizeClass = computed(() => {
+  if (props.icon) {
     return {
-        primary:
-            "disabled:bg-zinc-300 border-transparent text-white bg-orange hover:bg-orange/90 focus:ring-2 focus:ring-orange/40 active:bg-orange/70",
-        primaryOutlined:
-            "disabled:bg-zinc-100 disabled:text-zinc-400 disabled:border-zinc-300 border-primary-base border-opacity-30 dark:border-opacity-30 bg-none text-primary-700 hover:text-zinc-100 hover:border-primary-400 focus:ring-primary-300 focus:border-primary-400 hover:bg-primary-900 focus:ring-offset-0 focus:ring-2 active:bg-white",
-        secondary:
-            "disabled:bg-zinc-300  border-transparent text-white bg-secondary-base hover:bg-secondary-700 focus:ring-2 focus:ring-secondary-300 active:bg-secondary-500",
-        secondaryOutlined:
-            "disabled:bg-zinc-100 disabled:text-zinc-400 disabled:border-zinc-300 border-secondary-300 bg-none text-secondary-base hover:text-secondary-700 hover:border-secondary-base hover:bg-secondary-100 focus:ring-secondary-200 focus:border-secondary-base hover:bg-secondary-100 focus:ring-offset-0 focus:ring-2",
-        critical:
-            "disabled:bg-zinc-100 disabled:text-zinc-400 disabled:border-zinc-300 border-error-200 bg-none text-error-600 border-error-200 hover:border-error-300 hover:bg-error-100 hover:text-error-700 focus:ring-offset-0 focus:ring-2 focus:ring-error-200 focus:border-error-400",
-        plainOutlined:
-            "disabled:text-zinc-400 disabled:border-zinc-300 disabled:bg-zinc-100 bg-white dark:bg-zinc-800 text-zinc-600 border-zinc-300 dark:border-opacity-30 hover:text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 dark:hover:text-zinc-200 focus:ring-offset-0 focus:ring-2 focus:ring-zinc-200 focus:border-zinc-base",
-        plain:
-            "disabled:text-zinc-400 border-transparent text-zinc-600 dark:text-zinc-200 hover:text-zinc-100 active:text-zinc-base focus:ring-primary-300 focus:border-primary-400 hover:bg-primary-800 focus:ring-offset-0 focus:ring-2 active:bg-white",
-        noPadding:
-            "disabled:text-zinc-400 border-transparent text-zinc-700 dark:text-zinc-100 hover:text-primary-400  hover:text-primary-base active:text-zinc-base focus:text-zinc-400",
-        glass:
-            "disabled:opacity-50 bg-white/10 border border-white/20 text-white hover:bg-white/20 active:scale-95 transition-all"
-    }[props.buttonType];
-});
+      sm: 'h-9 w-9 rounded-full',
+      md: 'h-11 w-11 rounded-full',
+      lg: 'h-[52px] w-[52px] rounded-full',
+    }[props.size]
+  }
+  return {
+    sm: 'h-9 px-3.5 text-[13px] rounded-btn',
+    md: 'h-11 px-5 text-sm rounded-btn',
+    lg: 'h-[52px] px-6 text-[15px] rounded-btn',
+  }[props.size]
+})
 </script>
 
 <template>
-    <button data-cy="button" type="button" :disabled="isDisabled"
-        :class="[widthClass, btnSize, btnClass, btnAlign, roundedClasses, { 'animate-pulse': loading }, textStyle]"
-        class="relative flex items-center border whitespace-nowrap text-sm tracking-widest font-semibold focus:outline-none focus:ring-offset-2 transition duration-300">
-        <span class="flex items-center space-x-1">
-            <slot></slot>
-        </span>
-        <BaseLoaderSpin v-if="loading && withLoadingSpinner" class="ml-2" data-cy="loader-spin" />
-        <slot v-else name="iconSlot"></slot>
-    </button>
+  <component
+    :is="to ? RouterLink : 'button'"
+    :to="to"
+    :type="to ? undefined : type"
+    :disabled="to ? undefined : isDisabled"
+    :aria-disabled="to && isDisabled ? 'true' : undefined"
+    :aria-busy="loading || undefined"
+    class="inline-flex shrink-0 select-none items-center justify-center gap-2 whitespace-nowrap font-montserrat font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-revamp focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100"
+    :class="[variantClass, sizeClass, { 'w-full': block }]"
+  >
+    <svg
+      v-if="loading"
+      class="h-4 w-4 animate-spin motion-reduce:animate-none"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25" />
+      <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+    </svg>
+    <slot v-if="!(loading && icon)" />
+  </component>
 </template>

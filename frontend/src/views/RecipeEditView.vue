@@ -11,10 +11,12 @@ import type { Post } from '@/types/Post'
 import type { Ingredient } from '@/types/Ingredient'
 import { calcRow } from '@/composables/useNutritionCalc'
 import { logger } from '@/utils/logger'
+import { useConfirm } from '@/composables/useConfirm'
 
 const route = useRoute()
 const router = useRouter()
 const uiStore = useUiStore()
+const { confirm } = useConfirm()
 
 const post = ref<Post | null>(null)
 const isLoading = ref(true)
@@ -159,7 +161,7 @@ const removeStep = (i: number) => {
 
 async function handleDelete() {
   if (!post.value) return
-  if (!confirm('Are you sure you want to delete this recipe? This action cannot be undone.')) return
+  if (!(await confirm({ title: 'Delete this recipe?', message: 'This can’t be undone.', confirmLabel: 'Delete recipe', danger: true }))) return
   isSaving.value = true
   try {
     await postsApi.delete(post.value.id)

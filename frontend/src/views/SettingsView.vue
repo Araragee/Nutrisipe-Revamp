@@ -10,6 +10,7 @@ import { preferencesApi } from '@/http/endpoints/preferences'
 import { useTheme } from '@/composables/useTheme'
 import UserAvatar from '@/components/user/UserAvatar.vue'
 import ImageUpload from '@/components/common/ImageUpload.vue'
+import { useConfirm } from '@/composables/useConfirm'
 
 interface Prefs {
   dietary: string[]
@@ -20,6 +21,7 @@ interface Prefs {
 const router = useRouter()
 const authStore = useAuthStore()
 const uiStore = useUiStore()
+const { confirm } = useConfirm()
 const { mode, setMode } = useTheme()
 
 const activeSection = ref<'profile' | 'preferences' | 'appearance' | 'notifications' | 'privacy' | 'account'>(
@@ -166,7 +168,7 @@ async function savePrivacyPrefs() {
 }
 
 async function logoutEverywhere() {
-  if (!confirm('Sign out of all devices? You will need to log in again on each.')) return
+  if (!(await confirm({ title: 'Sign out of all devices?', message: 'You’ll need to sign in again on each device.', confirmLabel: 'Sign out everywhere' }))) return
   try {
     await authStore.logoutAll()
     router.push('/login')
