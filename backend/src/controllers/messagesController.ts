@@ -5,7 +5,7 @@ import { prisma } from '../lib/prisma'
 import { parsePagination } from '../utils/pagination'
 import type { Response } from 'express'
 
-const sendMessageSchema = z.object({
+export const sendMessageSchema = z.object({
   recipientId: z.string().uuid(),
   content: z.string().min(1).max(5000),
 })
@@ -142,6 +142,13 @@ export async function sendMessageHandler(req: AuthRequest, res: Response) {
       return res.status(400).json({ error: parsed.error.errors[0].message })
     }
     const { recipientId, content } = parsed.data
+    if (recipientId === senderId) {
+      return res.status(400).json({ error: 'Cannot message yourself' })
+    }
+    const recipient = await prisma.user.findUnique({ where: { id: recipientId }, select: { isBanned: true } })
+    if (!recipient || recipient.isBanned) {
+      return res.status(404).json({ error: 'Recipient not found' })
+    }
 
     let conversation = await prisma.conversation.findFirst({
       where: {

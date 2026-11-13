@@ -261,14 +261,14 @@ const themeOptions = [
 
             <div class="mt-6 space-y-5">
               <div>
-                <label class="settings-label">Display Name</label>
-                <input v-model="displayName" type="text" maxlength="100" class="settings-input" placeholder="Your display name" />
+                <label for="settings-display-name" class="settings-label">Display Name</label>
+                <input id="settings-display-name" v-model="displayName" type="text" maxlength="100" class="settings-input" placeholder="Your display name" />
                 <p class="settings-hint">{{ displayName.length }}/100</p>
               </div>
 
               <div>
-                <label class="settings-label">Bio</label>
-                <textarea v-model="bio" rows="4" maxlength="500" class="settings-input resize-none" placeholder="Tell people what you cook…"></textarea>
+                <label for="settings-bio" class="settings-label">Bio</label>
+                <textarea id="settings-bio" v-model="bio" rows="4" maxlength="500" class="settings-input resize-none" placeholder="Tell people what you cook…"></textarea>
                 <p class="settings-hint">{{ bio.length }}/500</p>
               </div>
             </div>

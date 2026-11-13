@@ -12,5 +12,5 @@ export function generateToken(userId: string): string {
 }
 
 export function verifyToken(token: string): JwtPayload {
-  return jwt.verify(token, env.JWT_SECRET) as JwtPayload
+  return jwt.verify(token, env.JWT_SECRET, { algorithms: ['HS256'] }) as JwtPayload
 }

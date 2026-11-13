@@ -189,6 +189,7 @@ const uploadVideo = async (file: File) => {
     }
 
     const response = await httpClient.post('/upload/video', formData, {
+      timeout: 0,
       headers: {
         'Content-Type': 'multipart/form-data'
       },

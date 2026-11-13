@@ -12,13 +12,27 @@ if (!fs.existsSync(TEMP_DIR)) {
   fs.mkdirSync(TEMP_DIR, { recursive: true })
 }
 
+const EXT_BY_MIME: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/jpg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'image/gif': '.gif',
+  'video/mp4': '.mp4',
+  'video/mpeg': '.mpeg',
+  'video/quicktime': '.mov',
+  'video/webm': '.webm',
+  'video/x-msvideo': '.avi',
+  'video/x-ms-wmv': '.wmv',
+}
+
 const storage = multer.diskStorage({
   destination: (_req: any, _file: any, cb: any) => {
     cb(null, TEMP_DIR)
   },
   filename: (_req: any, file: any, cb: any) => {
     const uniqueSuffix = Date.now() + '-' + crypto.randomBytes(8).toString('hex')
-    const ext = path.extname(file.originalname).replace(/[^a-zA-Z0-9.]/g, '')
+    const ext = EXT_BY_MIME[file.mimetype] || ''
     cb(null, file.fieldname + '-' + uniqueSuffix + ext)
   }
 })

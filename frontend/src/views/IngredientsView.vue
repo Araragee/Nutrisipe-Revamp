@@ -462,7 +462,7 @@ onMounted(load)
           <div class="p-3.5 border-b border-border">
             <div class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-background-secondary border-1.5 border-transparent focus-within:border-orange focus-within:bg-background transition-colors">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="text-text-dim shrink-0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input v-model="search" type="text" placeholder="Search ingredient or alias…" class="flex-1 bg-transparent border-none outline-none text-[13px] text-text font-inter" />
+              <input v-model="search" type="text" aria-label="Search ingredient or alias" placeholder="Search ingredient or alias…" class="flex-1 bg-transparent border-none outline-none text-[13px] text-text font-inter" />
             </div>
           </div>
 

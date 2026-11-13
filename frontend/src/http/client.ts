@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useToast } from "@/composables/useToast";
+import { useAuthStore } from "@/stores/auth";
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
@@ -24,13 +25,15 @@ httpClient.interceptors.response.use(
   (error) => {
     const skipErrorToast = error.config?.skipErrorToast;
 
-    if (error.response?.status === 401) {
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-        window.location.href = "/login";
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      const authStore = useAuthStore();
+      const { pathname, search } = window.location;
+      if (authStore.isAuthenticated && !pathname.startsWith('/login')) {
+        window.location.href = `/login?redirect=${encodeURIComponent(pathname + search)}`;
       }
     }
 
-    if (!skipErrorToast && typeof window !== 'undefined') {
+    if (!skipErrorToast && typeof window !== 'undefined' && !axios.isCancel(error)) {
       const statusCode = error.response?.status;
       let message = error.response?.data?.message || error.message || 'An unexpected error occurred';
       

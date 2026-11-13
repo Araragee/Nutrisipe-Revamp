@@ -94,13 +94,13 @@ function formatDate(date: string) {
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
-        <select v-model="filters.status" @change="loadReports(1)" class="bg-surface border-1.5 border-border rounded-btn px-5 py-3.5 focus:border-orange outline-none appearance-none font-bold transition-colors duration-200">
+        <select v-model="filters.status" aria-label="Filter by status" @change="loadReports(1)" class="bg-surface border-1.5 border-border rounded-btn px-5 py-3.5 focus:border-orange outline-none appearance-none font-bold transition-colors duration-200">
            <option value="">All Status</option>
            <option value="PENDING">Pending</option>
            <option value="REVIEWING">Reviewing</option>
            <option value="RESOLVED">Resolved</option>
         </select>
-        <select v-model="filters.type" @change="loadReports(1)" class="bg-surface border-1.5 border-border rounded-btn px-5 py-3.5 focus:border-orange outline-none appearance-none font-bold transition-colors duration-200">
+        <select v-model="filters.type" aria-label="Filter by type" @change="loadReports(1)" class="bg-surface border-1.5 border-border rounded-btn px-5 py-3.5 focus:border-orange outline-none appearance-none font-bold transition-colors duration-200">
            <option value="">All Types</option>
            <option value="POST">Post</option>
            <option value="COMMENT">Comment</option>

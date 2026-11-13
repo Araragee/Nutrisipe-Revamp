@@ -44,7 +44,11 @@ if (!env.JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is not set')
 }
 
-const PLACEHOLDER_SECRETS = ['your-super-secret-jwt-key', 'dev-only-secret-do-not-use-in-production']
+const PLACEHOLDER_SECRETS = [
+  'your-super-secret-jwt-key',
+  'dev-only-secret-do-not-use-in-production',
+  'SUPER_SECRET_JWT_KEY_THAT_MUST_BE_AT_LEAST_32_CHARACTERS_LONG_FOR_PRODUCTION',
+]
 const isWeakSecret = PLACEHOLDER_SECRETS.includes(env.JWT_SECRET) || env.JWT_SECRET.length < 32
 
 if (isWeakSecret) {
@@ -54,4 +58,8 @@ if (isWeakSecret) {
     )
   }
   console.warn('[env] WARNING: weak/placeholder JWT_SECRET — fine for local dev, fatal in production.')
+}
+
+if (env.NODE_ENV === 'production' && env.CORS_ORIGINS.includes('*')) {
+  throw new Error('CORS_ORIGIN must list explicit origins in production; "*" with credentialed cookies lets any site call the API as the user')
 }

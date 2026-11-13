@@ -331,6 +331,7 @@ onUnmounted(() => {
               <input
                 v-model="searchQuery"
                 type="search"
+                aria-label="Search recipes, chefs, tags"
                 placeholder="Search recipes, chefs, tags…"
                 class="w-full bg-background dark:bg-background-secondary border border-transparent rounded-full pl-10 pr-4 py-2 text-sm text-text dark:text-text outline-none focus:border-orange focus:bg-surface dark:focus:bg-surface transition-colors placeholder:text-text-dim"
               />
@@ -452,7 +453,8 @@ onUnmounted(() => {
               v-model="searchQuery"
               type="search"
               ref="mobileSearchInput"
-              placeholder="Search recipes, chefs, tags…"
+              aria-label="Search recipes, chefs, tags"
+                placeholder="Search recipes, chefs, tags…"
               class="w-full bg-background dark:bg-background-secondary border border-transparent rounded-full pl-10 pr-4 py-2 text-sm text-text dark:text-text outline-none focus:border-orange focus:bg-surface dark:focus:bg-surface transition-colors placeholder:text-text-dim"
             />
           </div>

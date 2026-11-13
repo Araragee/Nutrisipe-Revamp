@@ -13,7 +13,7 @@ export function usePostAuthFlow() {
     if (authStore.user && !authStore.user.onboardingCompleted) {
       router.push('/onboarding')
     } else {
-      router.push(fallbackRedirect)
+      router.push(/^\/(?!\/)/.test(fallbackRedirect) ? fallbackRedirect : '/')
     }
   }
 

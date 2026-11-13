@@ -125,17 +125,18 @@ async function unbanUser(userId: string) {
         <input
           v-model="filters.search"
           type="text"
+          aria-label="Search users by name or email"
           placeholder="Search by name, email..."
           class="bg-surface border-1.5 border-border rounded-btn px-5 py-3.5 focus:border-orange outline-none transition-colors duration-200 font-medium"
           @input="debouncedSearch"
         />
-        <select v-model="filters.role" @change="loadUsers(1)" class="bg-surface border-1.5 border-border rounded-btn px-5 py-3.5 focus:border-orange outline-none appearance-none font-bold transition-colors duration-200">
+        <select v-model="filters.role" aria-label="Filter by role" @change="loadUsers(1)" class="bg-surface border-1.5 border-border rounded-btn px-5 py-3.5 focus:border-orange outline-none appearance-none font-bold transition-colors duration-200">
            <option value="">All Roles</option>
            <option value="USER">User</option>
            <option value="MODERATOR">Moderator</option>
            <option value="ADMIN">Admin</option>
         </select>
-        <select v-model="filters.status" @change="loadUsers(1)" class="bg-surface border-1.5 border-border rounded-btn px-5 py-3.5 focus:border-orange outline-none appearance-none font-bold transition-colors duration-200">
+        <select v-model="filters.status" aria-label="Filter by status" @change="loadUsers(1)" class="bg-surface border-1.5 border-border rounded-btn px-5 py-3.5 focus:border-orange outline-none appearance-none font-bold transition-colors duration-200">
            <option value="">All Status</option>
            <option value="active">Active</option>
            <option value="banned">Banned</option>
@@ -170,7 +171,7 @@ async function unbanUser(userId: string) {
                     </div>
                  </td>
                  <td class="px-6 py-5">
-                    <select :value="user.role" @change="updateUserRole(user.id, ($event.target as any).value)" class="bg-transparent border-none text-sm font-bold focus:ring-0 cursor-pointer rounded-lg hover:text-orange transition-colors">
+                    <select :value="user.role" :aria-label="`Role for ${user.username}`" @change="updateUserRole(user.id, ($event.target as any).value)" class="bg-transparent border-none text-sm font-bold focus:ring-0 cursor-pointer rounded-lg hover:text-orange transition-colors">
                        <option value="USER">User</option>
                        <option value="MODERATOR">Moderator</option>
                        <option value="ADMIN">Admin</option>

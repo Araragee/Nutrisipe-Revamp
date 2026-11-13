@@ -188,6 +188,7 @@ watch(
           <input
             v-model="searchQuery"
             type="text"
+            aria-label="Search conversations"
             placeholder="Search conversations..."
             class="bg-transparent border-none outline-none text-sm w-full"
           />

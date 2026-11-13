@@ -4,7 +4,22 @@ import { Server as SocketIOServer, Socket } from 'socket.io'
 import { verifyToken } from '../utils/jwt'
 import { prisma } from '../lib/prisma'
 import { env } from '../config/env'
-import cookie from 'cookie'
+// cookie@1 is an ES module build with no default export; a default import is undefined at runtime
+import { parse as parseCookie } from 'cookie'
+import { sendMessageSchema } from '../controllers/messagesController'
+
+// Async socket handlers that throw become unhandled rejections and kill the process; never let client input do that.
+function safe<T extends unknown[]>(name: string, fn: (...args: T) => unknown) {
+  return async (...args: T) => {
+    try {
+      await fn(...args)
+    } catch (error) {
+      logger.error(`Socket handler ${name} failed:`, error)
+    }
+  }
+}
+
+const isId = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length <= 64
 
 interface AuthenticatedSocket extends Socket {
   userId?: string
@@ -13,7 +28,7 @@ interface AuthenticatedSocket extends Socket {
 export function initializeSocketServer(httpServer: HTTPServer) {
   const io = new SocketIOServer(httpServer, {
     cors: {
-      origin: env.CORS_ORIGIN,
+      origin: env.CORS_ORIGINS,
       credentials: true
     }
   })
@@ -23,13 +38,20 @@ export function initializeSocketServer(httpServer: HTTPServer) {
   io.use(async (socket: AuthenticatedSocket, next) => {
     try {
       const raw = socket.handshake.headers.cookie
-      const token = raw ? cookie.parse(raw).auth_token : socket.handshake.auth?.token
+      const token = raw ? parseCookie(raw).auth_token : socket.handshake.auth?.token
 
       if (!token) {
         return next(new Error('Authentication token required'))
       }
 
       const payload = verifyToken(token as string)
+      const user = await prisma.user.findUnique({
+        where: { id: payload.userId },
+        select: { isBanned: true },
+      })
+      if (!user || user.isBanned) {
+        return next(new Error('Invalid authentication token'))
+      }
       socket.userId = payload.userId
 
       next()
@@ -42,8 +64,7 @@ export function initializeSocketServer(httpServer: HTTPServer) {
     const userId = socket.userId!
     logger.log(`User connected: ${userId}`)
 
-    await updateUserPresence(userId, true, socket.id)
-
+    // Register handlers before any await: events sent right after connect are dropped otherwise.
     socket.join(`user:${userId}`)
 
     socket.on('disconnect', async () => {
@@ -51,42 +72,29 @@ export function initializeSocketServer(httpServer: HTTPServer) {
       await updateUserPresence(userId, false)
     })
 
-    socket.on('message:send', async (data) => {
-      await handleSendMessage(io, socket, data)
-    })
+    socket.on('message:send', safe('message:send', (data) => handleSendMessage(io, socket, data)))
 
-    socket.on('message:read', async (data) => {
-      await handleMarkMessageRead(io, socket, data)
-    })
+    socket.on('message:read', safe('message:read', (data) => handleMarkMessageRead(io, socket, data)))
 
-    socket.on('message:typing', async (data) => {
-      await handleTypingIndicator(io, socket, data)
-    })
+    socket.on('message:typing', safe('message:typing', (data) => handleTypingIndicator(io, socket, data)))
 
-    socket.on('conversation:join', (conversationId: string) => {
-      socket.join(`conversation:${conversationId}`)
-    })
+    socket.on('notification:read', safe('notification:read', (notificationId) => handleNotificationRead(socket, notificationId)))
 
-    socket.on('conversation:leave', (conversationId: string) => {
-      socket.leave(`conversation:${conversationId}`)
-    })
-
-    socket.on('notification:read', async (notificationId: string) => {
-      await handleNotificationRead(socket, notificationId)
-    })
-
-    socket.on('presence:check', async (userIds: string[]) => {
-      const presences = await getUsersPresence(userIds)
+    socket.on('presence:check', safe('presence:check', async (userIds) => {
+      if (!Array.isArray(userIds)) return
+      const presences = await getUsersPresence(userIds.filter(isId).slice(0, 200))
       socket.emit('presence:status', presences)
+    }))
+
+    socket.on('post:join', (postId) => {
+      if (isId(postId)) socket.join(`post:${postId}`)
     })
 
-    socket.on('post:join', (postId: string) => {
-      socket.join(`post:${postId}`)
+    socket.on('post:leave', (postId) => {
+      if (isId(postId)) socket.leave(`post:${postId}`)
     })
 
-    socket.on('post:leave', (postId: string) => {
-      socket.leave(`post:${postId}`)
-    })
+    await updateUserPresence(userId, true, socket.id)
   })
 
   return io
@@ -140,11 +148,21 @@ async function getUsersPresence(userIds: string[]) {
 async function handleSendMessage(
   io: SocketIOServer,
   socket: AuthenticatedSocket,
-  data: { recipientId: string; content: string }
+  data: unknown
 ) {
   try {
     const senderId = socket.userId!
-    const { recipientId, content } = data
+    const parsed = sendMessageSchema.safeParse(data)
+    if (!parsed.success || parsed.data.recipientId === senderId) {
+      socket.emit('message:error', { error: 'Invalid message' })
+      return
+    }
+    const { recipientId, content } = parsed.data
+    const recipient = await prisma.user.findUnique({ where: { id: recipientId }, select: { isBanned: true } })
+    if (!recipient || recipient.isBanned) {
+      socket.emit('message:error', { error: 'Recipient not found' })
+      return
+    }
 
     let conversation = await prisma.conversation.findFirst({
       where: {
@@ -207,16 +225,18 @@ async function handleSendMessage(
 async function handleMarkMessageRead(
   io: SocketIOServer,
   socket: AuthenticatedSocket,
-  data: { messageId: string }
+  data: { messageId?: unknown }
 ) {
   try {
     const userId = socket.userId!
-    const { messageId } = data
+    const messageId = data?.messageId
+    if (!isId(messageId)) return
 
     const message = await prisma.message.update({
       where: {
         id: messageId,
-        recipientId: userId
+        recipientId: userId,
+        isRead: false
       },
       data: {
         isRead: true,
@@ -252,10 +272,12 @@ async function handleMarkMessageRead(
 async function handleTypingIndicator(
   io: SocketIOServer,
   socket: AuthenticatedSocket,
-  data: { recipientId: string; isTyping: boolean }
+  data: { recipientId?: unknown; isTyping?: unknown }
 ) {
   const senderId = socket.userId!
-  const { recipientId, isTyping } = data
+  const recipientId = data?.recipientId
+  if (!isId(recipientId)) return
+  const isTyping = data?.isTyping === true
 
   io.to(`user:${recipientId}`).emit('message:typing', {
     userId: senderId,
@@ -265,13 +287,15 @@ async function handleTypingIndicator(
 
 async function handleNotificationRead(
   socket: AuthenticatedSocket,
-  notificationId: string
+  notificationId: unknown
 ) {
   try {
-    await prisma.notification.update({
-      where: { id: notificationId },
+    if (!isId(notificationId)) return
+    const { count } = await prisma.notification.updateMany({
+      where: { id: notificationId, userId: socket.userId! },
       data: { isRead: true }
     })
+    if (count === 0) return
 
     socket.emit('notification:updated', { notificationId, isRead: true })
   } catch (error) {

@@ -75,6 +75,7 @@ function onInput(event: Event) {
           @input="onInput"
           @keyup.enter="emit('search')"
           type="text"
+          aria-label="Search recipes, people, or tags"
           :placeholder="placeholder"
           class="w-full h-16 pl-14 pr-32 bg-surface/90 backdrop-blur-md border-1.5 border-border rounded-2xl text-[15px] font-medium outline-none focus:border-orange focus:ring-4 focus:ring-orange/10 shadow-card-hover transition-all"
         />
